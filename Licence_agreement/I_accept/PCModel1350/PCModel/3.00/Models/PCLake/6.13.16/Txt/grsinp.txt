@@ -1,0 +1,1 @@
+lGrsId iStatus dTime fValue sName sEOR

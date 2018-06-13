@@ -1,0 +1,69 @@
+LOGICAL InitCalc; CONSTANT InitCalc = .FALSE.
+ !If_T_skip_calculation_of_initial_values_used_in_case_of_REINIT_command
+
+LOGICAL ConstDepth; CONSTANT ConstDepth = .TRUE.
+ !If_T_water_depth_kept_constant_by_daily_dredging
+
+LOGICAL InclTran; CONSTANT InclTran = .TRUE.
+ !transport_processes
+
+LOGICAL InclPhytS; CONSTANT InclPhytS = .TRUE.
+ !Include_phytoplankton_module
+
+LOGICAL InclBed; CONSTANT InclBed = .TRUE.
+ !Include_vegetation_module
+
+LOGICAL InclWeb; CONSTANT InclWeb = .TRUE.
+ !Include_food_web_module
+
+LOGICAL InclMarsh; CONSTANT InclMarsh = .TRUE.
+ !Include_marsh_zone
+
+LOGICAL InclSeason; CONSTANT InclSeason = .TRUE.
+ !Include_season
+
+LOGICAL ReadTemp; CONSTANT ReadTemp = .FALSE.
+ !If_TRUE_use_measured_time-series_of_water_temperature_otherwise_sinus
+
+LOGICAL ReadLOut; CONSTANT ReadLOut = .FALSE.
+ !If_TRUE_use_measured_time-series_of_light_otherwise_sinus
+
+LOGICAL ReadVWind; CONSTANT ReadVWind = .FALSE.
+ !If_TRUE_use_measured_time-series_of_wind_otherwise_constant
+
+LOGICAL ReadQIn; CONSTANT ReadQIn = .FALSE.
+ !If_TRUE_use_measured_time-series_of_inflow_otherwise_constant
+
+LOGICAL ReadQOut; CONSTANT ReadQOut = .FALSE.
+ !If_TRUE_use_measured_time-series_of_inflow_otherwise_constant
+
+LOGICAL ReadQEv; CONSTANT ReadQEv = .FALSE.
+ !If_TRUE_use_measured_time-series_of_evaporation_otherwise_constant
+
+LOGICAL ReadPLoad; CONSTANT ReadPLoad = .FALSE.
+ !If_TRUE_use_measured_time-series_of_P_loading_otherwise_constant
+
+LOGICAL ReadNLoad; CONSTANT ReadNLoad = .FALSE.
+ !If_TRUE_use_measured_time-series_of_N_loading_otherwise_constant
+
+LOGICAL ReadNutFrac; CONSTANT ReadNutFrac = .FALSE.
+ !If_TRUE_use_measured_time-series_of_loading_with_diff_nutrient_fractions
+
+LOGICAL ReadPLoadPhyt; CONSTANT ReadPLoadPhyt = .FALSE.
+ !If_TRUE_use_measured_time-series_of_P_loading_algal_input_otherwise_constant
+
+LOGICAL ReadDLoadDet; CONSTANT ReadDLoadDet = .FALSE.
+ !If_TRUE_use_measured_time-series_of_DDet_loading_otherwise_constant
+
+LOGICAL ReadDLoadIM; CONSTANT ReadDLoadIM = .FALSE.
+ !If_TRUE_use_measured_time-series_of_DIM_loading_otherwise_constant
+
+LOGICAL UseSeasonLoad; CONSTANT UseSeasonLoad = .FALSE.
+ !If_TRUE_use_different_inflow_and_loading_for_summer_and_winter_periods
+
+LOGICAL UsePulseLoad; CONSTANT UsePulseLoad = .FALSE.
+ !If_TRUE_use_a_pulse-wise_nutrient_loading
+
+LOGICAL UseEmpUpt; CONSTANT UseEmpUpt = .FALSE.
+ !false_=_do_not_use_this_empirical_relation
+

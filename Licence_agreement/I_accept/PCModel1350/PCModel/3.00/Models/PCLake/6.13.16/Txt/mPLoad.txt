@@ -1,0 +1,8 @@
+dTime	dValue	-1			This is an example of  forcing function input data
+0	0.0006	-1			"It is possible to use time dependent parameter values for your PCLake run, for example time series of Phosphorus input."
+7300	0.0006	-1			"To to so, first let PCLake know that you want to use time dependent P input, by marking the _ReadPLoad_ with a  1. The _ReadPLoad_ can be found in the parameters worksheet. Enter the  1  in the empty cell in the parameter list that you are going to use for your model run. "
+18250	0.006	-1			Then go to the _mPLoad_ and in the corresponding cell enter  txt\nameoftheworksheetwiththedata.txt
+25550	0.006	-1			Thus if you want to use the data presented in this example enter txt\mPLoad.txt
+36500	0.0006	-1			"Ofcourse you can change the data presented in this worksheet. Note that missing values in the time series are interpolated, making that every day gets an input value. Do not forget to use the -1 to end a line, as shown in the example presented here."
+43800	0.0006	-1			You can use forcing functions for every parameter. For every forcing function you need to insert a new worksheet and give that worksheet a name so that you can refer to the time series
+-1					Please also check the manual and the example workbook where all important forcing functions are already filled in

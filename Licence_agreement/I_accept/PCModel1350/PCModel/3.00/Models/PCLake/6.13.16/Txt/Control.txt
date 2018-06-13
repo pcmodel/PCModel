@@ -1,0 +1,92 @@
+  																					
+																					
+																					
+																					Set 0
+																					Set 1
+																					Set 2
+																					Set 3
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+	Set 0	Set 1	Set 2	Set 3																	
+iRuniD	0	1	2	3																	
+iIntType	3	3	3	3																	
+iStateSet	0	1	0	0																	
+iParamSet	0	0	0	0																	
+iInitAuxilSet	0	0	0	0																	
+iAuxilset	0	0	0	0																	
+iCalibType	0	0	0	0																	
+iCalibMaxIter	50	50	50	50																	
+dReady	5	5	0	0																	
+dIntStep	0.001	0.001	0.001	0.001																	
+dIntAccuracy	0.0001	0.0001	0.0001	0.0001																	
+dRepStart	0	0	0	0																	
+dRepStep	1	1	7	7																	
+dAvgStep	7	7	7	7																	
+dAvgStart	4	4	0	0																	
+dAvgStartWithinYear	150	150	150	150																	
+dAvgEndWithinYear	210	210	210	210																	
+dSensitivityFactor	0.01	0.01	0.01	0.01																	
+dCalibScale	0.05	0.05	0.05	0.05																	
+dCalibAccuracy	0.001	0.001	0.001	0.001																	
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					
+																					

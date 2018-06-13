@@ -1,0 +1,1 @@
+lIndId lPopId lHabId iStatus dTime fValue sName sEOR

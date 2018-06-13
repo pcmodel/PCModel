@@ -1,0 +1,41 @@
+RunId	Identifier	Default	Value	Difference	-1
+-1
+1	_ReadTemp_	0	1	-1	-1
+1	_ReadLOut_	0	1	-1	-1
+1	_ReadQIn_	0	1	-1	-1
+1	_ReadQOut_	0	1	-1	-1
+1	_ReadQEv_	0	1	-1	-1
+1	_ReadPLoad_	0	1	-1	-1
+1	_ReadNLoad_	0	1	-1	-1
+1	_ReadDLoadDet_	0	1	-1	-1
+1	_ReadDLoadIM_	0	1	-1	-1
+1	_mTemp_	0	txt\mTemp.txt	0	-1
+1	_mLOut_	0	txt\mLOut.txt	0	-1
+1	_mQIn_	0	txt\mQIn.txt	0	-1
+1	_mQOut_	0	txt\mQOut.txt	0	-1
+1	_mQEv_	0	txt\mQEv.txt	0	-1
+1	_mPLoad_	0	txt\mPLoad.txt	0	-1
+1	_mNLoad_	0	txt\mNLoad.txt	0	-1
+1	_mDLoadDet_	0	txt\mDLoadDet.txt	0	-1
+1	_mDLoadIM_	0	txt\mDLoadIM.txt	0	-1
+-1
+-1
+3	_ReadTemp_	0	1	-1	-1
+3	_ReadLOut_	0	1	-1	-1
+3	_ReadQIn_	0	1	-1	-1
+3	_ReadQOut_	0	1	-1	-1
+3	_ReadQEv_	0	1	-1	-1
+3	_ReadPLoad_	0	1	-1	-1
+3	_ReadNLoad_	0	1	-1	-1
+3	_ReadDLoadDet_	0	1	-1	-1
+3	_ReadDLoadIM_	0	1	-1	-1
+3	_mTemp_	0	txt\mTemp.txt	0	-1
+3	_mLOut_	0	txt\mLOut.txt	0	-1
+3	_mQIn_	0	txt\mQIn.txt	0	-1
+3	_mQOut_	0	txt\mQOut.txt	0	-1
+3	_mQEv_	0	txt\mQEv.txt	0	-1
+3	_mPLoad_	0	txt\mPLoad.txt	0	-1
+3	_mNLoad_	0	txt\mNLoad.txt	0	-1
+3	_mDLoadDet_	0	txt\mDLoadDet.txt	0	-1
+3	_mDLoadIM_	0	txt\mDLoadIM.txt	0	-1
+-1

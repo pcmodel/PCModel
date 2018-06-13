@@ -1,0 +1,1194 @@
+CONSTANT YearZero = 0
+ !Note_also__Day_no_1_=_1_Jan_of_this_year
+
+CONSTANT cFetch = 1000
+ !wind_fetch
+
+CONSTANT fMarsh = 0
+ !relative_marsh_area
+
+CONSTANT fLutum = 0.1
+ !lutum_content_of_inorg_matter
+
+CONSTANT fFeDIM = 0.01
+ !Fe_content_of_inorg_matter
+
+CONSTANT fAlDIM = 0.01
+ !Al_content_of_inorg_matter
+
+CONSTANT cTmAve = 12
+ !average_water_temperature
+
+CONSTANT cTmVar = 10
+ !annual_water_temperature_variation
+
+CONSTANT cTimeLag = 40
+ !time_lag_for_temperature
+
+CONSTANT cVWind = 5
+ !average_wind_speed
+
+CONSTANT cQInf = 0
+ !infiltration_rate
+
+CONSTANT cPBackLoad = 0
+ !Background_P_loading
+
+CONSTANT cNBackLoad = 0
+ !Background_N_loading
+
+CONSTANT cLDayAve = 10000000
+ !annual_average_radiation
+
+CONSTANT cLDayVar = 8000000
+ !annual_variation_in_radiation
+
+CONSTANT cfDayAve = 0.5
+ !average_day_length
+
+CONSTANT cfDayVar = 0.2
+ !annual_variation_in_day_length
+
+CONSTANT fRefl = 0.2
+ !the_fraction_photosynthetically_active_radiation_reflected_at_the_surface
+
+CONSTANT cExtWat = 0.5
+ !background_extinction
+
+CONSTANT cDredInterval = 9999000
+ !dredging_interval
+
+CONSTANT cDredStart = 9999000
+ !first_dredging_year_(should_be_n_times__cDredInterval_)
+
+CONSTANT cDepthRef = 1E-28
+ !reference_water_depth_for_dredging
+
+CONSTANT cLengDred = 10
+ !length_of_dredging_period
+
+CONSTANT fEffDred = 0.95
+ !dredging_efficiency_(<10)
+
+CONSTANT fEffDredBent = 0.5
+ !dredging_efficiency_for_zoobenthos_(<10)
+
+CONSTANT fPAR = 0.48
+ !fraction_photosynthetically_active_radiation_(PAR)
+
+CONSTANT cExtSpDet = 0.15
+ !specific_extinction_detritus
+
+CONSTANT cExtSpIM = 0.05
+ !specific_extinction_inert_matter
+
+CONSTANT fDTotS0 = 0.3
+ !initial_dry-weight_fraction_in_sediment
+
+CONSTANT fDOrgS0 = 0.1
+ !initial_organic_fraction_of_sediment_DW
+
+CONSTANT fDDetS0 = 0.05
+ !initial_detritus_fraction_of_sediment_organic_matter
+
+CONSTANT fSedPhyt0 = 0.01
+ !Fraction_diatoms_DW_on_lake_sediment
+
+CONSTANT fPInorgS0 = 0.0005
+ !initial_inorg_P_fraction_in_sed
+
+CONSTANT fPAdsS0 = 0.99
+ !initial_adsorbed_fraction_of_inorg_P_in_sed
+
+CONSTANT cPDDet0 = 0.0025
+ !initial_P_fraction_in_detritus
+
+CONSTANT cNDDet0 = 0.025
+ !initial_N_fraction_in_detritus
+
+CONSTANT cSiDDet0 = 0.01
+ !initial_Si_fraction_in_detritus_Tentative
+
+CONSTANT cPDHum0 = 0.005
+ !initial_P_fraction_in_humus
+
+CONSTANT cNDHum0 = 0.05
+ !initial_N_fraction_in_humus
+
+CONSTANT cPDPhyt0 = 0.01
+ !initial_P_fraction_in_algae
+
+CONSTANT cNDPhyt0 = 0.1
+ !initial_N_fraction_in_algae
+
+CONSTANT cPDDiat0 = 0.01
+ !initial_P_fraction_in_diatoms
+
+CONSTANT cNDDiat0 = 0.1
+ !initial_N_fraction_in_diatoms
+
+CONSTANT cPDGren0 = 0.01
+ !initial_P_fraction_in_green_algae
+
+CONSTANT cNDGren0 = 0.1
+ !initial_N_fraction_in_green_algae
+
+CONSTANT cPDBlue0 = 0.01
+ !initial_P_fraction_in_blue-green_algae
+
+CONSTANT cNDBlue0 = 0.1
+ !initial_N_fraction_in_blue-green_algae
+
+CONSTANT cPDVeg0 = 0.002
+ !initial_P_fraction_in_veg
+
+CONSTANT cNDVeg0 = 0.02
+ !initial_N_fraction_in_veg
+
+CONSTANT cSiDDiat = 0.15
+ !Si/DW_ratio_of_daitoms
+
+CONSTANT cPDZooRef = 0.01
+ !reference_P/C-ratio_herb_zooplankton
+
+CONSTANT cNDZooRef = 0.07
+ !reference_N/C-ratio_herb_zooplankton
+
+CONSTANT cPDBentRef = 0.01
+ !reference_P/C_ratio_of_zoobenthos
+
+CONSTANT cNDBentRef = 0.07
+ !reference_N/C_ratio_of_zoobenthos
+
+CONSTANT cPDFishRef = 0.022
+ !reference_P/C_ratio_of_Fish
+
+CONSTANT cNDFishRef = 0.1
+ !reference_N/C_ratio_of_Fish
+
+CONSTANT cPDPisc = 0.022
+ !reference_P/C_ratio_of__Pi_sc
+
+CONSTANT cNDPisc = 0.1
+ !reference_N/C_ratio_of__Pi_sc
+
+CONSTANT cQIn = 20
+ !standard_water_inflow_if_not_measured
+
+CONSTANT cQInSum = 20
+ !summer_water_inflow_if_not_measured
+
+CONSTANT cQInWin = 20
+ !winter_water_inflow_if_not_measured
+
+CONSTANT cDepthWMax = 5
+ !maximum_water_depth
+
+CONSTANT cQInExtraApril1 = 0
+ !extra_inflow_at_start_of_summer
+
+CONSTANT cQInExtraOct1 = 0
+ !extra_inflow_at_start_of_winter
+
+CONSTANT cQOutExtraApril1 = 0
+ !extra_outflow_at_start_of_summer
+
+CONSTANT cQOutExtraOct1 = 0
+ !extra_outflow_at_start_of_winter
+
+CONSTANT cQEvAve = 1.5
+ !standard_average_evaporation
+
+CONSTANT cQEvVar = 1.3
+ !standard_variation_in_evaporation
+
+CONSTANT cPLoad = 0.005
+ !standard_P_loading_if_not_measured
+
+CONSTANT cPLoadSum = 0.005
+ !summer_P_loading_if_not_measured
+
+CONSTANT cPLoadWin = 0.005
+ !winter_P_loading_if_not_measured
+
+CONSTANT fPO4In = 0.5
+ !fraction_PO4_in_input_(if_PO4_input_not_measured)
+
+CONSTANT fPhytInWin = 0.02
+ !minimum_algal_fraction_in_organic_P_input
+
+CONSTANT fPhytInSum = 0.1
+ !maximum_algal_fraction_in_organic_P_input
+
+CONSTANT fDiatPhytIn = 0.33
+ !diatoms_fraction_of_algal_input
+
+CONSTANT fGrenPhytIn = 0.34
+ !greens_fraction_of_algal_input
+
+CONSTANT fBluePhytIn = 0.33
+ !blue-greens_fraction_of_algal_input
+
+CONSTANT cNLoad = 0.05
+ !standard_N_loading
+
+CONSTANT cNLoadSum = 0.05
+ !summer_N_loading
+
+CONSTANT cNLoadWin = 0.05
+ !winter_N_loading
+
+CONSTANT cNPLoadMeas = 7
+ !N/P_loading_if_P_is_measured_and_N_not
+
+CONSTANT cNPPhytIn = 7
+ !N/P_ratio_of_algal_input
+
+CONSTANT cNPDetIn = 7
+ !N/P_ratio_of_detrital_input
+
+CONSTANT fNH4DissIn = 0.5
+ !NH4_fraction_of_dissolved_N_load_(if_NH4_not_measured)
+
+CONSTANT cNDPhytIn = 0.07
+ !N/day_ratio_of_algal_input
+
+CONSTANT cNDDetIn = 0.07
+ !N/P_ratio_of_detrital_input
+
+CONSTANT cDIMIn = 5
+ !IM_conc_in_inflow
+
+CONSTANT cO2In = 5
+ !O2_conc_in_inflow
+
+CONSTANT cSiO2In = 3
+ !SiO2_conc_in_inflow
+
+CONSTANT cSiDDetIn = 0.05
+ !Si_content_of_sediment_detritus
+
+CONSTANT cDZooIn = 0.1
+ !zoopl_conc_in_inflowing_water
+
+CONSTANT cDayApril1 = 91
+ !April_1
+
+CONSTANT cDayOct1 = 273
+ !October_1
+
+CONSTANT cLengChange = 10
+ !length_of_season_change
+
+CONSTANT cNLoadS = 0
+ !N_fertilizer_to_sediment
+
+CONSTANT fNH4LoadS = 0.5
+ !NH4_fraction_of_N_fertilizer_to_sediment
+
+CONSTANT cDErosTot = 0.1
+ !Erosion_input_(tentative)
+
+CONSTANT fSedErosIM = 0.95
+ !instantly_sedimentating_fraction_of_IM
+
+CONSTANT fDOrgSoil = 0.1
+ !fraction_soil_organic_matter
+
+CONSTANT cPDSoilOM = 0.001
+ !P/day_ratio_of_soil_organic_matter
+
+CONSTANT cNDSoilOM = 0.01
+ !N/day_ratio_of_soil_organic_matter
+
+CONSTANT cPO4Ground = 0.1
+ !PO4_cone_in_groundwater
+
+CONSTANT cNH4Ground = 1
+ !NH4_cone_in_groundwater
+
+CONSTANT cNO3Ground = 0.1
+ !NO3_cone_in_groundwater
+
+CONSTANT cDepthS = 0.1
+ !sediment_depth
+
+CONSTANT cCPerDW = 0.4
+ !C_content_of_organic_matter
+
+CONSTANT cRhoIM = 2500000
+ !density_of_sediment_IM
+
+CONSTANT cRhoOM = 1400000
+ !density_of_sediment_detritus
+
+CONSTANT cTmRef = 20
+ !reference_temperature
+
+CONSTANT cAerRoot = 0.727
+ !coefficient_for_VWind^05
+
+CONSTANT cAerLin = -0.371
+ !coefficient_for_VWind_(is_negative)
+
+CONSTANT cAerSquare = 0.0376
+ !coefficient_for_VWind^2
+
+CONSTANT cThetaAer = 1.024
+ !Temperature_coeff_for_reaeration_(Downing_&_Truesdale_1955)
+
+CONSTANT cVSetIM = 1
+ !max_sedimentation_velocity_of_inert_org_matter_(10)
+
+CONSTANT cVSetDet = 0.25
+ !max_sedimentation_velocity_of_detritus
+
+CONSTANT cThetaSet = 1.01
+ !temp_parameter_of_sedimentation
+
+CONSTANT cSuspMin = 6.1
+ !minimum_value_of_logistic_empirical_suspended_matter_function
+
+CONSTANT cSuspMax = 25.2
+ !maximum_value_of_logistic_empirical_suspended_matter_function
+
+CONSTANT cSuspSlope = 2.1
+ !slope_of_logistic_empirical_suspended_matter_function
+
+CONSTANT hDepthSusp = 2
+ !half_sat_value_of_depth_in_logistic_empirical_suspended_matter_function
+
+CONSTANT cFetchRef = 1000
+ !reference_fetch
+
+CONSTANT fLutumRef = 0.2
+ !reference_lutum_fraction_(of_sandy_clay_soils)
+
+CONSTANT cSuspRef = 0.5
+ !reference_supsended_matter_function
+
+CONSTANT kVegResus = 0.01
+ !rel_resuspension_reduction_per_g_vegetation
+
+CONSTANT kTurbFish = 1
+ !relative_resuspension_by_adult_fish_browsing
+
+CONSTANT kResusPhytMax = 0.25
+ !max_phytopl_resuspension
+
+CONSTANT cResusPhytExp = -0.379
+ !exp_par_for_phytopl_resuspension
+
+CONSTANT cThetaMinW = 1.07
+ !expon_temp_constant_of_mineralization_in_water
+
+CONSTANT kDMinDetW = 0.01
+ !decomposition_constant_of_detritus
+
+CONSTANT hO2BOD = 1
+ !half-sat_oxygen_conc_for_BOD
+
+CONSTANT O2PerNO3 = 1.5
+ !mol_O2_formed_per_mol_NO3-_ammonified
+
+CONSTANT cThetaMinS = 1.07
+ !expon_temp_constant_of_sediment_mineralization
+
+CONSTANT kDMinDetS = 0.002
+ !decomposition_constant_of_sediment_detritus
+
+CONSTANT fRefrDetS = 0.15
+ !refractory_fraction_of_sed_detritus
+
+CONSTANT hNO3Denit = 2
+ !quadratic_half-sat_NO3_conc_for_denitrification
+
+CONSTANT NO3PerC = 0.8
+ !mol_NO3_denitrified_per_mol_C_mineralised
+
+CONSTANT kDMinHum = 0.00001
+ !maximum_decomposition_constant_of_humic_material_(1D-5)
+
+CONSTANT kNitrW = 0.1
+ !nitrification_rate_constant_in_water
+
+CONSTANT kNitrS = 1
+ !nitrification_rate_constant_in_sediment
+
+CONSTANT cThetaNitr = 1.08
+ !temperature_coefficient_of_nitrification
+
+CONSTANT O2PerNH4 = 2
+ !mol_O2_used_per_mol_NH4+_nitrified
+
+CONSTANT hO2Nitr = 2
+ !half-sat_O2_conc_for_nitrification_in_water
+
+CONSTANT kPDifPO4 = 0.000072
+ !mol_PO4_diffusion_constant
+
+CONSTANT kNDifNO3 = 0.000086
+ !mol_NO3_diffusion_constant
+
+CONSTANT kNDifNH4 = 0.000112
+ !mol_NH4_diffusion_constant
+
+CONSTANT kO2Dif = 0.000026
+ !mol_O2_diffusion_constant
+
+CONSTANT cThetaDif = 1.02
+ !Temperature_coefficient_for_diffusion
+
+CONSTANT fDepthDifS = 0.5
+ !nutrient_diffusion_distance_as_fraction_of_sediment_depth
+
+CONSTANT cTurbDifNut = 5
+ !bioturbation_factor_for_diffusion
+
+CONSTANT cTurbDifO2 = 5
+ !bioturbation_factor_for_diffusion
+
+CONSTANT kPSorp = 0.05
+ !P_sorption_rate_constant_not_too_high_->_model_speed
+
+CONSTANT cRelPAdsD = 0.00003
+ !max_P_adsorption_per_g_DW
+
+CONSTANT cRelPAdsFe = 0.065
+ !max_P_adsorption_per_g_Fe
+
+CONSTANT cRelPAdsAl = 0.134
+ !max_P_adsorption_per_g_Al
+
+CONSTANT cKPAdsOx = 0.6
+ !P_adsorption_affinity_at_oxidized_conditions
+
+CONSTANT fRedMax = 0.9
+ !max_reduction_factor_of_P_adsorption_affinity
+
+CONSTANT coPO4Max = 1
+ !max_SRP_conc_in_pore_water
+
+CONSTANT kPChemPO4 = 0.03
+ !chem_PO4_loss_rate
+
+CONSTANT cDayManVeg1 = -9999000
+ !first_mowing_day_(default_non-existent)
+
+CONSTANT cDayManVeg2 = -9999000
+ !second_mowing_day_(Note_259_=_16_Sep)
+
+CONSTANT fManVeg = 0
+ !Fraction_removed_by_management__for_submerged_plants
+
+CONSTANT cLengMan = 10
+ !length_of_mowing_period
+
+CONSTANT cYearStartBirds = 0
+ !first_year_of_birds_presence
+
+CONSTANT cDayStartBirds = 46
+ !yearly_first_day_of_birds_presence
+
+CONSTANT cDayEndBirds = 288
+ !yearly_last_day_of_birds_presence
+
+CONSTANT cBirdsPerha = 0
+ !number_of_birds_per_ha_vegetated_lake_(Default_=_0)
+
+CONSTANT cDGrazPerBird = 45
+ !daily_grazing_of_birds
+
+CONSTANT hDVegBird = 5
+ !half-sat_vegetation_biomassfor_birds_grazing
+
+CONSTANT fDAssBird = 0.5
+ !birds_assim_efficiency
+
+CONSTANT fDissEgesBird = 0.25
+ !fraction_dissolved_nutrient_of_coot_egestion
+
+CONSTANT fDissMortVeg = 0.25
+ !fraction_dissolved_nutrients_from_died_plants
+
+CONSTANT cLengAllo = 15
+ !duration_of_allocation_and_reallocation_phase
+
+CONSTANT cLengMort = 15
+ !duration_of_autumn_mortality_period
+
+CONSTANT fSedUptVegMax = 0.998
+ !maximum_sediment_fraction_of_nutrient_uptake
+
+CONSTANT fSedUptVegCoef = 2.66
+ !sigm_regr_coeff_for_sediment_fraction_of_nutrient_uptake
+
+CONSTANT fSedUptVegExp = -0.83
+ !exponent_in_sigm_regr_for_sediment_fraction_of_nutrient_uptake
+
+CONSTANT fRootVegSum = 0.1
+ !root_fraction_outside_growing_season
+
+CONSTANT fRootVegWin = 0.6
+ !root_fraction_outside_growing_season
+
+CONSTANT fFloatVeg = 0
+ !floating_fraction_of_shoot
+
+CONSTANT fEmergVeg = 0
+ !emergent_fraction_of_shoot
+
+CONSTANT fDepth1Veg = 0
+ !max_upper_depth_of_submerged_veget_layer_as_fraction_of_water_depth
+
+CONSTANT fDepth2Veg = 1
+ !max_lower_depth_of_submerged_veget_layer_as_fraction_of_water_depth
+
+CONSTANT cDLayerVeg = 0
+ !biomass_of_a_single_layer_floating_leaves
+
+CONSTANT cCovSpVeg = 0.5
+ !specific_cover
+
+CONSTANT kMigrVeg = 0.001
+ !vegetation_migration_rate
+
+CONSTANT cDVegIn = 1
+ !external_vegetation_density
+
+CONSTANT cTmInitVeg = 9
+ !temperature_for_initial_growth
+
+CONSTANT cDCarrVeg = 400
+ !max_vegetation_standing_crop
+
+CONSTANT cMuMaxVeg = 0.2
+ !maximum_growth_rate_of_vegetation_at_20oC
+
+CONSTANT cQ10ProdVeg = 1.2
+ !temperature_quotient_of_production
+
+CONSTANT hLRefVeg = 17
+ !half-sat_light_at_20_oC
+
+CONSTANT cExtSpVeg = 0.01
+ !specific_extinction
+
+CONSTANT kDRespVeg = 0.02
+ !dark_respiration_rate_of_vegetation
+
+CONSTANT cQ10RespVeg = 2
+ !temperature_quotient_of_respiration
+
+CONSTANT kMortVegSum = 0.005
+ !vegetation_mortality_rate_in_Spring_and_Summer_(low)
+
+CONSTANT fWinVeg = 0.3
+ !fraction_surviving_in_winter
+
+CONSTANT cDayWinVeg = 259
+ !end_of_growing_season_=_16_Sep
+
+CONSTANT fDetWMortVeg = 0.1
+ !fraction_of_shoot_mortality_becoming_water_detritus
+
+CONSTANT cPrefVegBird = 1
+ !edibility_for_birds
+
+CONSTANT cVPUptMaxVeg = 0.01
+ !maximum_P_uptake_capacity_of_vegetation
+
+CONSTANT cAffPUptVeg = 0.2
+ !initial_P_uptake_affinity_vegetation
+
+CONSTANT cPDVegMin = 0.0008
+ !minimum_P/day_ratio_vegetation
+
+CONSTANT cPDVegMax = 0.0035
+ !maximum_P/day_ratio_vegetation
+
+CONSTANT cVNUptMaxVeg = 0.1
+ !maximum_N_uptake_capacity_of_vegetation
+
+CONSTANT cAffNUptVeg = 0.2
+ !initial_N_uptake_affinity_vegetation
+
+CONSTANT cNDVegMin = 0.01
+ !minimum_N/day_ratio_vegetation
+
+CONSTANT cNDVegMax = 0.035
+ !maximum_N/day_ratio_vegetation
+
+CONSTANT cPACoefMin = 1.5
+ !minimum_Poole-Atkins_coefficient
+
+CONSTANT cPACoefMax = 2.5
+ !maximum_Poole-Atkins_coefficient
+
+CONSTANT hPACoef = 3
+ !decrease_constant_for_PA_coeff_with_DOMW
+
+CONSTANT cSecchiPlus = 0
+ !maximum_Secchi_depth_above_water_depth
+
+CONSTANT cEuph = 1.7
+ !conversion_constant_Secchi_depth_->_euphotic_depth
+
+CONSTANT cCovSpPhyt = 2
+ !specific_coverage_Tentative
+
+CONSTANT cTmOptLoss = 25
+ !optimum_temp_for_grazing
+
+CONSTANT cSigTmLoss = 13
+ !temperature_constant_of_grazing(sigma_in_Gaussian_curve)
+
+CONSTANT fDissMortPhyt = 0.2
+ !soluble_nutrient_fraction_of_died_Algae
+
+CONSTANT fDissLoss = 0.25
+ !dissolved_nutrient_fraction_of_grazing_loss
+
+CONSTANT cMuMaxDiat = 2
+ !maximum_growth_rate_Diatoms
+
+CONSTANT cTmOptDiat = 18
+ !optimum_temp_diatoms
+
+CONSTANT cSigTmDiat = 20
+ !temperature_constant_diatoms(sigma_in_Gaussian_curve)
+
+CONSTANT cExtSpDiat = 0.25
+ !specific_extinction_Diatoms
+
+CONSTANT UseSteeleDiat = 1
+ !Flag_1_=_use_Steele_function0_=_use_Lehman_function
+
+CONSTANT cLOptRefDiat = 54
+ !optimum_PAR_for_Diatoms_at_20_oC(Steele_function)
+
+CONSTANT hLRefDiat = 1000
+ !half-sat_PAR_at_20_oC(Lehmann_function)_Fake_value
+
+CONSTANT cChDDiatMin = 0.004
+ !min_chlorophyll/C_ratio_Diatoms
+
+CONSTANT cChDDiatMax = 0.012
+ !max_chlorophyll/C_ratio_Diatoms
+
+CONSTANT kDRespDiat = 0.1
+ !maintenance_respiration_constant_diatoms(=_005_*_MuMax)
+
+CONSTANT kLossDiat = 0.25
+ !grazing_loss_rate_for_Diatoms
+
+CONSTANT kMortDiatW = 0.01
+ !mortality_constant_of_Diatoms_in_water
+
+CONSTANT kMortDiatS = 0.05
+ !mortality_constant_of_sed_Diatoms
+
+CONSTANT cVSetDiat = 0.5
+ !sedimentation_velocity_Diatoms
+
+CONSTANT cVPUptMaxDiat = 0.01
+ !maximum_P_uptake_capacity_of_Diatoms
+
+CONSTANT cAffPUptDiat = 0.2
+ !initial_P_uptake_affinity_Diatoms
+
+CONSTANT cPDDiatMin = 0.0005
+ !minimum_P/day_ratio_Diatoms
+
+CONSTANT cPDDiatMax = 0.005
+ !max_P/day_ratio_Diatoms
+
+CONSTANT cVNUptMaxDiat = 0.07
+ !maximum_N_uptake_capacity_of_Diatoms
+
+CONSTANT cAffNUptDiat = 0.2
+ !initial_N_uptake_affinity_Diatoms
+
+CONSTANT cNDDiatMin = 0.01
+ !minimum_N/day_ratio_Diatoms
+
+CONSTANT cNDDiatMax = 0.05
+ !max_N/day_ratio_Diatoms
+
+CONSTANT hSiAssDiat = 0.09
+ !half_sat_Si_for_diatoms
+
+CONSTANT cMuMaxGren = 1.5
+ !maximum_growth_rate_greens
+
+CONSTANT cTmOptGren = 25
+ !optimum_temp_of_greens
+
+CONSTANT cSigTmGren = 15
+ !temperature_constant_greens(sigma_in_Gaussian_curve)
+
+CONSTANT cExtSpGren = 0.25
+ !specific_extinction_greens
+
+CONSTANT UseSteeleGren = 0
+ !Flag_1_=_use_Steele_function0_=_use_Lehman_function
+
+CONSTANT hLRefGren = 17
+ !half-sat_PAR_for_green_algae_at_20_oC(Lehmann_function)
+
+CONSTANT cLOptRefGren = 1000
+ !optimum_PAR_at_20_oC(Steele_function)_Fake_value
+
+CONSTANT cChDGrenMin = 0.01
+ !min_chlorophyll/C_ratio_greens
+
+CONSTANT cChDGrenMax = 0.02
+ !max_chlorophyll/C_ratio_greens
+
+CONSTANT kDRespGren = 0.075
+ !maintenance_respiration_constant_greens(=_005_*_MuMax)
+
+CONSTANT kLossGren = 0.25
+ !grazing_loss_rate_for_greens
+
+CONSTANT kMortGrenW = 0.01
+ !mortality_constant_of_Diatoms_in_water
+
+CONSTANT kMortGrenS = 0.05
+ !mortality_constant_greens
+
+CONSTANT cVSetGren = 0.2
+ !sedimentation_velocity_of_greens
+
+CONSTANT cVPUptMaxGren = 0.01
+ !maximum_P_uptake_capacity_of_greens
+
+CONSTANT cAffPUptGren = 0.2
+ !initial_P_uptake_affinity_greens
+
+CONSTANT cPDGrenMin = 0.0015
+ !minimum_P/day_ratio_greens
+
+CONSTANT cPDGrenMax = 0.015
+ !max_P/day_ratio_greens
+
+CONSTANT cVNUptMaxGren = 0.07
+ !maximum_N_uptake_capacity_of_greens
+
+CONSTANT cAffNUptGren = 0.2
+ !initial_N_uptake_affinity_greens
+
+CONSTANT cNDGrenMin = 0.02
+ !minimum_N/day_ratio_greens
+
+CONSTANT cNDGrenMax = 0.1
+ !max_N/day_ratio_greens
+
+CONSTANT hSiAssGren = 0
+ !half-sat_Si_conc_for_growth_of_green_algae_=_0
+
+CONSTANT cMuMaxBlue = 0.6
+ !maximum_growth_rate_Bluegreens
+
+CONSTANT cTmOptBlue = 25
+ !optimum_temp_blue-greens
+
+CONSTANT cSigTmBlue = 12
+ !temperature_constant_blue-greens(sigma_in_Gaussian_curve)
+
+CONSTANT cExtSpBlue = 0.35
+ !specific_extinction_Bluegreens
+
+CONSTANT UseSteeleBlue = 1
+ !Flag_1_=_use_Steele_function0_=_use_Lehman_function
+
+CONSTANT cLOptRefBlue = 13.6
+ !optimum_PAR_for_blue-greens_at_20_oC(Steele_function)
+
+CONSTANT hLRefBlue = 1000
+ !half-sat_PAR_at_20_oC(Lehmann_function)_Fake_value
+
+CONSTANT cChDBlueMin = 0.005
+ !min_chlorophyll/C_ratio_Bluegreens
+
+CONSTANT cChDBlueMax = 0.015
+ !max_chlorophyll/C_ratio_Bluegreens
+
+CONSTANT cCyDBlueMin = 0.004
+ !min_c-phycocyanin/C_ratio_Bluegreens
+
+CONSTANT cCyDBlueMax = 0.06
+ !max_c-phycocyanin/C_ratio_Bluegreens
+
+CONSTANT kDRespBlue = 0.03
+ !maintenance_respiration_constant_blue-greens(=_005_*_MuMax)
+
+CONSTANT kLossBlue = 0.03
+ !grazing_loss_rate_for_Blue-greens
+
+CONSTANT kMortBlueW = 0.01
+ !mortality_constant_of_blue-greens_in_water
+
+CONSTANT kMortBlueS = 0.2
+ !mortality_constant_Bluegreens
+
+CONSTANT cVSetBlue = 0.06
+ !sedimentation_velocity_Blue-greens
+
+CONSTANT cVPUptMaxBlue = 0.04
+ !maximum_P_uptake_capacity_of_Bluegreens
+
+CONSTANT cAffPUptBlue = 0.8
+ !initial_P_uptake_affinity_Bluegreens
+
+CONSTANT cPDBlueMin = 0.0025
+ !minimum_P/day_ratio_Bluegreens
+
+CONSTANT cPDBlueMax = 0.025
+ !max_P/day_ratio_blue-greens
+
+CONSTANT cVNUptMaxBlue = 0.07
+ !maximum_N_uptake_capacity_of_Bluegreens
+
+CONSTANT cAffNUptBlue = 0.2
+ !initial_N_uptake_affinity_Bluegreens
+
+CONSTANT cNDBlueMin = 0.03
+ !minimum_N/day_ratio_Bluegreens
+
+CONSTANT cNDBlueMax = 0.15
+ !max_N/DW_ratio_blue-greens
+
+CONSTANT hSiAssBlue = 0
+ !half-sat_Si_conc_for_growth_of_blue-greens_=_0
+
+CONSTANT cDBentIn = 0.01
+ !external_zoobenthos_density
+
+CONSTANT kMigrBent = 0.001
+ !zoobenthos_migration_rate
+
+CONSTANT kMigrFish = 0.001
+ !fish_migration_rate
+
+CONSTANT cDFiJvIn = 0.005
+ !external_fish_density
+
+CONSTANT cDFiAdIn = 0.005
+ !external_fish_density
+
+CONSTANT kHarvFishWin = 0
+ !fish_harvesting_fraction_in_winter
+
+CONSTANT kHarvFishSum = 0
+ !fish_harvesting_fraction_in_summer
+
+CONSTANT cDPiscIn = 0.001
+ !external__Pi_sc_density
+
+CONSTANT kMigrPisc = 0.001
+ !_Pi_sc_migration_rate
+
+CONSTANT kHarvPiscWin = 0
+ !_Pi_sc_harvesting_fraction_in_winter
+
+CONSTANT kHarvPiscSum = 0
+ !_Pi_sc_harvesting_fraction_in_summer
+
+CONSTANT cFiltMax = 4.5
+ !maximum_filtering_rate(when_DOMW=0)
+
+CONSTANT hFilt = 1
+ !half-sat_food_conc_for_filtering
+
+CONSTANT cDCarrZoo = 25
+ !carrying_capacity_of_zooplankton
+
+CONSTANT cPrefDiat = 0.75
+ !selection_factor_for_Diatoms
+
+CONSTANT cPrefGren = 0.75
+ !selection_factor_for_Greens
+
+CONSTANT cPrefBlue = 0.125
+ !selection_factor_for_Bluegreens_Cal
+
+CONSTANT cPrefDet = 0.25
+ !selection_factor_for_detritus
+
+CONSTANT fDAssZoo = 0.35
+ !DW-assimilation_efficiency_of_herb_zooplankton
+
+CONSTANT fDissEgesZoo = 0.25
+ !soluble_nutrient_fraction_of_by_herbzoopl_egested_food
+
+CONSTANT kDRespZoo = 0.15
+ !maintenance_respiration_constant_herbzooplankton
+
+CONSTANT kMortZoo = 0.04
+ !mortality_constant_herbzooplankton
+
+CONSTANT fDissMortZoo = 0.1
+ !soluble_nutrient_fraction_of_died_zooplankton
+
+CONSTANT cTmOptZoo = 25
+ !optimum_temp_zooplankton
+
+CONSTANT cSigTmZoo = 13
+ !temperature_constant_zooplankton(sigma_in_Gaussian_curve)
+
+CONSTANT cDCarrBent = 10
+ !carrying_capacity_of_zoobenthos
+
+CONSTANT kDAssBent = 0.1
+ !maximum_assimilation_rate
+
+CONSTANT hDFoodBent = 200
+ !half-saturating_food_for_zoobenthos
+
+CONSTANT fDAssBent = 0.3
+ !C_ass_efficiency_of_zoobenthos
+
+CONSTANT fDissEgesBent = 0.25
+ !soluble_nutrient_fraction_of_by_zoobenthos_egested_food
+
+CONSTANT kDRespBent = 0.005
+ !maint_respiration_constant_of_zoobenthos
+
+CONSTANT kMortBent = 0.005
+ !mortality_constant_of_zoobenthos
+
+CONSTANT fDissMortBent = 0.1
+ !soluble_P_fraction_of_died_zoobenthos_P
+
+CONSTANT cTmOptBent = 25
+ !optimum_temp_of_zoobenthos
+
+CONSTANT cSigTmBent = 16
+ !temperature_constant_of_zoobenthos(sigma_in_Gaussian_curve)
+
+CONSTANT fDBone = 0.35
+ !fraction_of_fish_C_fixed_in_bones_and_scales
+
+CONSTANT fPBone = 0.5
+ !fraction_of_fish_P_fixed_in_bones_and_scales
+
+CONSTANT cDCarrFish = 15
+ !carrying_capacity_of_fish(=_100_gFW/m2Grimm_1983)
+
+CONSTANT fDissEgesFish = 0.25
+ !soluble_nutrient_fraction_of_by_fish_egested_food
+
+CONSTANT fDissMortFish = 0.1
+ !soluble_nutrient_fraction_of_died_fish(excl_bones_and_scales
+
+CONSTANT cTmOptFish = 25
+ !optimum_temp_of_fish
+
+CONSTANT cSigTmFish = 10
+ !temperature_constant_of_fish(sigma_in_Gaussian_curve)
+
+CONSTANT cDayReprFish = 120
+ !reproduction_date_of_fish_=_1_May
+
+CONSTANT fReprFish = 0.02
+ !yearly_reproduction_fraction_of_adult_fish
+
+CONSTANT fAgeFish = 0.5
+ !yearly_ageing_fraction_of_young_fish
+
+CONSTANT cRelVegFish = 0.009
+ !decrease_of_fish_feeding_per_%_vegetation_cover(max_001)
+
+CONSTANT kDAssFiJv = 0.12
+ !maximum_assimilation_rate_of_young_fish
+
+CONSTANT hDZooFiJv = 1.25
+ !half-saturating_zooplankton_biomass_for_young_fish_predation
+
+CONSTANT fDAssFiJv = 0.4
+ !C_assimilation_efficiency_of_young_fish
+
+CONSTANT kDRespFiJv = 0.01
+ !maintenance_respiration_constant_of_young_fish
+
+CONSTANT kMortFiJv = 0.00137
+ !specific_mortality_of_young_fish(=_01_y-1)
+
+CONSTANT kDAssFiAd = 0.06
+ !maximum_assimilation_rate_of_adult_fish
+
+CONSTANT hDBentFiAd = 2.5
+ !half-saturating_zoobenthos_biomass_for_adult_fish_predation
+
+CONSTANT fDAssFiAd = 0.4
+ !C_assimilation_efficiency_of_adult_fish
+
+CONSTANT kDRespFiAd = 0.004
+ !maintenance_respiration_constant_of_adult_fish
+
+CONSTANT kMortFiAd = 0.00027
+ !specific_mortality_of_adult_fish(=_01_y-1)
+
+CONSTANT cDCarrPiscMax = 1.2
+ !maximum_carrying_capacity_of__Pi_sc(=75_kg/ha)
+
+CONSTANT cDCarrPiscMin = 0.1
+ !minimum_carrying_capacity_of__Pi_sc(=6_kg/ha)
+
+CONSTANT cDCarrPiscBare = 0.1
+ !carrying_capacity_of__Pi_sc_for_lake_without_marsh_zone
+
+CONSTANT cDPhraMinPisc = 50
+ !min_reed_biomass_for__Pi_sc
+
+CONSTANT cCovVegMin = 40
+ !min_submveg_coverage_for__Pi_sc
+
+CONSTANT cRelPhraPisc = 0.075
+ !rel__Pi_sc_density_per_%_reed_if_submveg_absent
+
+CONSTANT cRelVegPisc = 0.03
+ !extra_rel__Pi_sc_density_per_%_reed_if__aCovVeg__>__cCovVegMin
+
+CONSTANT kDAssPisc = 0.025
+ !maximum_assimilation_rate
+
+CONSTANT hDVegPisc = 5
+ !half-sat_vegetation_biomass_for__Pi_sc_growth
+
+CONSTANT hDFishPisc = 1
+ !half-saturating_DFish_for__Pi_sc_predation
+
+CONSTANT fDAssPisc = 0.4
+ !C_ass_efficiency_of__Pi_sc
+
+CONSTANT fDissEgesPisc = 0.25
+ !soluble_P_fraction_of_by_fish_egested_food
+
+CONSTANT kDRespPisc = 0.005
+ !maint_respiration_constant_of__Pi_sc
+
+CONSTANT kMortPisc = 0.00027
+ !specific_mortality_of__Pi_sc_=_01_y-1
+
+CONSTANT fDissMortPisc = 0.1
+ !soluble_nutrient_fraction_of_died__Pi_sc(excl_bones_and_scales
+
+CONSTANT cTmOptPisc = 25
+ !optimum_temp_of__Pi_sc
+
+CONSTANT cSigTmPisc = 10
+ !temperature_constant_of__Pi_sc(sigma_in_Gaussian_curve)
+
+CONSTANT cDepthSM = 0.1
+ !sediment_depth
+
+CONSTANT kExchMaxM = 1
+ !maximum_dispersive_marsh_water_exchange_coefficient
+
+CONSTANT hfMarsh = 0.1
+ !rel_marsh_area_where_exchange_is_50%
+
+CONSTANT fDTotSM0 = 0.3
+ !initial_dry-weight_fraction_in_sediment
+
+CONSTANT fDOrgSM0 = 0.1
+ !initial_organic_fraction_of_sed
+
+CONSTANT fDDetSM0 = 0.05
+ !initial_detritus_fraction_of_sediment_organic_matter
+
+CONSTANT fPInorgSM0 = 0.0005
+ !initial_inorg_P_fraction_in_sed
+
+CONSTANT cPDPhra0 = 0.002
+ !initial_P/day_ratio_of_reed
+
+CONSTANT cNDPhra0 = 0.02
+ !initial_N/day_ratio_of_reed
+
+CONSTANT cDensStemPhra = 61.5
+ !density_stem(+/-_139)
+
+CONSTANT cTmInitPhra = 8
+ !tempstart_initial_growth
+
+CONSTANT fDAllPhra = 0.3
+ !allocation_fraction
+
+CONSTANT kDAllPhra = 0.05
+ !allocation_rate
+
+CONSTANT cDStemPhra = 6
+ !average_stem_weight
+
+CONSTANT cQ10ProdPhra = 2
+ !temp_quotient_of_production
+
+CONSTANT cMuPhraMax = 0.03
+ !maximum_growth_rate_reed
+
+CONSTANT cDShootPhraMax = 3500
+ !max_shoot_biomass_of_reed
+
+CONSTANT cCovSpPhra = 0.1
+ !specific_coverage
+
+CONSTANT cPDPhraMin = 0.0008
+ !minPhra_P/day_-ratio
+
+CONSTANT cPDPhraMax = 0.003
+ !maxPhra_P/day_-ratio
+
+CONSTANT cNDPhraMin = 0.008
+ !minPhra_N/day_-ratio
+
+CONSTANT cNDPhraMax = 0.03
+ !maxPhra_N/day_-ratio
+
+CONSTANT cAffNUptPhra = 0.0002
+ !N_uptake_affinity_reed
+
+CONSTANT cAffPUptPhra = 0.0002
+ !P_uptake_affinity_reed
+
+CONSTANT cVNUptPhraMax = 0.1
+ !max_uptake_rate_N_001
+
+CONSTANT cVPUptPhraMax = 0.01
+ !max_uptake_rate_P_0001
+
+CONSTANT kDRespPhra = 0.001
+ !respiration_rate_of_reed
+
+CONSTANT cQ10RespPhra = 2.5
+ !temp_quotient_of_respiration
+
+CONSTANT fDayWin = 0.52
+ !Start_autumn
+
+CONSTANT fDRealPhra = 0.85
+ !reallocated_fraction_day
+
+CONSTANT kDRealPhra = 0.05
+ !reallocation_rate_day
+
+CONSTANT kDMortShootPhra = 0
+ !mortality_rate_shoots
+
+CONSTANT kDMortRootPhra = 0.000391
+ !mortality_rate_roots
+
+CONSTANT cDayWinPhra = 259
+ !begin_autumn(16_sept)
+
+CONSTANT cDayManPhra = 255
+ !time_of_management
+
+CONSTANT fManPhra = 0
+ !fraction_biomass_loss_by_management
+
+CONSTANT kDManShootPhra = 1
+ !rate_of_management
+

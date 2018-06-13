@@ -1,0 +1,1 @@
+ITEM !<typeNameITEM>!'sNH4W' 'sNO3W' 'sPO4W' 'sPAIMW' 'sSiO2W' 'sO2W' 'sDDetW' 'sNDetW' 'sPDetW' 'sSiDetW' 'sDIMW' 'sDDiatW' 'sNDiatW' 'sPDiatW' 'sDGrenW' 'sNGrenW' 'sPGrenW' 'sDBlueW' 'sNBlueW' 'sPBlueW' 'sDZoo' 'sNZoo' 'sPZoo'  DATA  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
