@@ -1,4 +1,6 @@
 set compilerpath=%~1
+@echo off set p="D:\Users\AnnetteJ\Documents\6_Writings\2_Papers\4_Paper2_LakeComparison\Model\3.00\Models\PCLake\6.13.16\"
+
 path %compilerpath%\bin;%path%
 cd ..\..\..\frameworks\osiris\3.01
 "%compilerpath%\bin\g++" -w -c -Iinclude pclake\pclake.cpp pcmodel\pcmodel.cpp pclake\pl61316c.cpp pclake\pl61316cd.cpp pclake\pl61316ci.cpp pclake\pl61316cc.cpp pclake\pl61316db.cpp

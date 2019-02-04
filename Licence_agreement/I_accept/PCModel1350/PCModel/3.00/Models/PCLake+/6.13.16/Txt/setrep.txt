@@ -1,0 +1,19 @@
+RunId	Identifier	Default	Value	Difference	-1
+-1
+1	_calcMixDepth_	1	0	1	-1
+1	_cDepthW0_	15	1.2	13.8	-1
+1	_cDepthMix_	5.8	0.6	5.2	-1
+1	_fVegShade_	0	0.2	-0.2	-1
+1	_cTmAveEpi_	21	12	9	-1
+1	_cTmVarHyp_	11	2	9	-1
+-1
+2	_cDepthW0_	15	2	13	-1
+2	_fVegShade_	0	0.4	-0.4	-1
+2	_cTmAveEpi_	21	12	9	-1
+2	_cTmVarHyp_	11	2	9	-1
+-1
+3	_cDepthW0_	15	2	13	-1
+3	_fVegShade_	0	0.6	-0.6	-1
+3	_cTmAveEpi_	21	12	9	-1
+3	_cTmVarHyp_	11	2	9	-1
+-1

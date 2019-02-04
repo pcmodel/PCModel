@@ -1,6 +1,6 @@
-#define MAX_PARAM 455
-#define MAX_INIT_STATE 104
-#define MAX_INIT_AUXIL 139
-#define MAX_STATE 104
-#define MAX_AUXIL 1371
-#define MAX_DERIV 104
+#define MAX_PARAM 516
+#define MAX_INIT_STATE 129
+#define MAX_INIT_AUXIL 179
+#define MAX_STATE 129
+#define MAX_AUXIL 2126
+#define MAX_DERIV 129

@@ -1,0 +1,6551 @@
+sTime = time
+ !time
+
+TimeYears = sTime / DaysPerYear
+ !Time_in_years
+
+Day = sTime - INT(TimeYears) * DaysPerYear
+ !Time_(daynumber)_within_the_year_(0-365)
+
+Years = YearZero + TimeYears
+ !Time_in_calendar_years
+
+IF (.NOT. InclSeason) THEN
+   uTm = cTmAve 
+ELSEIF (ReadTemp) THEN
+   uTm = mTemp(Time) 
+ELSE
+   uTm = cTmAve - cTmVar * COS(2.0*Pi*(sTime + TenDays - cTimeLag) / DaysPerYear) 
+ENDIF
+ !Forcing_function_temperature
+
+IF (ReadVWind)THEN
+   uVWind = mVWind(Time) 
+ELSE
+   uVWind = cVWind 
+ENDIF
+ !Forcing_function_wind_speed
+
+IF (.NOT. InclSeason) THEN
+   ufDay = cfDayAve 
+ELSE
+   ufDay = cfDayAve - cfDayVar * COS(2.0*Pi*(sTime+TenDays) / DaysPerYear) 
+ENDIF
+ !day_length
+
+IF (.NOT. InclSeason) THEN
+   uLDay = cLDayAve 
+ELSEIF (ReadLOut) THEN
+   uLDay = 0.0 
+ELSE
+   uLDay = cLDayAve - cLDayVar * COS(2.0*Pi*(sTime+TenDays) / DaysPerYear) 
+ENDIF
+ !total_daily_radiation
+
+IF (.NOT. InclSeason) THEN
+   uLOut = uLDay / SecsPerDay / ufDay 
+ELSEIF (ReadLOut) THEN
+   uLOut = mLOut(Time) / ufDay 
+ELSE
+   uLOut = uLDay / SecsPerDay / ufDay 
+ENDIF
+ !average_light_intensity_during_daytime
+
+uLPARSurf = fPAR * (1.0 - fRefl) * uLOut
+ !average_PAR_at_zero_depth
+
+aExtPhyt = cExtSpDiat * sDDiatW + cExtSpGren * sDGrenW + cExtSpBlue * sDBlueW
+ !contribution_of_algae_to_extinction
+
+aExtDet = cExtSpDet * sDDetW
+ !detrital_contribution_to_extinction
+
+aExtIM = cExtSpIM * sDIMW
+ !contribution_of_inert_matter_to_extinction
+
+aExtCoefOpen = cExtWat + aExtIM + aExtDet + aExtPhyt
+ !extinction_coefficient_without_vegetation
+
+IF (.NOT. UseSeasonLoad) THEN
+   uQInSeason = 0.0 
+ELSEIF (Day .LT. cDayApril1 - 0.5*cLengChange) THEN
+   uQInSeason = cQInWin 
+ELSEIF (Day .LT. cDayApril1 + 0.5*cLengChange) THEN
+   uQInSeason = 0.5*(cQInWin + cQInSum) + 0.5*(cQInWin - cQInSum) * COS(Pi/cLengChange * (Day - cDayApril1)) 
+ELSEIF (Day .LT. cDayOct1 - 0.5*cLengChange) THEN
+   uQInSeason = cQInSum 
+ELSEIF (Day .LT. cDayOct1 + 0.5*cLengChange) THEN
+   uQInSeason = 0.5*(cQInWin + cQInSum) - 0.5*(cQInWin - cQInSum) * COS(Pi/cLengChange * (Day - cDayOct1)) 
+ELSE
+   uQInSeason = cQInWin 
+ENDIF
+ !seasonal_inflow
+
+uQEvSinus = cQEvAve - cQEvVar * COS(2.0*Pi * (sTime + TenDays - cTimeLag) / DaysPerYear)
+ !sinusoid_evaporation
+
+IF (.NOT. InclSeason) THEN
+   uQEv = cQEvAve 
+ELSEIF (ReadQEv) THEN
+   uQEv = mQEv(Time) 
+ELSE
+   uQEv = uQEvSinus 
+ENDIF
+ !evaporation
+
+IF ((Day .GE. cDayApril1 - 0.5*cLengChange) .AND. (Day .LT. cDayApril1 + 0.5*cLengChange)) THEN
+   uQInExtra = cQInExtraApril1 
+ELSEIF ( (Day .GE. cDayOct1 - 0.5*cLengChange) .AND. (Day .LT. cDayOct1 + 0.5*cLengChange) ) THEN
+   uQInExtra = cQInExtraOct1 
+ELSE
+   uQInExtra = 0.0 
+ENDIF
+ !extra_inflow_(for_periodic_water_level_regulation
+
+IF ((Day .GE. cDayApril1 - 0.5*cLengChange) .AND. (Day .LT. cDayApril1 + 0.5*cLengChange)) THEN
+   uQOutExtra = cQOutExtraApril1 
+ELSEIF ( (Day .GE. cDayOct1 - 0.5*cLengChange) .AND. (Day .LT. cDayOct1 + 0.5*cLengChange) ) THEN
+   uQOutExtra = cQOutExtraOct1 
+ELSE
+   uQOutExtra = 0.0 
+ENDIF
+ !extra_outflow_(for_periodic_water_level_regulation
+
+IF (ReadQIn) THEN
+   uQIn = mQIn(Time) 
+ELSEIF (UseSeasonLoad) THEN
+   uQIn = uQInSeason + uQInExtra 
+ELSE
+   uQIn = cQIn + uQInExtra 
+ENDIF
+ !inflow
+
+IF (ReadQOut) THEN
+   uQOut = MAX(mQOut(Time), (sDepthW - cDepthWMax) * mmPerm) 
+ELSE
+   uQOut = MAX(0.0, (uQIn - uQInExtra) - uQEv - cQInf) + uQOutExtra 
+ENDIF
+ !outflow
+
+uQDil = uQIn - uQEv
+ !inflow_minus_evaporation
+
+ukDil = uQDil / mmPerm / sDepthW
+ !dilution_rate_of_substances
+
+ukDilWat = uQIn / mmPerm / sDepthW
+ !dilution_rate_of_water
+
+ukOut = uQOut / mmPerm / sDepthW
+ !outflow_rate
+
+uTauWat = 1.0 / (ukDilWat+NearZero)
+ !water_residence_time
+
+uTauSubst = 1.0 / (ukDil+NearZero)
+ !residence_time_of_substances
+
+IF (.NOT. InclTran) THEN
+   vTranDepthW = 0.0 
+ELSEIF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   vTranDepthW = (uQIn - uQEv - cQInf - uQOut) / mmPerm 
+ELSE
+   vTranDepthW = ((uQIn - uQEv - cQInf - uQOut) / mmPerm) / (1.0 + fMarsh) 
+ENDIF
+ !change_in_water_depth
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   akExchM = kExchMaxM * hfMarsh /(hfMarsh + fMarsh) + vTranDepthW / sDepthWM 
+ELSE
+   akExchM = 0.0 
+ENDIF
+ !marsh_water_exchange_coefficient
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   afVolMarsh = fMarsh * sDepthWM / sDepthW 
+ELSE
+   afVolMarsh = 0.0 
+ENDIF
+ !relative_marsh_volume
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   akExchL = akExchM * afVolMarsh 
+ELSE
+   akExchL = 0.0 
+ENDIF
+ !lake_water_exchange_coefficient
+
+oDPhytW = sDDiatW + sDGrenW + sDBlueW
+ !total_DW_phytoplankton_in_lake_water
+
+oPPhytW = sPDiatW + sPGrenW + sPBlueW
+ !total_P_phytoplankton_in_lake_water
+
+oNPhytW = sNDiatW + sNGrenW + sNBlueW
+ !total_N_phytoplankton_in_lake_water
+
+IF (InclPhytS) THEN
+   aDPhytS = sDDiatS + sDGrenS + sDBlueS 
+ELSE
+   aDPhytS = NearZero 
+ENDIF
+ !total_DW_phytoplankton_on_lake_sediment
+
+IF (InclPhytS) THEN
+   aPPhytS = sPDiatS + sPGrenS + sPBlueS 
+ELSE
+   aPPhytS = NearZero 
+ENDIF
+ !total_P_phytoplankton_on_lake_sediment
+
+IF (InclPhytS) THEN
+   aNPhytS = sNDiatS + sNGrenS + sNBlueS 
+ELSE
+   aNPhytS = NearZero 
+ENDIF
+ !total_N_phytoplankton_on_lake_sediment
+
+oDOMW = sDDetW + oDPhytW
+ !organic_seston
+
+oDSestW = oDOMW + sDIMW
+ !total_seston
+
+oPOMW = oPPhytW + sPDetW
+ !organic_P_in_water
+
+oPSestW = oPPhytW + sPDetW + sPAIMW
+ !total_seston_P_(incl_adsorbed
+
+oPInorgW = sPO4W + sPAIMW
+ !inorganic_P_in_water
+
+oPTotW = oPSestW + sPO4W
+ !total_P_in_water_(excl_animals_AND_vegetation)
+
+oNDissW = sNO3W + sNH4W
+ !SRN_in_water
+
+oNOMW = oNPhytW + sNDetW
+ !orgseston_N
+
+oNSestW = oNOMW
+ !total_seston_N
+
+oNkjW = oNSestW + sNH4W
+ !kjeldahl_N_in_water
+
+oNTotW = oNkjW + sNO3W
+ !total_N_in_water_(without_animals_AND_vegetation)
+
+bPorS = (1.0 - fDTotS0) * (fDOrgS0 * cRhoOM + (1 - fDOrgS0) * cRhoIM) / cRhoWat / ( fDTotS0 + (1.0 - fDTotS0) * (fDOrgS0 * cRhoOM + (1 - fDOrgS0) * cRhoIM) / cRhoWat )
+ !porosity
+
+bPorCorS = ((bPorS )** (bPorS + 1.0))
+ !sediment_porosity_corrected_for_tortuosity
+
+aDTotS = sDIMS + sDHumS + sDDetS
+ !total_sediment_(excl_biota)
+
+aRhoTotS = aDTotS / cDepthS
+ !(apparent)_bulk_density_of_sediment
+
+aRhoSolidS = (sDIMS * cRhoIM + (sDHumS + sDDetS) * cRhoOM) / aDTotS
+ !average_solid_density
+
+afDTotS = 1.0 / (1.0 + bPorS/(1.0-bPorS) * cRhoWat / aRhoSolidS)
+ !sediment_dry-weight_fraction
+
+afDOrgS = (sDHumS + sDDetS) / aDTotS
+ !total_organic_fraction_of_sediment_DW
+
+afDetS = sDDetS / (sDHumS + sDDetS)
+ !detrital_fraction_of_sediment_organic_DW
+
+afDetTotS = sDDetS / (sDIMS + sDHumS + sDDetS)
+ !detrital_fraction_of_total_sediment_DW
+
+aPInorgS = sPO4S + sPAIMS
+ !inorganic_P_in_sediment
+
+aPTotAvailS = sPDetS + aPInorgS + aPPhytS
+ !total_P_in_sediment_(excl_humus_animals_AND_vegetation)
+
+aPTotS = aPTotAvailS + sPHumS
+ !total_P_in_sediment_(excl_animals_AND_vegetation)
+
+afPInorgS = aPInorgS / aDTotS
+ !fraction_inorganic_P_in_sediment
+
+afPTotS = aPTotS / aDTotS
+ !total_P_fraction_in_sediment
+
+afPO4S = sPO4S / (aPTotAvailS + NearZero)
+ !fraction_dissolved_P_in_sediment
+
+oPO4S = sPO4S / cDepthS / bPorS
+ !conc_dissolved_P_in_interstitial_water
+
+aNDissS = sNH4S + sNO3S
+ !total_dissolved_N_in_pore_water
+
+aNkjAvailS = sNDetS + aNPhytS + sNH4S
+ !kjeldahl_N_in_sediment_excl_humus
+
+aNkjS = aNkjAvailS + sNHumS
+ !kjeldahl_N_in_sediment
+
+aNTotAvailS = aNkjAvailS + sNO3S
+ !total_N_in_sediment_excl_humus
+
+aNTotS = aNkjS + sNO3S
+ !total_N_in_sediment
+
+afNInorgS = aNDissS / aDTotS
+ !fraction_inorganic_N_in_sediment
+
+afNTotS = aNTotS / aDTotS
+ !total_N_fraction_in_sediment
+
+oNO3S = sNO3S / cDepthS / bPorS
+ !conc_dissolved_N-NO3_in_interstitial_water
+
+oNH4S = sNH4S / cDepthS / bPorS
+ !conc_dissolved_N-NH4_in_interstitial_water
+
+oNDissS = aNDissS / cDepthS / bPorS
+ !Dissolved_N_conc_in_sediment_needed_for_calc_of_veg_uptake_rate
+
+rPDIMW = sPAIMW / sDIMW
+ !P/D_ratio_of_water_DIM
+
+rPDIMS = sPAIMS / sDIMS
+ !P/D_ratio_of_sediment_DIM
+
+rPDDetW = sPDetW / (sDDetW+NearZero)
+ !P/D_ratio_of_water_detritus
+
+rNDDetW = sNDetW / (sDDetW+NearZero)
+ !N/D_ratio_of_water_detritus
+
+rSiDDetW = sSiDetW / (sDDetW+NearZero)
+ !Si/D_ratio_of_water_detritus
+
+rPDHumS = sPHumS / (sDHumS+NearZero)
+ !P_content_of_sediment_OM
+
+rNDHumS = sNHumS / (sDHumS+NearZero)
+ !N_content_of_sediment_OM
+
+rPDDetS = sPDetS / (sDDetS+NearZero)
+ !P_content_of_sediment_detritus
+
+rNDDetS = sNDetS / (sDDetS+NearZero)
+ !N_content_of_sediment_detritus
+
+rSiDDetS = sSiDetS / (sDDetS+NearZero)
+ !Si_content_of_sediment_detritus
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   oDPhytWM = sDDiatWM + sDGrenWM + sDBlueWM 
+ELSE
+   oDPhytWM = 0.0 
+ENDIF
+ !total_DW_phytoplankton_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   oPPhytWM = sPDiatWM + sPGrenWM + sPBlueWM 
+ELSE
+   oPPhytWM = 0.0 
+ENDIF
+ !total_P_phytoplankton_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   oNPhytWM = sNDiatWM + sNGrenWM + sNBlueWM 
+ELSE
+   oNPhytWM = 0.0 
+ENDIF
+ !total_N_phytoplankton_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   oSiDiatWM = cSiDDiat * sDDiatWM 
+ELSE
+   oSiDiatWM = 0.0 
+ENDIF
+ !total_Si_diatoms_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   oDOMWM = sDDetWM + oDPhytWM 
+ELSE
+   oDOMWM = 0.0 
+ENDIF
+ !organic_seston
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   oDSestWM = oDOMWM + sDIMWM 
+ELSE
+   oDSestWM = 0.0 
+ENDIF
+ !total_seston
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   oPOMWM = oPPhytWM + sPDetWM 
+ELSE
+   oPOMWM = 0.0 
+ENDIF
+ !organic_P_in_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   oPSestWM = oPPhytWM + sPDetWM + sPAIMWM 
+ELSE
+   oPSestWM = 0.0 
+ENDIF
+ !total_seston_P(incl_adsorbed
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   oPInorgWM = sPO4WM + sPAIMWM 
+ELSE
+   oPInorgWM = 0.0 
+ENDIF
+ !inorganic_P_in_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   oPTotWM = oPSestWM + sPO4WM 
+ELSE
+   oPTotWM = 0.0 
+ENDIF
+ !total_P_in_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   oNDissWM = sNO3WM + sNH4WM 
+ELSE
+   oNDissWM = 0.0 
+ENDIF
+ !SRN_in_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   oNOMWM = oNPhytWM + sNDetWM 
+ELSE
+   oNOMWM = 0.0 
+ENDIF
+ !orgseston_N
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   oNSestWM = oNOMWM 
+ELSE
+   oNSestWM = 0.0 
+ENDIF
+ !total_seston_N
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   oNkjWM = oNSestWM + sNH4WM 
+ELSE
+   oNkjWM = 0.0 
+ENDIF
+ !kjeldahl_N_in_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   oNTotWM = oNkjWM + sNO3WM 
+ELSE
+   oNTotWM = 0.0 
+ENDIF
+ !total_N_in_water
+
+bPorSM = (1.0 - fDTotSM0) * (fDOrgSM0 * cRhoOM +(1 - fDOrgSM0) * cRhoIM) / cRhoWat /(fDTotSM0 + (1.0 - fDTotSM0) * (fDOrgSM0 * cRhoOM +(1 - fDOrgSM0) * cRhoIM) / cRhoWat)
+ !porosity
+
+bPorCorSM = ((bPorSM )** (bPorSM + 1.0))
+ !sediment_porosity_corrected_for_tortuosity
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aDTotSM = sDIMSM + sDHumSM + sDDetSM 
+ELSE
+   aDTotSM = 0.0 
+ENDIF
+ !total_sediment(excl_biota)
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aRhoTotSM = aDTotSM / cDepthSM 
+ELSE
+   aRhoTotSM = 0.0 
+ENDIF
+ !(apparent)_bulk_density_of_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aRhoSolidSM = (sDIMSM * cRhoIM +(sDHumSM + sDDetSM) * cRhoOM) / aDTotSM 
+ELSE
+   aRhoSolidSM = 0.0 
+ENDIF
+ !average_solid_density
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   afDTotSM = 1.0 /(1.0 + bPorSM/(1.0-bPorSM) * cRhoWat / aRhoSolidSM) 
+ELSE
+   afDTotSM = 0.0 
+ENDIF
+ !sediment_dry-weight_fraction
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   afDOrgSM = (sDHumSM + sDDetSM) / aDTotSM 
+ELSE
+   afDOrgSM = 0.0 
+ENDIF
+ !total_organic_fraction_of_sediment_DW
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   afDetSM = sDDetSM /(sDHumSM + sDDetSM) 
+ELSE
+   afDetSM = 0.0 
+ENDIF
+ !detrital_fraction_of_sediment_organic_DW
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   afDetTotSM = sDDetSM /(sDIMSM + sDHumSM + sDDetSM) 
+ELSE
+   afDetTotSM = 0.0 
+ENDIF
+ !detrital_fraction_of_total_sediment_DW
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aPInorgSM = sPO4SM + sPAIMSM 
+ELSE
+   aPInorgSM = 0.0 
+ENDIF
+ !inorganic_P_in_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aPTotAvailSM = sPDetSM + aPInorgSM 
+ELSE
+   aPTotAvailSM = 0.0 
+ENDIF
+ !total_P_in_sediment(excl_humusanimals_AND_vegetation)
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aPTotSM = aPTotAvailSM + sPHumSM 
+ELSE
+   aPTotSM = 0.0 
+ENDIF
+ !total_P_in_sediment(excl_animals_AND_vegetation)
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   afPInorgSM = aPInorgSM / aDTotSM 
+ELSE
+   afPInorgSM = 0.0 
+ENDIF
+ !fraction_inorganic_P_in_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   afPTotSM = aPTotSM / aDTotSM 
+ELSE
+   afPTotSM = 0.0 
+ENDIF
+ !total_P_fraction_in_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   afPO4SM = sPO4SM /(aPTotAvailSM + NearZero) 
+ELSE
+   afPO4SM = 0.0 
+ENDIF
+ !fraction_dissolved_P_in_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   oPO4SM = sPO4SM / cDepthSM / bPorSM 
+ELSE
+   oPO4SM = 0.0 
+ENDIF
+ !conc_dissolved_P_in_interstitial_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aNDissSM = sNH4SM + sNO3SM 
+ELSE
+   aNDissSM = 0.0 
+ENDIF
+ !total_dissolved_N_in_pore_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aNkjAvailSM = sNDetSM + sNH4SM 
+ELSE
+   aNkjAvailSM = 0.0 
+ENDIF
+ !kjeldahl_N_in_sedimentexcl_humus
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aNkjSM = aNkjAvailSM + sNHumSM 
+ELSE
+   aNkjSM = 0.0 
+ENDIF
+ !kjeldahl_N_in_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aNTotAvailSM = aNkjAvailSM + sNO3SM 
+ELSE
+   aNTotAvailSM = 0.0 
+ENDIF
+ !total_N_in_sedimentexcl_humus
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aNTotSM = aNkjSM + sNO3SM 
+ELSE
+   aNTotSM = 0.0 
+ENDIF
+ !total_N_in_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   afNInorgSM = aNDissSM / aDTotSM 
+ELSE
+   afNInorgSM = 0.0 
+ENDIF
+ !fraction_inorganic_N_in_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   afNTotSM = aNTotSM / aDTotSM 
+ELSE
+   afNTotSM = 0.0 
+ENDIF
+ !total_N_fraction_in_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   oNO3SM = sNO3SM / cDepthSM / bPorSM 
+ELSE
+   oNO3SM = 0.0 
+ENDIF
+ !conc_dissolved_N-NO3_in_interstitial_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   oNH4SM = sNH4SM / cDepthSM / bPorSM 
+ELSE
+   oNH4SM = 0.0 
+ENDIF
+ !conc_dissolved_N-NH4_in_interstitial_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   oNDissSM = aNDissSM / cDepthSM / bPorSM 
+ELSE
+   oNDissSM = 0.0 
+ENDIF
+ !Dissolved_N_conc_in_marsh_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   rPDIMWM = sPAIMWM / sDIMWM 
+ELSE
+   rPDIMWM = 0.0 
+ENDIF
+ !P/D_ratio_of_DIM_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   rPDIMSM = sPAIMSM / sDIMSM 
+ELSE
+   rPDIMSM = 0.0 
+ENDIF
+ !P/D_ratio_of_DIM_marsh_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   rPDDetWM = sPDetWM /(sDDetWM+NearZero) 
+ELSE
+   rPDDetWM = 0.0 
+ENDIF
+ !P/D_ratio_of_marsh_water_detritus
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   rNDDetWM = sNDetWM /(sDDetWM+NearZero) 
+ELSE
+   rNDDetWM = 0.0 
+ENDIF
+ !N/D_ratio_of_marsh_water_detritus
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   rSiDDetWM = sSiDetWM /(sDDetWM+NearZero) 
+ELSE
+   rSiDDetWM = 0.0 
+ENDIF
+ !Si/D_ratio_of_marsh_water_detritus
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   rPDHumSM = sPHumSM /(sDHumSM+NearZero) 
+ELSE
+   rPDHumSM = 0.0 
+ENDIF
+ !P_content_of_marsh_sediment_OM
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   rNDHumSM = sNHumSM /(sDHumSM+NearZero) 
+ELSE
+   rNDHumSM = 0.0 
+ENDIF
+ !N_content_of_marsh_sediment_OM
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   rPDDetSM = sPDetSM /(sDDetSM+NearZero) 
+ELSE
+   rPDDetSM = 0.0 
+ENDIF
+ !P_content_of_marsh_sediment_detritus
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   rNDDetSM = sNDetSM /(sDDetSM+NearZero) 
+ELSE
+   rNDDetSM = 0.0 
+ENDIF
+ !N_content_of_marsh_sediment_detritus
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   rSiDDetSM = sSiDetSM /(sDDetSM+NearZero) 
+ELSE
+   rSiDDetSM = 0.0 
+ENDIF
+ !Si_content_of_marsh_sediment_detritus
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aDTotM = ((sDIMWM + sDDetWM + oDPhytWM + sDZooM) * sDepthWM + sDIMSM + sDHumSM + sDDetSM + sDShootPhra + sDRootPhra) * fMarsh 
+ELSE
+   aDTotM = 0.0 
+ENDIF
+ !total_D_in_marsh
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aPTotM = ((sPO4WM + sPDetWM + sPAIMWM + oPPhytWM + sPZooM) * sDepthWM + sPO4SM + sPHumSM + sPDetSM + sPAIMSM + sPShootPhra + sPRootPhra) * fMarsh 
+ELSE
+   aPTotM = 0.0 
+ENDIF
+ !total_P_in_marsh
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aNTotM = ((sNH4WM + sNO3WM + sNDetWM + oNPhytWM + sNZooM) * sDepthWM + sNH4SM + sNO3SM + sNHumSM + sNDetSM + sNShootPhra + sNRootPhra) * fMarsh 
+ELSE
+   aNTotM = 0.0 
+ENDIF
+ !total_N_in_marsh
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aSiTotM = ((sSiO2WM + sSiDetWM + oSiDiatWM) * sDepthWM + sSiDetSM) * fMarsh 
+ELSE
+   aSiTotM = 0.0 
+ENDIF
+ !total_Si_in_marsh
+
+iPPulse = 1
+ !-
+
+IF (.NOT. UseSeasonLoad) THEN
+   uPLoadSeason = 0.0 
+ELSEIF (Day .LT. cDayApril1 - 0.5*cLengChange) THEN
+   uPLoadSeason = cPLoadWin 
+ELSEIF (Day .LT. cDayApril1 + 0.5*cLengChange) THEN
+   uPLoadSeason = 0.5*(cPLoadWin + cPLoadSum) + 0.5*(cPLoadWin - cPLoadSum) * COS(Pi/cLengChange * (Day - cDayApril1)) 
+ELSEIF (Day .LT. cDayOct1 - 0.5*cLengChange) THEN
+   uPLoadSeason = cPLoadSum 
+ELSEIF (Day .LT. cDayOct1 + 0.5*cLengChange) THEN
+   uPLoadSeason = 0.5*(cPLoadWin + cPLoadSum) - 0.5*(cPLoadWin - cPLoadSum) * COS(Pi/cLengChange * (Day - cDayOct1)) 
+ELSE
+   uPLoadSeason = cPLoadWin 
+ENDIF
+ !seasonal_P_load
+
+IF (ReadPLoad .AND. ReadNutFrac) THEN
+   uPLoad = mPLoadPO4(Time) + mPLoadOrg(Time) 
+ELSEIF (ReadPLoad .AND. .NOT. ReadNutFrac) THEN
+   uPLoad = mPLoad(Time) 
+ELSEIF (UsePulseLoad) THEN
+   uPLoad = 0.0 
+ELSEIF (UseSeasonLoad) THEN
+   uPLoad = uPLoadSeason 
+ELSE
+   uPLoad = cPLoad 
+ENDIF
+ !P_load
+
+IF (.NOT. ReadPLoad) THEN
+   uPLoadPO4 = fPO4In * uPLoad 
+ELSEIF (ReadNutFrac) THEN
+   uPLoadPO4 = mPLoadPO4(Time) 
+ELSE
+   uPLoadPO4 = fPO4In * mPLoad(Time) 
+ENDIF
+ !P_load_PO4
+
+IF (.NOT. ReadPLoad) THEN
+   uPLoadOrg = (1.0 - fPO4In) * uPLoad 
+ELSEIF (ReadNutFrac) THEN
+   uPLoadOrg = mPLoadOrg(Time) 
+ELSE
+   uPLoadOrg = (1.0 - fPO4In) * mPLoad(Time) 
+ENDIF
+ !P_load_bound_to_org_matter
+
+IF (.NOT. InclSeason) THEN
+   uPLoadPhytTot = (((fPhytInSum + fPhytInWin)/2)*uPLoadOrg) 
+ELSEIF (ReadPLoadPhyt) THEN
+   uPLoadPhytTot = mPLoadPhytTot(Time) 
+ELSE
+   uPLoadPhytTot = ((fPhytInSum+fPhytInWin)/2.0 - (fPhytInSum-fPhytInWin)/2.0 * COS(2.0*Pi * (sTime + TenDays - cTimeLag) / DaysPerYear)) * uPLoadOrg 
+ENDIF
+ !(total)_algal_P_input
+
+uPLoadDet = uPLoadOrg - uPLoadPhytTot
+ !detrital_P_input
+
+uPLoadAIM = 0.0
+ !Adsorbed_P_loading_(=0)
+
+iNPulse = 1
+ !-
+
+IF (.NOT. UseSeasonLoad) THEN
+   uNLoadSeason = 0.0 
+ELSEIF (Day .LT. cDayApril1 - 0.5*cLengChange) THEN
+   uNLoadSeason = cNLoadWin 
+ELSEIF (Day .LT. cDayApril1 + 0.5*cLengChange) THEN
+   uNLoadSeason = 0.5*(cNLoadWin + cNLoadSum) + 0.5*(cNLoadWin - cNLoadSum) * COS(Pi/cLengChange * (Day - cDayApril1)) 
+ELSEIF (Day .LT. cDayOct1 - 0.5*cLengChange) THEN
+   uNLoadSeason = cNLoadSum 
+ELSEIF (Day .LT. cDayOct1 + 0.5*cLengChange) THEN
+   uNLoadSeason = 0.5*(cNLoadWin + cNLoadSum) - 0.5*(cNLoadWin - cNLoadSum) * COS(Pi/cLengChange * (Day - cDayOct1)) 
+ELSE
+   uNLoadSeason = cNLoadWin 
+ENDIF
+ !seasonal_N_load
+
+uNLoadPhytTot = cNPPhytIn * uPLoadPhytTot
+ !(total)_algal_N_input
+
+IF (ReadNLoad .AND. ReadNutFrac) THEN
+   uNLoad = mNLoadNH4(Time) + mNLoadNO3(Time) + mNLoadOrg(Time) 
+ELSEIF (ReadNLoad .AND. .NOT. ReadNutFrac) THEN
+   uNLoad = mNLoad(Time) 
+ELSEIF (UsePulseLoad) THEN
+   uNLoad = 0.0 
+ELSEIF (ReadPLoad) THEN
+   uNLoad = cNPLoadMeas * uPLoad 
+ELSEIF (UseSeasonLoad) THEN
+   uNLoad = uNLoadSeason 
+ELSE
+   uNLoad = cNLoad 
+ENDIF
+ !N_load
+
+IF (.NOT. ReadNLoad) THEN
+   uNLoadDet = MIN(cNPDetIn * uPLoadDet, uNLoad - uNLoadPhytTot) 
+ELSEIF (ReadNutFrac) THEN
+   uNLoadDet = 0.0 
+ELSE
+   uNLoadDet = MIN(cNPDetIn * uPLoadDet, uNLoad - uNLoadPhytTot) 
+ENDIF
+ !N_load_detritus
+
+IF (.NOT. ReadNLoad) THEN
+   uNLoadOrg = uNLoadPhytTot + uNLoadDet 
+ELSEIF (ReadNutFrac) THEN
+   uNLoadOrg = mNLoadOrg(Time) 
+ELSE
+   uNLoadOrg = uNLoadPhytTot + uNLoadDet 
+ENDIF
+ !loading_N_bound_to_org_matter
+
+IF (.NOT. ReadNLoad) THEN
+   uNLoadDiss = uNLoad - uNLoadOrg 
+ELSEIF (ReadNutFrac) THEN
+   uNLoadDiss = 0.0 
+ELSE
+   uNLoadDiss = uNLoad - uNLoadOrg 
+ENDIF
+ !N_loading_dissolved_(sum_of_NO2_and_NH4)
+
+IF (.NOT. ReadNLoad) THEN
+   uNLoadNH4 = fNH4DissIn * uNLoadDiss 
+ELSEIF (ReadNutFrac) THEN
+   uNLoadNH4 = mNLoadNH4(Time) 
+ELSE
+   uNLoadNH4 = fNH4DissIn * uNLoadDiss 
+ENDIF
+ !NH4_loading
+
+IF (.NOT. ReadNLoad) THEN
+   uNLoadNO3 = (1.0 - fNH4DissIn) * uNLoadDiss 
+ELSEIF (ReadNutFrac) THEN
+   uNLoadNO3 = mNLoadNO3(Time) 
+ELSE
+   uNLoadNO3 = (1.0 - fNH4DissIn) * uNLoadDiss 
+ENDIF
+ !NO3_loading
+
+uNTotIn = uNLoad / (uQIn / mmPerm + NearZero)
+ !external_N_conc
+
+IF (ReadDLoadDet) THEN
+   uDLoadDet = mDLoadDet(Time) 
+ELSE
+   uDLoadDet = uNLoadDet / cNDDetIn 
+ENDIF
+ !detrital_DW_loading
+
+uDLoadPhytTot = uNLoadPhytTot / cNDPhytIn
+ !(total)_algal_DW_input
+
+IF (ReadDLoadIM) THEN
+   uDLoadIM = mDLoadIM(Time) 
+ELSE
+   uDLoadIM = cDIMIn * uQIn / mmPerm 
+ENDIF
+ !loading_of_DW_of_inorg_matter
+
+uDLoad = uDLoadIM + uDLoadDet + uDLoadPhytTot
+ !total_DW_input
+
+uPTotIn = uPLoad / (uQIn / mmPerm + NearZero)
+ !external_P_concentration
+
+uDLoadDiat = fDiatPhytIn * uDLoadPhytTot
+ !Diat_input
+
+uPLoadDiat = fDiatPhytIn * uPLoadPhytTot
+ !Diat_input
+
+uNLoadDiat = fDiatPhytIn * uNLoadPhytTot
+ !Diat_input
+
+uDLoadGren = fGrenPhytIn * uDLoadPhytTot
+ !Gren_input
+
+uPLoadGren = fGrenPhytIn * uPLoadPhytTot
+ !Gren_input
+
+uNLoadGren = fGrenPhytIn * uNLoadPhytTot
+ !Gren_input
+
+uDLoadBlue = fBluePhytIn * uDLoadPhytTot
+ !Blue_input
+
+uPLoadBlue = fBluePhytIn * uPLoadPhytTot
+ !Blue_input
+
+uNLoadBlue = fBluePhytIn * uNLoadPhytTot
+ !Blue_input
+
+wDDilIM = ukDil * sDIMW
+ !dilution_of_DW_IM
+
+wDDilDet = ukDil * sDDetW
+ !dilllution_of_detritus
+
+wPDilPO4 = ukDil * sPO4W
+ !dilution_of_SRP
+
+wPDilDet = ukDil*sPDetW
+ !dilution_of_detritus
+
+wPDilAIM = ukDil * sPAIMW
+ !dilution_of_IM-ads_P
+
+wNDilNH4 = ukDil * sNH4W
+ !dilution_of_ammonium
+
+wNDilNO3 = ukDil * sNO3W
+ !dilution_of_nitrate
+
+wNDilDet = ukDil * sNDetW
+ !dilution_of_detritus
+
+wO2Inflow = ukDilWat * cO2In
+ !oxygen_inflow
+
+wO2Outfl = ukDil * sO2W
+ !oxygen_outflow
+
+wDDilDiat = ukDil * sDDiatW
+ !dilution_of_Diat
+
+wPDilDiat = ukDil * sPDiatW
+ !dilution_of_Diat
+
+wNDilDiat = ukDil * sNDiatW
+ !dilution_of_Diat
+
+wDDilGren = ukDil * sDGrenW
+ !dilution_of_Gren
+
+wPDilGren = ukDil * sPGrenW
+ !dilution_of_Gren
+
+wNDilGren = ukDil * sNGrenW
+ !dilution_of_Gren
+
+wDDilBlue = ukDil * sDBlueW
+ !dilution_of_Blue
+
+wPDilBlue = ukDil * sPBlueW
+ !dilution_of_Blue
+
+wNDilBlue = ukDil * sNBlueW
+ !dilution_of_Blue
+
+wDDilPhyt = wDDilDiat + wDDilGren + wDDilBlue
+ !total_algal_dilution
+
+wPDilPhyt = wPDilDiat + wPDilGren + wPDilBlue
+ !total_algal_dilution
+
+wNDilPhyt = wNDilDiat + wNDilGren + wNDilBlue
+ !total_algal_dilution
+
+wDOutflTot = ukOut * oDSestW
+ !Outflow_of_DW
+
+wPOutflTot = ukOut * oPTotW
+ !Outflow_of_P
+
+wNOutflTot = ukOut * oNTotW
+ !Outflow_of_N
+
+IF (.NOT. InclTran) THEN
+   wDTranDiat = 0.0 
+ELSE
+   wDTranDiat = uDLoadDiat / sDepthW - wDDilDiat 
+ENDIF
+ !transport_flux_of_D_in_Diat
+
+IF (.NOT. InclTran) THEN
+   wPTranDiat = 0.0 
+ELSE
+   wPTranDiat = uPLoadDiat / sDepthW - wPDilDiat 
+ENDIF
+ !transport_flux_of_P_in_Diat
+
+IF (.NOT. InclTran) THEN
+   wNTranDiat = 0.0 
+ELSE
+   wNTranDiat = uNLoadDiat / sDepthW - wNDilDiat 
+ENDIF
+ !transport_flux_of_N_in_Diat
+
+IF (.NOT. InclTran) THEN
+   wDTranGren = 0.0 
+ELSE
+   wDTranGren = uDLoadGren / sDepthW - wDDilGren 
+ENDIF
+ !transport_flux_of_D_in_Gren
+
+IF (.NOT. InclTran) THEN
+   wPTranGren = 0.0 
+ELSE
+   wPTranGren = uPLoadGren / sDepthW - wPDilGren 
+ENDIF
+ !transport_flux_of_P_in_Gren
+
+IF (.NOT. InclTran) THEN
+   wNTranGren = 0.0 
+ELSE
+   wNTranGren = uNLoadGren / sDepthW - wNDilGren 
+ENDIF
+ !transport_flux_of_N_in_Gren
+
+IF (.NOT. InclTran) THEN
+   wDTranBlue = 0.0 
+ELSE
+   wDTranBlue = uDLoadBlue / sDepthW - wDDilBlue 
+ENDIF
+ !transport_flux_of_D_in_Blue
+
+IF (.NOT. InclTran) THEN
+   wPTranBlue = 0.0 
+ELSE
+   wPTranBlue = uPLoadBlue / sDepthW - wPDilBlue 
+ENDIF
+ !transport_flux_of_P_in_Blue
+
+IF (.NOT. InclTran) THEN
+   wNTranBlue = 0.0 
+ELSE
+   wNTranBlue = uNLoadBlue / sDepthW - wNDilBlue 
+ENDIF
+ !transport_flux_of_N_in_Blue
+
+IF (.NOT. InclTran) THEN
+   wDTranPhyt = 0.0 
+ELSE
+   wDTranPhyt = wDTranDiat + wDTranGren + wDTranBlue 
+ENDIF
+ !total_transport_flux_of_D_in_Phyt
+
+IF (.NOT. InclTran) THEN
+   wPTranPhyt = 0.0 
+ELSE
+   wPTranPhyt = wPTranDiat + wPTranGren + wPTranBlue 
+ENDIF
+ !total_transport_flux_of_P_in_Phyt
+
+IF (.NOT. InclTran) THEN
+   wNTranPhyt = 0.0 
+ELSE
+   wNTranPhyt = wNTranDiat + wNTranGren + wNTranBlue 
+ENDIF
+ !total_transport_flux_of_N_in_Phyt
+
+uSiLoadSiO2 = cSiO2In * uQIn / mmPerm
+ !total_transport_flux_of_Si_in_SiO2
+
+uSiLoadDet = cSiDDetIn * uDLoadDet
+ !total_transport_flux_of_Si_in_Det
+
+uSiLoadDiat = cSiDDiat * uDLoadDiat
+ !total_transport_flux_of_Si_in_Diat
+
+uSiLoad = uSiLoadSiO2 + uSiLoadDet + uSiLoadDiat
+ !Silica_loading
+
+wSiDilSiO2 = ukDil * sSiO2W
+ !Dilution_of_Si_in_SiO2
+
+wSiDilDet = ukDil * sSiDetW
+ !Dilution_of_Si_in_detritus
+
+wSiDilDiat = cSiDDiat * wDDilDiat
+ !Dilution_of_Si_in_diatoms
+
+wSiOutflTot = ukOut * (sSiO2W + sSiDetW + cSiDDiat * sDDiatW)
+ !total_Si_surface_outflow
+
+IF (.NOT. InclTran) THEN
+   wSiTranSiO2 = 0.0 
+ELSE
+   wSiTranSiO2 = uSiLoadSiO2 / sDepthW - wSiDilSiO2 
+ENDIF
+ !transport_flux_of_Si_in_SIO2
+
+IF (.NOT. InclTran) THEN
+   wSiTranDetW = 0.0 
+ELSE
+   wSiTranDetW = uSiLoadDet / sDepthW - wSiDilDet 
+ENDIF
+ !transport_flux_of_Si_in_detritus
+
+IF (.NOT. InclTran) THEN
+   tSiTranTotT = 0.0 
+ELSE
+   tSiTranTotT = uSiLoadSiO2 + uSiLoadDet + uSiLoadDiat - (wSiDilDet + wSiDilSiO2 + wSiDilDiat) * sDepthW 
+ENDIF
+ !total_Si_transport_flux
+
+IF (.NOT. InclTran) THEN
+   wDTranZoo = 0.0 
+ELSE
+   wDTranZoo =( ukDilWat * cDZooIn - ukDil*sDZoo) 
+ENDIF
+ !net_migration_flux_of_D_in_Zoo
+
+IF (.NOT. InclTran) THEN
+   wPTranZoo = 0.0 
+ELSE
+   wPTranZoo =(ukDilWat * cPDZooRef*cDZooIn - ukDil*sPZoo) 
+ENDIF
+ !net_migration_flux_of_P_in_ZOO
+
+IF (.NOT. InclTran) THEN
+   wNTranZoo = 0.0 
+ELSE
+   wNTranZoo =(ukDilWat * cNDZooRef*cDZooIn - ukDil * sNZoo) 
+ENDIF
+ !net_migration_flux_of_N_in_Zoo
+
+IF (.NOT. InclTran) THEN
+   wDTranIMW = 0.0 
+ELSE
+   wDTranIMW = uDLoadIM / sDepthW - wDDilIM 
+ENDIF
+ !transport_flux_DW_in_IM
+
+IF (.NOT. InclTran) THEN
+   wDTranDetW = 0.0 
+ELSE
+   wDTranDetW = uDLoadDet / sDepthW - wDDilDet 
+ENDIF
+ !transport_flux_DW_in_detritus
+
+IF (.NOT. InclTran) THEN
+   wO2TranW = 0.0 
+ELSE
+   wO2TranW = wO2Inflow - wO2Outfl 
+ENDIF
+ !transport_flux_O2
+
+IF (.NOT. InclTran) THEN
+   wPTranPO4W = 0.0 
+ELSE
+   wPTranPO4W = uPLoadPO4 / sDepthW - wPDilPO4 
+ENDIF
+ !transport_flux_of_P_in_PO4
+
+IF (.NOT. InclTran) THEN
+   wPTranAIMW = 0.0 
+ELSE
+   wPTranAIMW = uPLoadAIM / sDepthW - wPDilAIM 
+ENDIF
+ !transport_flux_of_P_in_AIM
+
+IF (.NOT. InclTran) THEN
+   wPTranDetW = 0.0 
+ELSE
+   wPTranDetW = uPLoadDet / sDepthW - wPDilDet 
+ENDIF
+ !transport_flux_of_P_in_detritus
+
+IF (.NOT. InclTran) THEN
+   wNTranNH4W = 0.0 
+ELSE
+   wNTranNH4W = uNLoadNH4 / sDepthW - wNDilNH4 
+ENDIF
+ !transport_flux_of_N_in_NH4
+
+IF (.NOT. InclTran) THEN
+   wNTranNO3W = 0.0 
+ELSE
+   wNTranNO3W = uNLoadNO3 / sDepthW - wNDilNO3 
+ENDIF
+ !transport_flux_of_N_in_NO3
+
+IF (.NOT. InclTran) THEN
+   wNTranDetW = 0.0 
+ELSE
+   wNTranDetW = uNLoadDet / sDepthW - wNDilDet 
+ENDIF
+ !transport_flux_of_N_in_detritus
+
+wDDilTot = wDDilIM + wDDilDet + wDDilPhyt
+ !Total_DW_dilution_fluxes
+
+wPDilTot = wPDilDet + wPDilPO4 + wPDilAIM + wPDilPhyt
+ !Total_P_dilution_fluxes
+
+wNDilTot = wNDilDet + wNDilNO3 + wNDilNH4 + wNDilPhyt
+ !Total_N_dilution_fluxes
+
+wSiDilTot = wSiDilDet + wSiDilSiO2 + wSiDilDiat
+ !Total_SI_dilution_fluxes
+
+IF (.NOT. InclTran) THEN
+   tDTranTotT = 0.0 
+ELSE
+   tDTranTotT = uDLoad - wDDilTot * sDepthW 
+ENDIF
+ !total_transport_fluxes_of_DW_for_mass_balance_equations
+
+IF (.NOT. InclTran) THEN
+   tPTranTotT = 0.0 
+ELSE
+   tPTranTotT = uPLoad - wPDilTot * sDepthW 
+ENDIF
+ !total_transport_fluxes_of_P_for_mass_balance_equations
+
+IF (.NOT. InclTran) THEN
+   tNTranTotT = 0.0 
+ELSE
+   tNTranTotT = uNLoad - wNDilTot * sDepthW 
+ENDIF
+ !total_transport_fluxes_of_N_for_mass_balance_equations
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wDExchIMM = akExchM *(sDIMW - sDIMWM) 
+ELSE
+   wDExchIMM = 0.0 
+ENDIF
+ !exchange_flux_of_DW_in_IMM_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wPExchPO4M = akExchM *(sPO4W - sPO4WM) 
+ELSE
+   wPExchPO4M = 0.0 
+ENDIF
+ !exchange_flux_of_P_in_PO4M_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wPExchAIMM = akExchM *(sPAIMW - sPAIMWM) 
+ELSE
+   wPExchAIMM = 0.0 
+ENDIF
+ !exchange_flux_of_P_in_AIMM_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wNExchNH4M = akExchM *(sNH4W - sNH4WM) 
+ELSE
+   wNExchNH4M = 0.0 
+ENDIF
+ !exchange_flux_of_N_in_NH4M_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wNExchNO3M = akExchM *(sNO3W - sNO3WM) 
+ELSE
+   wNExchNO3M = 0.0 
+ENDIF
+ !exchange_flux_of_N_in_NO3M_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wSiExchSiO2M = akExchM *(sSiO2W - sSiO2WM) 
+ELSE
+   wSiExchSiO2M = 0.0 
+ENDIF
+ !exchange_flux_of_Si_in_hSiO2M_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wO2ExchM = akExchM *(sO2W - sO2WM) 
+ELSE
+   wO2ExchM = 0.0 
+ENDIF
+ !exchange_flux_of_O2_in_hM_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wDExchDetM = akExchM *(sDDetW - sDDetWM) 
+ELSE
+   wDExchDetM = 0.0 
+ENDIF
+ !exchange_flux_of_DW_in_DetM_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wPExchDetM = akExchM *(sPDetW - sPDetWM) 
+ELSE
+   wPExchDetM = 0.0 
+ENDIF
+ !exchange_flux_of_P_in_DetM_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wNExchDetM = akExchM *(sNDetW - sNDetWM) 
+ELSE
+   wNExchDetM = 0.0 
+ENDIF
+ !exchange_flux_of_N_in_DetM_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wSiExchDetM = akExchM *(sSiDetW - sSiDetWM) 
+ELSE
+   wSiExchDetM = 0.0 
+ENDIF
+ !exchange_flux_of_Si_in_hDetM_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wDExchDiatM = akExchM *(sDDiatW - sDDiatWM) 
+ELSE
+   wDExchDiatM = 0.0 
+ENDIF
+ !exchange_flux_of_DW_in_DiatM_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wPExchDiatM = akExchM *(sPDiatW - sPDiatWM) 
+ELSE
+   wPExchDiatM = 0.0 
+ENDIF
+ !exchange_flux_of_P_in_DiatM_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wNExchDiatM = akExchM *(sNDiatW - sNDiatWM) 
+ELSE
+   wNExchDiatM = 0.0 
+ENDIF
+ !exchange_flux_of_N_in_DiatM_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wSiExchDiatM = cSiDDiat * wDExchDiatM 
+ELSE
+   wSiExchDiatM = 0.0 
+ENDIF
+ !exchange_flux_of_Si_in_DiatM_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wDExchGrenM = akExchM *(sDGrenW - sDGrenWM) 
+ELSE
+   wDExchGrenM = 0.0 
+ENDIF
+ !exchange_flux_of_DW_in_GrenM_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wPExchGrenM = akExchM *(sPGrenW - sPGrenWM) 
+ELSE
+   wPExchGrenM = 0.0 
+ENDIF
+ !exchange_flux_of_P_in_GrenM_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wNExchGrenM = akExchM *(sNGrenW - sNGrenWM) 
+ELSE
+   wNExchGrenM = 0.0 
+ENDIF
+ !exchange_flux_of_N_in_GrenM_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wDExchBlueM = akExchM *(sDBlueW - sDBlueWM) 
+ELSE
+   wDExchBlueM = 0.0 
+ENDIF
+ !exchange_flux_of_DW_in_BlueM_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wPExchBlueM = akExchM *(sPBlueW - sPBlueWM) 
+ELSE
+   wPExchBlueM = 0.0 
+ENDIF
+ !exchange_flux_of_P_in_BlueM_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wNExchBlueM = akExchM *(sNBlueW - sNBlueWM) 
+ELSE
+   wNExchBlueM = 0.0 
+ENDIF
+ !exchange_flux_of_N_in_BlueM_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wDExchZooM = akExchM *(sDZoo - sDZooM) 
+ELSE
+   wDExchZooM = 0.0 
+ENDIF
+ !exchange_flux_of_DW_in_ZooM_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wPExchZooM = akExchM *(sPZoo - sPZooM) 
+ELSE
+   wPExchZooM = 0.0 
+ENDIF
+ !exchange_flux_of_P_in_ZooM_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wNExchZooM = akExchM *(sNZoo - sNZooM) 
+ELSE
+   wNExchZooM = 0.0 
+ENDIF
+ !exchange_flux_of_N_in_ZooM_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wDExchIM = akExchL *(sDIMW - sDIMWM) 
+ELSE
+   wDExchIM = 0.0 
+ENDIF
+ !exchange_flux_of_DW_in_IM_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wPExchPO4 = akExchL *(sPO4W - sPO4WM) 
+ELSE
+   wPExchPO4 = 0.0 
+ENDIF
+ !exchange_flux_of_P_in_PO4_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wPExchAIM = akExchL *(sPAIMW - sPAIMWM) 
+ELSE
+   wPExchAIM = 0.0 
+ENDIF
+ !exchange_flux_of_P_in_AIM_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wNExchNH4 = akExchL *(sNH4W - sNH4WM) 
+ELSE
+   wNExchNH4 = 0.0 
+ENDIF
+ !exchange_flux_of_N_in_NH4_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wNExchNO3 = akExchL *(sNO3W - sNO3WM) 
+ELSE
+   wNExchNO3 = 0.0 
+ENDIF
+ !exchange_flux_of_N_in_NO3_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wSiExchSiO2 = akExchL *(sSiO2W - sSiO2WM) 
+ELSE
+   wSiExchSiO2 = 0.0 
+ENDIF
+ !exchange_flux_of_Si_in_SiO2_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wO2Exch = akExchL *(sO2W - sO2WM) 
+ELSE
+   wO2Exch = 0.0 
+ENDIF
+ !exchange_flux_of_O2_in_O2_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wDExchDet = akExchL *(sDDetW - sDDetWM) 
+ELSE
+   wDExchDet = 0.0 
+ENDIF
+ !exchange_flux_of_DW_in_Det_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wPExchDet = akExchL *(sPDetW - sPDetWM) 
+ELSE
+   wPExchDet = 0.0 
+ENDIF
+ !exchange_flux_of_P_in_Det_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wNExchDet = akExchL *(sNDetW - sNDetWM) 
+ELSE
+   wNExchDet = 0.0 
+ENDIF
+ !exchange_flux_of_N_in_Det_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wSiExchDet = akExchL *(sSiDetW - sSiDetWM) 
+ELSE
+   wSiExchDet = 0.0 
+ENDIF
+ !exchange_flux_of_Si_in_Det_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wDExchDiat = akExchL *(sDDiatW - sDDiatWM) 
+ELSE
+   wDExchDiat = 0.0 
+ENDIF
+ !exchange_flux_of_DW_in_Diat_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wPExchDiat = akExchL *(sPDiatW - sPDiatWM) 
+ELSE
+   wPExchDiat = 0.0 
+ENDIF
+ !exchange_flux_of_P_in_Diat_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wNExchDiat = akExchL *(sNDiatW - sNDiatWM) 
+ELSE
+   wNExchDiat = 0.0 
+ENDIF
+ !exchange_flux_of_N_in_Diat_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wSiExchDiat = cSiDDiat * wDExchDiat 
+ELSE
+   wSiExchDiat = 0.0 
+ENDIF
+ !exchange_flux_of_Si_in_Diat_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wDExchGren = akExchL *(sDGrenW - sDGrenWM) 
+ELSE
+   wDExchGren = 0.0 
+ENDIF
+ !exchange_flux_of_DW_in_Gren_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wPExchGren = akExchL *(sPGrenW - sPGrenWM) 
+ELSE
+   wPExchGren = 0.0 
+ENDIF
+ !exchange_flux_of_P_in_Gren_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wNExchGren = akExchL *(sNGrenW - sNGrenWM) 
+ELSE
+   wNExchGren = 0.0 
+ENDIF
+ !exchange_flux_of_N_in_Gren_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wDExchBlue = akExchL *(sDBlueW - sDBlueWM) 
+ELSE
+   wDExchBlue = 0.0 
+ENDIF
+ !exchange_flux_of_DW_in_Blue_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wPExchBlue = akExchL *(sPBlueW - sPBlueWM) 
+ELSE
+   wPExchBlue = 0.0 
+ENDIF
+ !exchange_flux_of_P_in_Blue_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wNExchBlue = akExchL *(sNBlueW - sNBlueWM) 
+ELSE
+   wNExchBlue = 0.0 
+ENDIF
+ !exchange_flux_of_N_in_Blue_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wDExchZoo = akExchL *(sDZoo - sDZooM) 
+ELSE
+   wDExchZoo = 0.0 
+ENDIF
+ !exchange_flux_of_DW_in_Zoo_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wPExchZoo = akExchL *(sPZoo - sPZooM) 
+ELSE
+   wPExchZoo = 0.0 
+ENDIF
+ !exchange_flux_of_P_in_Zoo_between_marsh_and_lake_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wNExchZoo = akExchL *(sNZoo - sNZooM) 
+ELSE
+   wNExchZoo = 0.0 
+ENDIF
+ !exchange_flux_of_N_in_Zoo_between_marsh_and_lake_water
+
+IF (cQInf .GE. 0.0) THEN
+   tPInfPO4W = cQInf / mmPerm * sPO4W 
+ELSE
+   tPInfPO4W = cQInf / mmPerm * oPO4S 
+ENDIF
+ !infiltr_of_SRP
+
+IF (cQInf .GE. 0.0) THEN
+   tNInfNH4W = cQInf / mmPerm * sNH4W 
+ELSE
+   tNInfNH4W = cQInf / mmPerm * oNH4S 
+ENDIF
+ !infiltr_of_ammonium
+
+IF (cQInf .GE. 0.0) THEN
+   tNInfNO3W = cQInf / mmPerm * sNO3W 
+ELSE
+   tNInfNO3W = cQInf / mmPerm * oNO3S 
+ENDIF
+ !infiltr_of_nitrate
+
+IF (cQInf .GE. 0.0) THEN
+   tPInfPO4S = cQInf / mmPerm * oPO4S 
+ELSE
+   tPInfPO4S = cQInf / mmPerm * cPO4Ground 
+ENDIF
+ !infiltration_of_interst_PO4
+
+IF (cQInf .GE. 0.0) THEN
+   tNInfNH4S = cQInf / mmPerm * oNH4S 
+ELSE
+   tNInfNH4S = cQInf / mmPerm * cNH4Ground 
+ENDIF
+ !infiltration_of_interst_NH4
+
+IF (cQInf .GE. 0.0) THEN
+   tNInfNO3S = cQInf / mmPerm * oNO3S 
+ELSE
+   tNInfNO3S = cQInf / mmPerm * cNO3Ground  
+ENDIF
+ !infiltration_of_interst_NO3
+
+tNH4LoadS = fNH4LoadS * cNLoadS
+ !NH4_load_to_sediment_from_artificial_fertilizer
+
+tNO3LoadS = cNLoadS - tNH4LoadS
+ !NO3_load_to_sediment_from_artificial_fertilizer
+
+uDErosIM = (1.0 - fDOrgSoil) * cDErosTot
+ !IM_input_from_banks
+
+uDErosIMS = fSedErosIM * uDErosIM
+ !IM_input_to_sediment_from_banks
+
+uDErosIMW = uDErosIM - uDErosIMS
+ !IM_input_to_water_column_from_banks
+
+uDErosOM = fDOrgSoil * cDErosTot
+ !organic_matter_input_from_banks
+
+uPErosOM = cPDSoilOM * uDErosOM
+ !organic_P_input_from_banks
+
+uNErosOM = cNDSoilOM * uDErosOM
+ !organic_N_input_from_banks
+
+uO2Sat = 14.652 - 0.41022 * uTm + 0.007991 * uTm*uTm - 0.000077774 * uTm*uTm*uTm
+ !oxygen_saturation_concentration
+
+kAer = cAerRoot * ((uVWind )** (0.5)) + cAerLin * uVWind + cAerSquare * uVWind*uVWind
+ !reaeration_coefficient
+
+uFunTmAer = ((cThetaAer )** (uTm-cTmRef))
+ !temperature_function_of_reaeration
+
+aFunLemnAer = 1.0
+ !duckweed_function_of_reaeration
+
+tO2Aer = kAer * uFunTmAer * (uO2Sat - sO2W) * aFunLemnAer
+ !reaeration_flux_of_O2_into_the_water
+
+IF (InclWeb) THEN
+   uFunTmFish = EXP( -0.5/(cSigTmFish*cSigTmFish) * ((uTm - cTmOptFish)*(uTm - cTmOptFish) - (cTmRef - cTmOptFish)*(cTmRef - cTmOptFish))) 
+ELSE
+   uFunTmFish = 0.0 
+ENDIF
+ !temp_function_of_fish
+
+IF (InclWeb) THEN
+   tDTurbFish = (kTurbFish * uFunTmFish * sDFiAd) 
+ELSE
+   tDTurbFish = 0.0 
+ENDIF
+ !bioturbation_by_fish
+
+tDTurbFishIM = fLutum * sDIMS / (fLutum * sDIMS + sDDetS) * tDTurbFish
+ !IM_bioturbation_by_fish
+
+aFunVegResus = MAX(1.0 - kVegResus * sDVeg, 0.0)
+ !vegetation_dependence_of_resuspension
+
+IF (uTm .GE. 0.1) THEN
+   aFunDimSusp = cSuspRef * ((cSuspMin + cSuspMax / (1.0 + EXP(cSuspSlope * (sDepthW - hDepthSusp)))) * ((((cFetch +NearZero)/ cFetchRef) )** (0.5))) 
+ELSE
+   aFunDimSusp = 0.0 
+ENDIF
+ !Empirical_suspended_matter_function_(logistic_fit_to_data)
+
+tDResusTauDead = MIN(aFunDimSusp, ((aFunDimSusp +NearZero )** (0.5))) * ((fLutum / fLutumRef )** (0.5)) * bPorS
+ !resuspension_due_to_shear_stress
+
+tDResusBareDead = tDResusTauDead + tDTurbFish
+ !resuspension_due_to_shear_stress_AND_fish
+
+tDResusDead = tDResusBareDead * aFunVegResus
+ !resuspension_corrected_for_vegetation_effect
+
+tDResusIM = fLutum * sDIMS / (fLutum * sDIMS + sDDetS) * tDResusDead
+ !IM_resuspension
+
+tDResusDet = sDDetS / (fLutum * sDIMS + sDDetS) * tDResusDead
+ !detrital_resuspension
+
+akResusPhytRef = kResusPhytMax * (1.0 - EXP(cResusPhytExp * tDResusDead))
+ !phytoplankton_resuspension_rate_constant
+
+tDResusPhytTot = akResusPhytRef * aDPhytS
+ !phytoplankton_resuspension
+
+tPResusDet = rPDDetS * tDResusDet
+ !resuspension_flux_of_detrital_P
+
+tPResusPO4 = sPO4S / sDDetS * tDResusDet
+ !resuspension_flux_of_dissolved_P
+
+tPResusAIM = sPAIMS / sDIMS * tDResusIM
+ !resuspension_flux_of_P_adsorbed_onto_inert_matter
+
+tNResusNO3 = sNO3S / sDDetS * tDResusDet
+ !resuspension_flux_of_nitrate
+
+tNResusNH4 = sNH4S / sDDetS * tDResusDet
+ !resuspension_flux_of_ammonium
+
+tNResusDet = rNDDetS * tDResusDet
+ !resuspension_flux_of_detrital_N
+
+tSiResusDet = rSiDDetS * tDResusDet
+ !resuspension_flux_of_detrial_SI
+
+aFunTauSetOM = MIN(1.0 / ((aFunDimSusp +NearZero )** (0.5)), 1.0)
+ !correction_factor_for_IM_settling_rate_(<=_1)
+
+aFunTauSetIM = aFunTauSetOM
+ !correction_factor_for_OM_settling_rate_(<=_1)
+
+uFunTmSet = ((cThetaSet )** (uTm-cTmRef))
+ !temperature_correction_of_sedimentation
+
+uCorVSetIM = aFunTauSetIM * (((fLutumRef/fLutum) )** (0.5)) * uFunTmSet * cVSetIM
+ !corrected_sedimentation_velocity_of_IM
+
+tDSetIM = uCorVSetIM * sDIMW
+ !sedimentation_flux_of_inert_matter
+
+tPSetAIM = sPAIMW / sDIMW * tDSetIM
+ !sedimentation_flux_of_P_adsorbed_onto_inert_org_matter
+
+uCorVSetDet = cVSetDet * aFunTauSetOM * uFunTmSet
+ !corrected_sedimentation_velocity_of_detritus
+
+tDSetDet = uCorVSetDet * sDDetW
+ !sedimentation_flux_of_detritus
+
+tPSetDet = uCorVSetDet * sPDetW
+ !sedimentation_flux_of_detrital_P
+
+tNSetDet = uCorVSetDet * sNDetW
+ !sedimentation_flux_of_detrital_N
+
+tSiSetDet = uCorVSetDet * sSiDetW
+ !sedimentation_flux_of_detrital_Si
+
+kPMinDetW = kDMinDetW
+ !P_mineralisation_constant_in_water
+
+kNMinDetW = kDMinDetW
+ !N_mineralisation_constant_in_water
+
+kSiMinDetW = kDMinDetW
+ !Si_mineralisation_constant_in_water
+
+uFunTmMinW = ((cThetaMinW )** (uTm-cTmRef))
+ !temp_function_of_mineralization_in_water
+
+wDMinDetW = kDMinDetW * uFunTmMinW * sDDetW
+ !decomposition
+
+wPMinDetW = kPMinDetW * uFunTmMinW * sPDetW
+ !mineralization
+
+wNMinDetW = kNMinDetW * uFunTmMinW * sNDetW
+ !mineralization
+
+wSiMinDetW = kSiMinDetW * uFunTmMinW * sSiDetW
+ !mineralization
+
+aCorO2BOD = sO2W / (hO2BOD + sO2W)
+ !correction_of_O2_demand_in_water_at_low_oxygen_conc
+
+wO2MinDetW = molO2molC * cCPerDW * aCorO2BOD * wDMinDetW
+ !O2_flux_due_to_mineralization_of_detritus
+
+wDDenitW = sNO3W*sNO3W / (hNO3Denit*hNO3Denit + sNO3W*sNO3W) * (1.0 - aCorO2BOD) * wDMinDetW
+ !mineralisation_flux_by_denitrification
+
+wNDenitW = NO3PerC * molNmolC * cCPerDW * wDDenitW
+ !Denitrification_flux
+
+uFunTmNitr = ((cThetaNitr )** (uTm-cTmRef))
+ !Temperature_dependence_for_nitrification
+
+aCorO2NitrW = sO2W*sO2W / (hO2Nitr*hO2Nitr + sO2W*sO2W)
+ !oxygen_consumption_during_nitrification
+
+wNNitrW = kNitrW * uFunTmNitr * aCorO2NitrW * sNH4W
+ !nitrification_flux
+
+wO2NitrW = O2PerNH4 * molO2molN * wNNitrW
+ !O2_flux_due_to_nitrification
+
+kPMinDetS = kDMinDetS
+ !P_mineralisation_constant_in_sed
+
+kNMinDetS = kDMinDetS
+ !N_mineralisation_constant_in_sed
+
+kSiMinDetS = kDMinDetS
+ !Si_mineralisation_constant_in_sed
+
+uFunTmMinS = ((cThetaMinS )** (uTm-cTmRef))
+ !temp_function
+
+tDMinDetS = kDMinDetS * uFunTmMinS * sDDetS
+ !decomposition_of_upper_sediment
+
+tPMinDetS = kPMinDetS * uFunTmMinS * sPDetS
+ !mineralization_of_P_in_upper_sediment
+
+tNMinDetS = kNMinDetS * uFunTmMinS * sNDetS
+ !mineralization_of_N_in_upper_sediment
+
+tSiMinDetS = kSiMinDetS * uFunTmMinS * sSiDetS
+ !mineralization_of_Si_in_upper_sediment
+
+uFunTmDif = ((cThetaDif )** (uTm-cTmRef))
+ !temperature_function_of_diffusion
+
+akO2DifCor = kO2Dif * uFunTmDif * cTurbDifO2 * bPorCorS
+ !corrected_O2_diffusion_coefficient
+
+tSOD = (molO2molC * cCPerDW * (1.0 - fRefrDetS) * tDMinDetS + O2PerNH4 * molO2molN * kNitrS * uFunTmNitr * sNH4S) / cDepthS
+ !sediment_oxygen_demand
+
+aDepthOxySed = (((2.0 * sO2W * akO2DifCor / tSOD) )** (0.5))
+ !oxygen_penetration_depth
+
+afOxySed = aDepthOxySed / cDepthS
+ !fraction_aerobic_sediment
+
+tDMinOxyDetS = afOxySed * (1.0 - fRefrDetS) * tDMinDetS
+ !aerobic_mineralisation
+
+tO2MinDetS = molO2molC * cCPerDW * tDMinOxyDetS
+ !sediment_oxygen_demand
+
+tDDenitS = oNO3S*oNO3S / (hNO3Denit*hNO3Denit + oNO3S*oNO3S) * (1.0 - afOxySed) * (1.0 - fRefrDetS) * tDMinDetS
+ !mineralisation_flux_by_denitrification
+
+tNDenitS = NO3PerC * molNmolC * cCPerDW * tDDenitS
+ !Denitrification_flux
+
+tNNitrS = afOxySed * kNitrS * uFunTmNitr * sNH4S
+ !nitrification_flux
+
+tO2NitrS = O2PerNH4 * molO2molN * tNNitrS
+ !O2_flux_due_to_nitrification
+
+tDMinHumS = kDMinHum * uFunTmMinS * afOxySed * sDHumS
+ !decomposition_of_upper_sediment_humus
+
+tPMinHumS = kDMinHum * uFunTmMinS * afOxySed * sPHumS
+ !mineralization_of_P_in_upper_sediment_humus
+
+tNMinHumS = kDMinHum * uFunTmMinS * afOxySed * sNHumS
+ !mineralization_of_N_in_upper_sediment_humus
+
+aDepthDif = fDepthDifS * cDepthS
+ !average_diffusion_distance
+
+tPDifPO4 = kPDifPO4 * uFunTmDif * cTurbDifNut * bPorCorS * (oPO4S - sPO4W ) / aDepthDif
+ !diffusion_flux_of_dissolved_P_from_sediment_to_water
+
+tNDifNO3 = kNDifNO3 * uFunTmDif * cTurbDifNut * bPorCorS * (oNO3S - sNO3W ) / aDepthDif
+ !diffusion_flux_of_NO3_from_sediment_to_water
+
+tNDifNH4 = kNDifNH4 * uFunTmDif * cTurbDifNut * bPorCorS * (oNH4S - sNH4W ) / aDepthDif
+ !diffusion_flux_of_NH4_from_sediment_to_water
+
+tO2Dif = kO2Dif / aDepthDif * uFunTmDif * cTurbDifO2 * bPorCorS * sO2W
+ !O2_diffusion_(water_->_sediment)
+
+tPDifGroundPO4 = 0.0
+ !diffusion_flux_of_dissolved_P_from_pore_water_to_ground_water
+
+tNDifGroundNO3 = 0.0
+ !diffusion_flux_of_dissolved_NO3_from_pore_water_to_ground_water
+
+tNDifGroundNH4 = 0.0
+ !diffusion_flux_of_dissolved_NH4_from_pore_water_to_ground_water
+
+aPAdsMaxW = cRelPAdsD + aCorO2BOD * cRelPAdsFe * fFeDIM + cRelPAdsAl * fAlDIM
+ !max_P_adsorption_per_g_inorg_matter_in_water
+
+aKPAdsW = (1.0 - fRedMax * (1.0-aCorO2BOD)) * cKPAdsOx
+ !P_adsorption_affinity_corrected_for_redox_conditions
+
+aPIsoAdsW = aPAdsMaxW * aKPAdsW * sPO4W / (1.0 + aKPAdsW * sPO4W)
+ !P_adsorption_isotherm_onto_inorg_matter_in_sediment
+
+aPEqIMW = aPIsoAdsW * sDIMW
+ !equilibrium_conc
+
+wPSorpIMW = kPSorp * (aPEqIMW - sPAIMW)
+ !sorption_flux_in_water
+
+aPAdsMaxS = cRelPAdsD + afOxySed * cRelPAdsFe * fFeDIM + cRelPAdsAl * fAlDIM
+ !max_P_adsorption_per_g_inorg_matter_in_sediment
+
+aKPAdsS = (1.0 - fRedMax * (1.0-afOxySed)) * cKPAdsOx
+ !P_adsorption_affinity_corrected_for_redox_conditions
+
+aPIsoAdsS = aPAdsMaxS * aKPAdsS * oPO4S / (1.0 + aKPAdsS * oPO4S)
+ !P_adsorption_isotherm_onto_inorg_matter_in_sediment
+
+aPEqIMS = aPIsoAdsS * sDIMS
+ !equilibrium_amount
+
+tPSorpIMS = kPSorp * (aPEqIMS - sPAIMS)
+ !sorption
+
+tPChemPO4 = MAX( 0.0, kPChemPO4 * (oPO4S - coPO4Max) )
+ !chem_loss_of_dissolved_P_from_pore_water
+
+wDAbioIMW = (uDErosIMW - tDSetIM + tDResusIM) / sDepthW
+ !total_abiotic/microbial_DW_inorganic_matter_flux_in_water
+
+wDAbioDetW = (- tDSetDet + tDResusDet ) / sDepthW - wDMinDetW
+ !total_abiotic/microbial_DW_detritus_flux_in_water
+
+tDAbioIMS = uDErosIMS + tDSetIM - tDResusIM
+ !total_abiotic/microbial_DW_inorganic_matter_flux_in_sediment
+
+tDAbioDetS = tDSetDet - tDResusDet - tDMinDetS
+ !total_abiotic/microbial_DW_detritus_flux_in_sediment
+
+tDAbioHumS = uDErosOM + fRefrDetS * tDMinDetS - tDMinHumS
+ !total_abiotic/microbial_DW_humus_flux_in_sediment
+
+tDAbioTotT = cDErosTot - wDMinDetW * sDepthW - (1.0 - fRefrDetS) * tDMinDetS - tDMinHumS
+ !total_abiotic/microbial_DW_flux_for_mass_balance_check
+
+wO2AbioW = tO2Aer / sDepthW - wO2MinDetW - wO2NitrW - (tO2MinDetS + tO2NitrS) / sDepthW
+ !total_abiotic/microbial_O2_flux_in_water
+
+wPAbioDetW = - wPMinDetW - (tPSetDet - tPResusDet) / sDepthW
+ !total_abiotic/microbial_P_detritus_flux_in_water
+
+wPAbioPO4W = wPMinDetW - wPSorpIMW - tPInfPO4W / sDepthW + tPDifPO4 / sDepthW + tPResusPO4 / sDepthW
+ !total_abiotic/microbial_dissolved_P_flux_in_water
+
+wPAbioAIMW = (- tPSetAIM + tPResusAIM) / sDepthW + wPSorpIMW
+ !total_abiotic/microbial_P_absorbed_onto_inorganic_matter_flux_in_water
+
+tPAbioDetS = - tPMinDetS + tPSetDet - tPResusDet
+ !total_abiotic/microbial_P_detritus_flux_in_sediment
+
+tPAbioHumS = uPErosOM + fRefrDetS * tPMinDetS - tPMinHumS
+ !total_abiotic/microbial_P_humus_flux_in_sediment
+
+tPAbioPO4S = tPInfPO4W - tPInfPO4S + (1.0-fRefrDetS) * tPMinDetS + tPMinHumS - tPSorpIMS - tPResusPO4 - tPDifPO4 - tPDifGroundPO4 - tPChemPO4
+ !total_abiotic/microbial_dissolved_P_flux_in_sediment
+
+tPAbioAIMS = tPSetAIM - tPResusAIM + tPSorpIMS
+ !total_abiotic/microbial_P_absorbed_onto_inorganic_matter_flux_in_sediment
+
+tPAbioTotT = uPErosOM - tPChemPO4 - tPInfPO4S - tPDifGroundPO4
+ !total_abiotic/microbial_P_flux_for_mass_balance_check
+
+wNAbioNH4W = wNMinDetW - wNNitrW - tNInfNH4W / sDepthW + (tNDifNH4 + tNResusNH4) / sDepthW
+ !total_abiotic/microbial_N_NH4_flux_in_water
+
+wNAbioNO3W = wNNitrW - wNDenitW + (tNDifNO3 + tNResusNO3 - tNInfNO3W) / sDepthW
+ !total_abiotic/microbial_N_NO3_flux_in_water
+
+wNAbioDetW = - wNMinDetW - (tNSetDet - tNResusDet ) / sDepthW
+ !total_abiotic/microbial_N_detritus_flux_in_water
+
+tNAbioNH4S = tNInfNH4W - tNInfNH4S + (1.0-fRefrDetS) * tNMinDetS + tNMinHumS - tNResusNH4 - tNDifNH4 - tNDifGroundNH4 - tNNitrS
+ !total_abiotic/microbial_N_NH4_flux_in_sediment
+
+tNAbioNO3S = tNInfNO3W - tNInfNO3S + tNNitrS - tNDenitS - tNResusNO3 - tNDifNO3 - tNDifGroundNO3
+ !total_abiotic/microbial_N_NO3_flux_in_sediment
+
+tNAbioDetS = - tNMinDetS + tNSetDet - tNResusDet
+ !total_abiotic/microbial_N_detritus_flux_in_sediment
+
+tNAbioHumS = uNErosOM + fRefrDetS * tNMinDetS - tNMinHumS
+ !total_abiotic/microbial_N_humus_flux_in_sediment
+
+tNAbioTotT = uNErosOM - tNDenitS - wNDenitW * sDepthW - tNInfNH4S - tNInfNO3S - tNDifGroundNO3 - tNDifGroundNH4
+ !total_abiotic/microbial_N_flux_for_mass_balance_check
+
+wSiAbioSiO2W = wSiMinDetW + (1.0 - fRefrDetS) * tSiMinDetS / sDepthW
+ !total_abiotic/microbial_Si_SiO2_flux_in_water
+
+wSiAbioDetW = - wSiMinDetW - (tSiSetDet - tSiResusDet) / sDepthW
+ !total_abiotic/microbial_Si_detritus_flux_in_water
+
+tSiAbioDetS = - tSiMinDetS + tSiSetDet - tSiResusDet
+ !total_abiotic/microbial_Si_detritus_flux_in_sediment
+
+tSiAbioTotT = - fRefrDetS * tSiMinDetS
+ !total_abiotic/microbial_Si_flux_for_mass_balance_check
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   uQEvPhra = uQEv 
+ELSE
+   uQEvPhra = 0.0 
+ENDIF
+ !reed_evaporation(set_EQUAL_to_lake_evaporation)
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tPEvPO4WM = uQEvPhra / mmPerm * sPO4WM 
+ELSE
+   tPEvPO4WM = 0.0 
+ENDIF
+ !SRP_flux
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNEvNH4WM = uQEvPhra / mmPerm * sNH4WM 
+ELSE
+   tNEvNH4WM = 0.0 
+ENDIF
+ !ammonium_flux
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNEvNO3WM = uQEvPhra / mmPerm * sNO3WM 
+ELSE
+   tNEvNO3WM = 0.0 
+ENDIF
+ !nitrate_flux
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tPInfPO4WM = 0.0 
+ELSEIF (cQInf .GE. 0.0) THEN
+   tPInfPO4WM = cQInf / mmPerm * sPO4WM 
+ELSE
+   tPInfPO4WM = cQInf / mmPerm * oPO4SM 
+ENDIF
+ !infiltr_of_SRP
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNInfNH4WM = 0.0 
+ELSEIF (cQInf .GE. 0.0) THEN
+   tNInfNH4WM = cQInf / mmPerm * sNH4WM 
+ELSE
+   tNInfNH4WM = cQInf / mmPerm * oNH4SM 
+ENDIF
+ !infiltr_of_ammonium
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   tNInfNO3WM = 0.0 
+ELSEIF (cQInf .GE. 0.0) THEN
+   tNInfNO3WM = cQInf / mmPerm * sNO3WM 
+ELSE
+   tNInfNO3WM = cQInf / mmPerm * oNO3SM 
+ENDIF
+ !infiltr_of_nitrate
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   tPInfPO4SM = 0.0 
+ELSEIF (cQInf .GE. 0.0) THEN
+   tPInfPO4SM = cQInf / mmPerm * oPO4SM 
+ELSE
+   tPInfPO4SM = cQInf / mmPerm * cPO4Ground 
+ENDIF
+ !infiltration_of_interst_PO4
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   tNInfNH4SM = 0.0 
+ELSEIF (cQInf .GE. 0.0) THEN
+   tNInfNH4SM = cQInf / mmPerm * oNH4SM 
+ELSE
+   tNInfNH4SM = cQInf / mmPerm * oNH4SM 
+ENDIF
+ !infiltration_of_interst_NH4
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   tNInfNO3SM = 0.0 
+ELSEIF (cQInf .GE. 0.0) THEN
+   tNInfNO3SM = cQInf / mmPerm * oNO3SM 
+ELSE
+   tNInfNO3SM = cQInf / mmPerm * oNO3SM 
+ENDIF
+ !infiltration_of_interst_NO3
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tO2AerM = kAer * uFunTmAer *(uO2Sat - sO2WM) 
+ELSE
+   tO2AerM = 0.0 
+ENDIF
+ !reaeration_flux_of_O2_into_the_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tDSetIMM = cVSetIM * uFunTmSet * sDIMWM 
+ELSE
+   tDSetIMM = 0.0 
+ENDIF
+ !sedimentation_flux_of_inert_matter
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tPSetAIMM = cVSetIM * uFunTmSet * sPAIMWM 
+ELSE
+   tPSetAIMM = 0.0 
+ENDIF
+ !sedimentation_flux_of_P_adsorbed_onto_inert_org_matter
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tDSetDetM = cVSetDet * uFunTmSet * sDDetWM 
+ELSE
+   tDSetDetM = 0.0 
+ENDIF
+ !sedimentation_flux_of_detritus
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tPSetDetM = cVSetDet * uFunTmSet* sPDetWM 
+ELSE
+   tPSetDetM = 0.0 
+ENDIF
+ !sedimentation_flux_of_detrital_P
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNSetDetM = cVSetDet * uFunTmSet* sNDetWM 
+ELSE
+   tNSetDetM = 0.0 
+ENDIF
+ !sedimentation_flux_of_detrital_N
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tSiSetDetM = cVSetDet * uFunTmSet * sSiDetWM 
+ELSE
+   tSiSetDetM = 0.0 
+ENDIF
+ !sedimentation_flux_of_detrital_Si
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tDSetDiatM = cVSetDiat * uFunTmSet * sDDiatWM 
+ELSE
+   tDSetDiatM = 0.0 
+ENDIF
+ !sedimentation_flux_of_detritus
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tPSetDiatM = cVSetDiat * uFunTmSet* sPDiatWM 
+ELSE
+   tPSetDiatM = 0.0 
+ENDIF
+ !sedimentation_flux_of_detrital_P
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNSetDiatM = cVSetDiat * uFunTmSet* sNDiatWM 
+ELSE
+   tNSetDiatM = 0.0 
+ENDIF
+ !sedimentation_flux_of_detrital_N
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tSiSetDiatM = cVSetDiat * uFunTmSet * oSiDiatWM 
+ELSE
+   tSiSetDiatM = 0.0 
+ENDIF
+ !sedimentation_flux_of_detrital_Si
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tDSetGrenM = cVSetGren * uFunTmSet * sDGrenWM 
+ELSE
+   tDSetGrenM = 0.0 
+ENDIF
+ !sedimentation_flux_of_detritus
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tPSetGrenM = cVSetGren * uFunTmSet* sPGrenWM 
+ELSE
+   tPSetGrenM = 0.0 
+ENDIF
+ !sedimentation_flux_of_detrital_P
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNSetGrenM = cVSetGren * uFunTmSet* sNGrenWM 
+ELSE
+   tNSetGrenM = 0.0 
+ENDIF
+ !sedimentation_flux_of_detrital_N
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tDSetBlueM = cVSetBlue * uFunTmSet * sDBlueWM 
+ELSE
+   tDSetBlueM = 0.0 
+ENDIF
+ !sedimentation_flux_of_detritus
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tPSetBlueM = cVSetBlue * uFunTmSet* sPBlueWM 
+ELSE
+   tPSetBlueM = 0.0 
+ENDIF
+ !sedimentation_flux_of_detrital_P
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNSetBlueM = cVSetBlue * uFunTmSet* sNBlueWM 
+ELSE
+   tNSetBlueM = 0.0 
+ENDIF
+ !sedimentation_flux_of_detrital_N
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tDSetPhytM = tDSetDiatM + tDSetGrenM + tDSetBlueM 
+ELSE
+   tDSetPhytM = 0.0 
+ENDIF
+ !sedimentation_flux_of_detritus
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tPSetPhytM = tPSetDiatM + tPSetGrenM + tPSetBlueM 
+ELSE
+   tPSetPhytM = 0.0 
+ENDIF
+ !sedimentation_flux_of_detrital_P
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNSetPhytM = tNSetDiatM + tNSetGrenM + tNSetBlueM 
+ELSE
+   tNSetPhytM = 0.0 
+ENDIF
+ !sedimentation_flux_of_detrital_N
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tDSetTotM = tDSetIMM + tDSetDetM + tDSetPhytM 
+ELSE
+   tDSetTotM = 0.0 
+ENDIF
+ !total_sedimentation_in_marsh
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wDMinDetWM = kDMinDetW * uFunTmMinW * sDDetWM 
+ELSE
+   wDMinDetWM = 0.0 
+ENDIF
+ !decomposition
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wPMinDetWM = kPMinDetW * uFunTmMinW * sPDetWM 
+ELSE
+   wPMinDetWM = 0.0 
+ENDIF
+ !mineralization
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wNMinDetWM = kNMinDetW * uFunTmMinW * sNDetWM 
+ELSE
+   wNMinDetWM = 0.0 
+ENDIF
+ !mineralization
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wSiMinDetWM = kSiMinDetW * uFunTmMinW * sSiDetWM 
+ELSE
+   wSiMinDetWM = 0.0 
+ENDIF
+ !mineralization
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aCorO2BODM = sO2WM /(hO2BOD + sO2WM) 
+ELSE
+   aCorO2BODM = 0.0 
+ENDIF
+ !correction_of_O2_demand_in_water_at_low_oxygen_conc
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wO2MinDetWM = molO2molC * cCPerDW * aCorO2BODM * wDMinDetWM 
+ELSE
+   wO2MinDetWM = 0.0 
+ENDIF
+ !O2_flux_due_to_mineralization_of_detritus
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wDDenitWM = sNO3WM*sNO3WM /(hNO3Denit*hNO3Denit + sNO3WM*sNO3WM) *(1.0 - aCorO2BODM) * wDMinDetWM 
+ELSE
+   wDDenitWM = 0.0 
+ENDIF
+ !mineralisation_flux_by_denitrification
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wNDenitWM = NO3PerC * molNmolC * cCPerDW * wDDenitWM 
+ELSE
+   wNDenitWM = 0.0 
+ENDIF
+ !Denitrification_flux
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aCorO2NitrWM = sO2WM * sO2WM /(hO2Nitr * hO2Nitr + sO2WM * sO2WM) 
+ELSE
+   aCorO2NitrWM = 0.0 
+ENDIF
+ !oxygen_use_for_nitrification_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wNNitrWM = kNitrW * uFunTmNitr * aCorO2NitrWM * sNH4WM 
+ELSE
+   wNNitrWM = 0.0 
+ENDIF
+ !nitrification_flux
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wO2NitrWM = O2PerNH4 * molO2molN * wNNitrWM 
+ELSE
+   wO2NitrWM = 0.0 
+ENDIF
+ !O2_flux_due_to_nitrification
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tDMinDetSM = kDMinDetS * uFunTmMinS * sDDetSM 
+ELSE
+   tDMinDetSM = 0.0 
+ENDIF
+ !decomposition_of_upper_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tPMinDetSM = kPMinDetS * uFunTmMinS * sPDetSM 
+ELSE
+   tPMinDetSM = 0.0 
+ENDIF
+ !mineralization_of_P_in_upper_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNMinDetSM = kNMinDetS * uFunTmMinS * sNDetSM 
+ELSE
+   tNMinDetSM = 0.0 
+ENDIF
+ !mineralization_of_N_in_upper_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tSiMinDetSM = kSiMinDetS * uFunTmMinS * sSiDetSM 
+ELSE
+   tSiMinDetSM = 0.0 
+ENDIF
+ !mineralization_of_Si_in_upper_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   akO2DifCorM = kO2Dif * uFunTmDif * cTurbDifO2 * bPorCorSM 
+ELSE
+   akO2DifCorM = 0.0 
+ENDIF
+ !corrected_O2_diffusion_coefficient
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tSODM =(molO2molC * cCPerDW *(1.0 - fRefrDetS) * tDMinDetSM + O2PerNH4 * molO2molN * kNitrS * uFunTmNitr * sNH4SM) / cDepthSM 
+ELSE
+   tSODM = 0.0 
+ENDIF
+ !sediment_oxygen_demand
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aDepthOxySedM = (((2.0 * sO2WM * akO2DifCorM / tSODM) )** (0.5)) 
+ELSE
+   aDepthOxySedM = 0.0 
+ENDIF
+ !oxygen_penetration_depth
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   afOxySedM = aDepthOxySedM / cDepthSM 
+ELSE
+   afOxySedM = 0.0 
+ENDIF
+ !fraction_aerobic_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tDMinOxyDetSM = afOxySedM *(1.0 - fRefrDetS) * tDMinDetSM 
+ELSE
+   tDMinOxyDetSM = 0.0 
+ENDIF
+ !aerobic_mineralisation
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tO2MinDetSM = molO2molC * cCPerDW * tDMinOxyDetSM 
+ELSE
+   tO2MinDetSM = 0.0 
+ENDIF
+ !sediment_oxygen_demand
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tDDenitSM = oNO3SM*oNO3SM /(hNO3Denit*hNO3Denit + oNO3SM*oNO3SM) *(1.0 - afOxySedM) *(1.0 - fRefrDetS) * tDMinDetSM 
+ELSE
+   tDDenitSM = 0.0 
+ENDIF
+ !mineralisation_flux_by_denitrification
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNDenitSM = NO3PerC * molNmolC * cCPerDW * tDDenitSM 
+ELSE
+   tNDenitSM = 0.0 
+ENDIF
+ !Denitrification_flux
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNNitrSM = afOxySedM * kNitrS * uFunTmNitr * sNH4SM 
+ELSE
+   tNNitrSM = 0.0 
+ENDIF
+ !nitrification_flux
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tO2NitrSM = O2PerNH4 * molO2molN * tNNitrSM 
+ELSE
+   tO2NitrSM = 0.0 
+ENDIF
+ !O2_flux_due_to_nitrification
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tDMinHumSM = kDMinHum * uFunTmMinS * afOxySedM * sDHumSM 
+ELSE
+   tDMinHumSM = 0.0 
+ENDIF
+ !decomposition_of_upper_sediment_humus
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tPMinHumSM = kDMinHum * uFunTmMinS * afOxySedM * sPHumSM 
+ELSE
+   tPMinHumSM = 0.0 
+ENDIF
+ !mineralization_of_P_in_upper_sediment_humus
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNMinHumSM = kDMinHum * uFunTmMinS * afOxySedM * sNHumSM 
+ELSE
+   tNMinHumSM = 0.0 
+ENDIF
+ !mineralization_of_N_in_upper_sediment_humus
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aDepthDifM = fDepthDifS * cDepthSM 
+ELSE
+   aDepthDifM = 0.0 
+ENDIF
+ !average_diffusion_distance
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tPDifPO4M = kPDifPO4 * uFunTmDif * cTurbDifNut * bPorCorSM * (oPO4SM - sPO4WM) / aDepthDifM 
+ELSE
+   tPDifPO4M = 0.0 
+ENDIF
+ !diffusion_flux_of_dissolved_P_from_sediment_to_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNDifNO3M = kNDifNO3 * uFunTmDif * cTurbDifNut * bPorCorSM * (oNO3SM - sNO3WM) / aDepthDifM 
+ELSE
+   tNDifNO3M = 0.0 
+ENDIF
+ !diffusion_flux_of_NO3_from_sediment_to_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNDifNH4M = kNDifNH4 * uFunTmDif * cTurbDifNut * bPorCorSM * (oNH4SM - sNH4WM) / aDepthDifM 
+ELSE
+   tNDifNH4M = 0.0 
+ENDIF
+ !diffusion_flux_of_NH4_from_sediment_to_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tO2DifM = kO2Dif / aDepthDifM * uFunTmDif * cTurbDifO2 * bPorCorSM * sO2WM 
+ELSE
+   tO2DifM = 0.0 
+ENDIF
+ !O2_diffusion(water_->_sediment)
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tPDifGroundPO4M = 0.0 
+ELSE
+   tPDifGroundPO4M = 0.0 
+ENDIF
+ !diffusion_flux_of_dissolved_P_from_pore_water_to_ground_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNDifGroundNO3M = 0.0 
+ELSE
+   tNDifGroundNO3M = 0.0 
+ENDIF
+ !diffusion_flux_of_NO3_from_pore_water_to_ground_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNDifGroundNH4M = 0.0 
+ELSE
+   tNDifGroundNH4M = 0.0 
+ENDIF
+ !diffusion_flux_of_NH4_from_pore_water_to_ground_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aPAdsMaxWM = cRelPAdsD + aCorO2BODM * cRelPAdsFe * fFeDIM + cRelPAdsAl * fAlDIM 
+ELSE
+   aPAdsMaxWM = 0.0 
+ENDIF
+ !max_P_adsorption_per_g_inorg_matter_in_water_marsh
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aKPAdsWM =(1.0 - fRedMax *(1.0-aCorO2BODM)) * cKPAdsOx 
+ELSE
+   aKPAdsWM = 0.0 
+ENDIF
+ !P_adsorption_affinitycorrected_for_redox_conditions
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aPIsoAdsWM = aPAdsMaxWM * aKPAdsWM * sPO4WM /(1.0 + aKPAdsWM * sPO4WM) 
+ELSE
+   aPIsoAdsWM = 0.0 
+ENDIF
+ !P_adsorption_isotherm_onto_inorg_matter_in_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aPEqIMWM = aPIsoAdsWM * sDIMWM 
+ELSE
+   aPEqIMWM = 0.0 
+ENDIF
+ !equilibrium_conc
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   wPSorpIMWM = kPSorp *(aPEqIMWM - sPAIMWM) 
+ELSE
+   wPSorpIMWM = 0.0 
+ENDIF
+ !sorption_flux_in_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aPAdsMaxSM = cRelPAdsD + afOxySedM * cRelPAdsFe * fFeDIM + cRelPAdsAl * fAlDIM 
+ELSE
+   aPAdsMaxSM = 0.0 
+ENDIF
+ !max_P_adsorption_per_g_inorg_matter_in_sediment_marsh
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aKPAdsSM =(1.0 - fRedMax *(1.0-afOxySedM)) * cKPAdsOx 
+ELSE
+   aKPAdsSM = 0.0 
+ENDIF
+ !P_adsorption_affinitycorrected_for_redox_conditions
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aPIsoAdsSM = aPAdsMaxSM * aKPAdsSM * oPO4SM /(1.0 + aKPAdsSM * oPO4SM) 
+ELSE
+   aPIsoAdsSM = 0.0 
+ENDIF
+ !P_adsorption_isotherm_onto_inorg_matter_in_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aPEqIMSM = aPIsoAdsSM * sDIMSM 
+ELSE
+   aPEqIMSM = 0.0 
+ENDIF
+ !equilibrium_amount
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tPSorpIMSM = kPSorp *(aPEqIMSM - sPAIMSM) 
+ELSE
+   tPSorpIMSM = 0.0 
+ENDIF
+ !sorption
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tPChemPO4M = MAX(0.0,kPChemPO4 *(oPO4SM - coPO4Max)) 
+ELSE
+   tPChemPO4M = 0.0 
+ENDIF
+ !chem_loss_of_dissolved_P_from_pore_water
+
+IF (Day .LT. 1.0 .OR. sTime .LT. BeginTime + 1.0) THEN
+   aDayInitVeg = 367 
+ELSEIF (uTm .GE. cTmInitVeg .AND. aDayInitVeg .GT. 366) THEN
+   aDayInitVeg = Day 
+ELSE
+   aDayInitVeg = aDayInitVeg 
+ENDIF
+ !Initial_growth_only_once_a_year
+
+IF (.NOT. InclSeason) THEN
+   bfRootVeg = fRootVegSum 
+ELSEIF (Day .LT. aDayInitVeg) THEN
+   bfRootVeg = fRootVegWin 
+ELSEIF (Day .LT. aDayInitVeg + cLengAllo) THEN
+   bfRootVeg = 0.5*(fRootVegWin + fRootVegSum) + 0.5*(fRootVegWin - fRootVegSum) * COS(Pi/cLengAllo * (Day - aDayInitVeg)) 
+ELSEIF (Day .LT. cDayWinVeg) THEN
+   bfRootVeg = fRootVegSum 
+ELSEIF (Day .LT. cDayWinVeg + cLengAllo) THEN
+   bfRootVeg = 0.5*(fRootVegWin + fRootVegSum) - 0.5*(fRootVegWin - fRootVegSum) * COS(Pi/cLengAllo * (Day - cDayWinVeg)) 
+ELSE
+   bfRootVeg = fRootVegWin 
+ENDIF
+ !setting_root_fration
+
+bfShootVeg = 1.0 - bfRootVeg
+ !shoot_fraction
+
+aDRootVeg = bfRootVeg * sDVeg
+ !root_biomass
+
+aDShootVeg = bfShootVeg * sDVeg
+ !shoot_biomass
+
+aDEmergVeg = fEmergVeg * aDShootVeg
+ !emergent_biomass
+
+aDFloatVeg = fFloatVeg * aDShootVeg
+ !floating_biomass
+
+bfSubVeg = 1.0 - fFloatVeg - fEmergVeg
+ !submerged_fraction_of_shoot
+
+aDSubVeg = bfSubVeg * aDShootVeg
+ !submerged_biomass
+
+IF (.NOT. InclBed) THEN
+   aExtVeg = 0.0 
+ELSE
+   aExtVeg = cExtSpVeg * aDSubVeg / sDepthW 
+ENDIF
+ !contribution_of_plant_species_to_extinction_(submerged)
+
+aDepth1Veg = fDepth1Veg * sDepthW
+ !upper_depth_of_vegetation_layer_(minimum_=_0_m_=_surface)
+
+aDepth2Veg = fDepth2Veg * sDepthW
+ !lower_depth_of_vegetation_layer_(maximum_=_water_depth)
+
+IF (.NOT. InclBed) THEN
+   afCovSurfVeg = 0.0 
+ELSE
+   afCovSurfVeg = MIN(1.0, MAX(aDFloatVeg / (cDLayerVeg + NearZero), aDEmergVeg / (fEmergVeg * cDCarrVeg + NearZero) ) ) 
+ENDIF
+ !fraction_of_water_SURFACE_covered_by_plant_species
+
+afCovEmergVeg = MIN(1.0, PerCent * cCovSpVeg * aDEmergVeg)
+ !fraction_emergent_coverage
+
+aCovVeg = MIN(100.0, cCovSpVeg * aDShootVeg)
+ !percent_cover
+
+aDVeg = sDVeg
+ !total_plant_biomass
+
+aPVeg = sPVeg
+ !total_P_in_vegetation
+
+aNVeg = sNVeg
+ !total_N_in_vegetation
+
+aExtCoef = aExtCoefOpen + aExtVeg
+ !extinction_coefficient_incl_vegetation
+
+aLPARBot = uLPARSurf * EXP(- aExtCoef * sDepthW)
+ !light_at_the_bottom
+
+rPDVeg = sPVeg / (sDVeg+NearZero)
+ !P/DW_ratio_of_vegetation
+
+rNDVeg = sNVeg / (sDVeg+NearZero)
+ !N/DW_ratio_of_vegetation
+
+tDMigrVeg = kMigrVeg * (cDVegIn - sDVeg)
+ !migration_flux
+
+tPMigrVeg = kMigrVeg * (cPDVeg0* cDVegIn - sPVeg)
+ !net_migration_flux
+
+tNMigrVeg = kMigrVeg * (cNDVeg0* cDVegIn - sNVeg)
+ !net_migration_flux
+
+uFunTmProdVeg = ((cQ10ProdVeg )** (0.1 * (uTm - cTmRef)))
+ !temperature_function_of_vegetation_production
+
+uFunTmRespVeg = ((cQ10RespVeg )** (0.1 * (uTm - cTmRef)))
+ !temperature_function_of_vegetation_respiration
+
+IF (.NOT. UseEmpUpt) THEN
+   afPUptVegS = 0.0 
+ELSEIF (bfRootVeg .LE. NearZero) THEN
+   afPUptVegS = 0.0 
+ELSEIF (fFloatVeg + bfSubVeg .LE. NearZero) THEN
+   afPUptVegS = 1.0 
+ELSE
+   afPUptVegS = fSedUptVegMax / (1.0 + fSedUptVegCoef * ((((oPO4S+NearZero) / (sPO4W+NearZero)) )** fSedUptVegExp)) 
+ENDIF
+ !fraction_of_P_uptake_from_sediment
+
+IF (.NOT. UseEmpUpt) THEN
+   afNUptVegS = 0.0 
+ELSEIF (bfRootVeg .LE. NearZero) THEN
+   afNUptVegS = 0.0 
+ELSEIF (fFloatVeg + bfSubVeg .LE. NearZero) THEN
+   afNUptVegS = 1.0 
+ELSE
+   afNUptVegS = fSedUptVegMax / (1.0 + fSedUptVegCoef * ((((oNDissS+NearZero) / (oNDissW+NearZero)) )** fSedUptVegExp)) 
+ENDIF
+ !fraction_of_N_uptake_from_sediment
+
+IF (.NOT. UseEmpUpt) THEN
+   aVPUptMaxCrVeg = MAX( 0.0, cVPUptMaxVeg * uFunTmProdVeg * (cPDVegMax-rPDVeg) / (cPDVegMax-cPDVegMin) ) 
+ELSE
+   aVPUptMaxCrVeg = MAX( 0.0, cVPUptMaxVeg * uFunTmProdVeg * (cPDVegMax-rPDVeg) / (cPDVegMax-cPDVegMin) ) 
+ENDIF
+ !maximum_P_uptake_rate_of_vegetation_corrected_for_P/D_ratio
+
+IF (.NOT. UseEmpUpt) THEN
+   aVPUptVegW = sPO4W * aVPUptMaxCrVeg / (aVPUptMaxCrVeg / cAffPUptVeg + sPO4W) 
+ELSE
+   aVPUptVegW = 0.0 
+ENDIF
+ !P_uptake_RATE_by_subm_AND_floating_parts
+
+IF (.NOT. UseEmpUpt) THEN
+   aVPUptVegS = oPO4S * aVPUptMaxCrVeg / (aVPUptMaxCrVeg / cAffPUptVeg + oPO4S) 
+ELSE
+   aVPUptVegS = 0.0 
+ENDIF
+ !P_uptake_rate_by_roots
+
+IF (.NOT. UseEmpUpt) THEN
+   tPUptVegW = aVPUptVegW * (aDSubVeg + aDFloatVeg) 
+ELSE
+   tPUptVegW = (1.0 - afPUptVegS) * aVPUptMaxCrVeg * sPO4W / (aVPUptMaxCrVeg / cAffPUptVeg + sPO4W) * sDVeg 
+ENDIF
+ !P_uptake_from_water
+
+IF (.NOT. UseEmpUpt) THEN
+   tPUptVegS = aVPUptVegS * aDRootVeg 
+ELSE
+   tPUptVegS = afPUptVegS * aVPUptMaxCrVeg * oPO4S / (aVPUptMaxCrVeg / cAffPUptVeg + oPO4S) * sDVeg 
+ENDIF
+ !P_uptake_from_pore_water_(by_root_fraction)
+
+IF (.NOT. UseEmpUpt) THEN
+   tPUptVeg = tPUptVegW + tPUptVegS 
+ELSE
+   tPUptVeg = tPUptVegW + tPUptVegS 
+ENDIF
+ !total_P_uptake_vegetation
+
+IF (.NOT. UseEmpUpt) THEN
+   aVNUptMaxCrVeg = MAX( 0.0, cVNUptMaxVeg * uFunTmProdVeg * (cNDVegMax - rNDVeg) / (cNDVegMax - cNDVegMin)) 
+ELSE
+   aVNUptMaxCrVeg = MAX( 0.0, cVNUptMaxVeg * uFunTmProdVeg * (cNDVegMax - rNDVeg) / (cNDVegMax - cNDVegMin)) 
+ENDIF
+ !maximum_N_uptake_rate_of_vegetation_corrected_for_N/D_ratio
+
+IF (.NOT. UseEmpUpt) THEN
+   ahNUptVeg = aVNUptMaxCrVeg / cAffNUptVeg 
+ELSE
+   ahNUptVeg = aVNUptMaxCrVeg / cAffNUptVeg 
+ENDIF
+ !half-sat_constant_for_N_uptake
+
+IF (.NOT. UseEmpUpt) THEN
+   aVNUptVegW = oNDissW * aVNUptMaxCrVeg / (ahNUptVeg + oNDissW) 
+ELSE
+   aVNUptVegW = 0.0 
+ENDIF
+ !N_uptake_RATE_by_subm_AND_floating_parts
+
+IF (.NOT. UseEmpUpt) THEN
+   afNH4UptVegW = sNH4W * sNO3W / ((ahNUptVeg + sNH4W) * (ahNUptVeg + sNO3W + NearZero)) + sNH4W * ahNUptVeg / ((sNH4W + sNO3W + NearZero) * (ahNUptVeg + sNO3W + NearZero)) 
+ELSE
+   afNH4UptVegW = sNH4W * sNO3W / ((ahNUptVeg + sNH4W) * (ahNUptVeg + sNO3W + NearZero)) + sNH4W * ahNUptVeg / ((sNH4W + sNO3W + NearZero) * (ahNUptVeg + sNO3W + NearZero)) 
+ENDIF
+ !fraction_ammonium_uptake_from_water_column_(from_WASP_model_EPA)
+
+IF (.NOT. UseEmpUpt) THEN
+   tNUptVegW = aVNUptVegW * (aDSubVeg + aDFloatVeg) 
+ELSE
+   tNUptVegW = (1.0 - afNUptVegS) * aVNUptMaxCrVeg * oNDissW / (aVNUptMaxCrVeg / cAffNUptVeg + oNDissW) * sDVeg 
+ENDIF
+ !N_uptake_from_water_(by_shoots)
+
+IF (.NOT. UseEmpUpt) THEN
+   tNUptNH4VegW = afNH4UptVegW * tNUptVegW 
+ELSE
+   tNUptNH4VegW = afNH4UptVegW * tNUptVegW 
+ENDIF
+ !NH4_uptake_of_vegetation_from_water
+
+IF (.NOT. UseEmpUpt) THEN
+   tNUptNO3VegW = tNUptVegW - tNUptNH4VegW 
+ELSE
+   tNUptNO3VegW = tNUptVegW - tNUptNH4VegW 
+ENDIF
+ !NO3_uptake_of_vegetation_from_water
+
+IF (.NOT. UseEmpUpt) THEN
+   aVNUptVegS = oNDissS * aVNUptMaxCrVeg / (ahNUptVeg + oNDissS) 
+ELSE
+   aVNUptVegS = 0.0 
+ENDIF
+ !N_uptake_RATE_of_roots
+
+IF (.NOT. UseEmpUpt) THEN
+   tNUptVegS = aVNUptVegS * aDRootVeg 
+ELSE
+   tNUptVegS = afNUptVegS * aVNUptMaxCrVeg * oNDissS / (aVNUptMaxCrVeg / cAffNUptVeg + oNDissS) * sDVeg 
+ENDIF
+ !N_uptake_from_pore_water_(by_roots)
+
+IF (.NOT. UseEmpUpt) THEN
+   afNH4UptVegS = oNH4S * oNO3S / ((ahNUptVeg + oNH4S +NearZero) * (ahNUptVeg + oNO3S +NearZero)) + oNH4S * ahNUptVeg / ((oNH4S + oNO3S+NearZero) * (ahNUptVeg + oNO3S+NearZero)) 
+ELSE
+   afNH4UptVegS = oNH4S * oNO3S / ((ahNUptVeg + oNH4S +NearZero) * (ahNUptVeg + oNO3S +NearZero)) + oNH4S * ahNUptVeg / ((oNH4S + oNO3S+NearZero) * (ahNUptVeg + oNO3S+NearZero)) 
+ENDIF
+ !fraction_ammonium_uptake_from_pore_water_(from_WASP_model_EPA)
+
+IF (.NOT. UseEmpUpt) THEN
+   tNUptNH4VegS = afNH4UptVegS * tNUptVegS 
+ELSE
+   tNUptNH4VegS = afNH4UptVegS * tNUptVegS 
+ENDIF
+ !NH4_uptake_of_vegetation_from_sediment
+
+IF (.NOT. UseEmpUpt) THEN
+   tNUptNO3VegS = tNUptVegS - tNUptNH4VegS 
+ELSE
+   tNUptNO3VegS = tNUptVegS - tNUptNH4VegS 
+ENDIF
+ !NO3_uptake_of_vegetation_from_sediment
+
+IF (.NOT. UseEmpUpt) THEN
+   tNUptVeg = tNUptVegW + tNUptVegS 
+ELSE
+   tNUptVeg = tNUptVegW + tNUptVegS 
+ENDIF
+ !total_N_uptake_vegetation
+
+aLPAR1Veg = uLPARSurf * EXP(- aExtCoefOpen * aDepth1Veg)
+ !light_at_top_of_vegetation_layer
+
+aLPAR2Veg = aLPAR1Veg * EXP(- aExtCoef * (aDepth2Veg - aDepth1Veg))
+ !light_at_bottom_of_vegetation_layer
+
+uhLVeg = hLRefVeg * uFunTmProdVeg
+ !half-sat_light_for_vegetation_production_at_current_temp
+
+aLLimShootVeg = fEmergVeg + fFloatVeg * (1.0 - afCovEmergVeg) + bfSubVeg * (1.0 - afCovSurfVeg) * 1.0 / (aExtCoef * sDepthW) * LOG( (1.0 + aLPAR1Veg / uhLVeg) / (1.0 + aLPAR2Veg / uhLVeg))
+ !light_function_of_growth_based_on_shoot_fraction
+
+aMuTmLVeg = ufDay * bfShootVeg * aLLimShootVeg * uFunTmProdVeg * cMuMaxVeg
+ !max_growth_rate_at_current_temp_AND_light
+
+aPLimVeg = MAX(0.0, (1.0 - cPDVegMin / rPDVeg) * cPDVegMax / (cPDVegMax - cPDVegMin) )
+ !Droop_function_(P)_for_vegetation
+
+aNLimVeg = MAX(0.0, (1.0 - cNDVegMin / rNDVeg) * cNDVegMax / (cNDVegMax - cNDVegMin) )
+ !Droop_function_(N)_for_vegetation
+
+aNutLimVeg = MIN( aPLimVeg, aNLimVeg)
+ !nutrient_limitation_function_of_vegetation
+
+aMuVeg = aMuTmLVeg * aNutLimVeg
+ !actual_growth_rate_of_vegetation
+
+IF (.NOT. InclSeason) THEN
+   bkMortVeg = kMortVegSum 
+ELSEIF (Day .LT. cDayWinVeg) THEN
+   bkMortVeg = kMortVegSum 
+ELSEIF (Day .LT. cDayWinVeg + cLengMort) THEN
+   bkMortVeg = - LOG(fWinVeg) / cLengMort 
+ELSE
+   bkMortVeg = kMortVegSum 
+ENDIF
+ !mortality_constant
+
+akDIncrVeg = aMuTmLVeg - kDRespVeg * uFunTmRespVeg - bkMortVeg
+ !intrinsic_net_increase_rate_of_vegetation
+
+tDEnvVeg = MAX(0.0, akDIncrVeg / (cDCarrVeg+NearZero) * sDVeg*sDVeg)
+ !logistic_correction_of_vegetation
+
+tDEnvProdVeg = aMuVeg / cMuMaxVeg * tDEnvVeg
+ !logistic_correction_of_production
+
+tDProdVeg = MAX(0.0, aMuVeg * sDVeg - tDEnvProdVeg)
+ !vegetation_production
+
+tDProdSubVeg = bfSubVeg * tDProdVeg
+ !submerged_production
+
+tDRespVeg = kDRespVeg * uFunTmRespVeg * sDVeg
+ !dark_respiration_of_vegetation
+
+tDEnvMortVeg = tDEnvVeg - tDEnvProdVeg
+ !logistic_correction_of_mortality
+
+tDMortVeg = bkMortVeg * sDVeg + tDEnvMortVeg
+ !total_mortality_flux_DW_vegetation
+
+tDMortVegW = fDetWMortVeg * (1.0 - bfRootVeg) * tDMortVeg
+ !mortality_flux_becoming_water_detritus
+
+tDMortVegS = tDMortVeg - tDMortVegW
+ !mortality_flux_becoming_sediment_detritus
+
+IF ( (sTime .GE. cYearStartBirds * DaysPerYear) .AND. (Day .GE. cDayStartBirds) .AND. (Day .LE. cDayEndBirds) ) THEN
+   tDGrazVegBird = cPrefVegBird * sDVeg / (hDVegBird + sDVeg) * cBirdsPerha / m2Perha * cDGrazPerBird 
+ELSE
+   tDGrazVegBird = 0.0 
+ENDIF
+ !biomass_loss_due_to_grazing_of_birds
+
+IF ((Day .GE. cDayManVeg1 .AND. Day .LT. cDayManVeg1 + cLengMan) .OR. (Day .GE. cDayManVeg2 .AND. Day .LT. cDayManVeg2 + cLengMan)) THEN
+   bkManVeg = -LOG(1.0 - fManVeg) / cLengMan 
+ELSE
+   bkManVeg = 0.0 
+ENDIF
+ !rate_constant_during_mowing_period
+
+tDManVeg = bkManVeg * sDVeg
+ !Mowing_of_vegetation_DW
+
+tPManVeg = rPDVeg * tDManVeg
+ !Mowing_of_vegetation_P
+
+tNManVeg = rNDVeg * tDManVeg
+ !Mowing_of_vegetation_N
+
+tDBedVeg = tDMigrVeg + tDProdVeg - tDRespVeg - tDMortVeg - tDGrazVegBird - tDManVeg
+ !derivative_of_vegetation_biomass
+
+tO2ProdVeg = molO2molC * cCPerDW * tDProdVeg
+ !vegetation_O2_production
+
+tO2RespVegW = molO2molC * cCPerDW * bfSubVeg * tDRespVeg * aCorO2BOD
+ !submerged_O2_respiration
+
+tO2RespVegS = molO2molC * cCPerDW * bfRootVeg * tDRespVeg * afOxySed
+ !root_O2_respiration
+
+tO2ProdVegS = MIN (tO2RespVegS, tO2ProdVeg)
+ !O2_transport_to_roots
+
+tO2ProdVegW = MIN( tO2ProdVeg - tO2ProdVegS, bfSubVeg * tO2ProdVeg)
+ !O2_used_for_vegetation_production
+
+tO2UptNO3VegW = O2PerNO3 * molO2molN * bfSubVeg * tNUptNO3VegW
+ !O2_production_to_water_due_to_NO3_uptake_by_macrophytes
+
+tO2UptNO3VegS = O2PerNO3 * molO2molN * tNUptNO3VegS
+ !O2_production_due_to_NO3_uptake_from_sed_by_macrophytes
+
+tPExcrVeg = (rPDVeg *2.0)/ (cPDVegMax + rPDVeg) * rPDVeg * tDRespVeg
+ !P_excretion_by_vegetation
+
+tPExcrVegS = bfRootVeg * tPExcrVeg
+ !P_excretion_by_vegetation_in_sediment
+
+tPExcrVegW = tPExcrVeg - tPExcrVegS
+ !P_excretion_by_vegetation_in_water
+
+tPMortVeg = rPDVeg * tDMortVeg
+ !P_mortality_flux_of_vegetation
+
+tPMortVegPO4 = fDissMortVeg * tPMortVeg
+ !mortality_flux_of_vegetation_becoming_dissolved_P
+
+tPMortVegPO4S = bfRootVeg * tPMortVegPO4
+ !mortality_flux_of_vegetation_becoming_dissolved_P_in_sediment
+
+tPMortVegPO4W = tPMortVegPO4 - tPMortVegPO4S
+ !mortality_flux_of_vegetation_becoming_dissolved_P_in_water
+
+tPMortVegDet = tPMortVeg - tPMortVegPO4
+ !mortality_flux_of_vegetation_becoming_detritus_P
+
+tPMortVegDetW = fDetWMortVeg * (1.0 - bfRootVeg) * tPMortVegDet
+ !mortality_flux_of_vegetation_becoming_detritus_P_in_water
+
+tPMortVegDetS = tPMortVegDet - tPMortVegDetW
+ !mortality_flux_of_vegetation_becoming_detritus_P_in_sediment
+
+tPGrazVegBird = rPDVeg * tDGrazVegBird
+ !P_mortality_flux_of_vegetation_by_bird_grazing
+
+tPBedVeg = tPMigrVeg + tPUptVeg - tPExcrVeg - tPMortVeg - tPGrazVegBird - tPManVeg
+ !total_vegetation_P_flux_in_bed_module
+
+tNExcrVeg = (2.0 * rNDVeg) / (cNDVegMax + rNDVeg) * rNDVeg * tDRespVeg
+ !N_excretion_by_vegetation
+
+tNExcrVegS = bfRootVeg * tNExcrVeg
+ !N_excretion_by_vegetation_to_sediment
+
+tNExcrVegW = tNExcrVeg - tNExcrVegS
+ !N_excretion_by_vegetation_to_water
+
+tNMortVeg = rNDVeg * tDMortVeg
+ !N_mortality_flux_of_vegetation
+
+tNMortVegNH4 = fDissMortVeg * tNMortVeg
+ !mortality_flux_of_vegetation_becoming_dissolved_N
+
+tNMortVegNH4S = bfRootVeg * tNMortVegNH4
+ !mortality_flux_of_vegetation_becoming_dissolved_N_in_sediment
+
+tNMortVegNH4W = tNMortVegNH4 - tNMortVegNH4S
+ !mortality_flux_of_vegetation_becoming_dissolved_N_in_water
+
+tNMortVegDet = tNMortVeg - tNMortVegNH4
+ !mortality_flux_of_vegetation_becoming_detritus_N
+
+tNMortVegDetW = fDetWMortVeg * (1.0 - bfRootVeg) * tNMortVegDet
+ !mortality_flux_of_vegetation_becoming_detritus_N_in_water
+
+tNMortVegDetS = tNMortVegDet - tNMortVegDetW
+ !mortality_flux_of_vegetation_becoming_detritus_N_in_sediment
+
+tNGrazVegBird = rNDVeg * tDGrazVegBird
+ !N_mortality_flux_of_vegetation_by_bird_grazing
+
+tNBedVeg = tNMigrVeg + tNUptVeg - tNExcrVeg - tNMortVeg - tNGrazVegBird - tNManVeg
+ !total_vegetation_N_flux_in_bed_module
+
+tDAssVegBird = fDAssBird * tDGrazVegBird
+ !DW_assimilation_by_herbivorous_birds
+
+tDEgesBird = tDGrazVegBird - tDAssVegBird
+ !DW_egestion_by_herbivorous_birds
+
+tPAssVegBird = fDAssBird * tPGrazVegBird
+ !P_assimilation_by_herbivorous_birds
+
+tPEgesBird = tPGrazVegBird - tPAssVegBird
+ !P_egestion_by_herbivorous_birds
+
+tPEgesBirdPO4 = fDissEgesBird * tPEgesBird
+ !PO4_egestion_by_herbivorous_birds
+
+tPEgesBirdDet = tPEgesBird - tPEgesBirdPO4
+ !P_detritus_egestion_by_herbivorous_birds
+
+tNAssVegBird = fDAssBird * tNGrazVegBird
+ !N_assimilation_by_herbivorous_birds
+
+tNEgesBird = tNGrazVegBird - tNAssVegBird
+ !N_egestion_by_herbivorous_birds
+
+tNEgesBirdNH4 = fDissEgesBird * tNEgesBird
+ !NH4_egestion_by_herbivorous_birds
+
+tNEgesBirdDet = tNEgesBird - tNEgesBirdNH4
+ !N_detritus_egestion_by_herbivorous_birds
+
+wDBedDetW = (tDMortVegW + tDEgesBird) / sDepthW
+ !total_DW_flux_from_Vegetation_module_to_water_detritus
+
+tDBedDetS = tDMortVegS
+ !total_DW_flux_from_Vegetation_module_to_sediment_detritus
+
+tDBedTotT = tDMigrVeg + tDProdVeg - tDRespVeg - tDManVeg - tDAssVegBird
+ !total_DW_flux_from_Vegetation_module
+
+wPBedPO4W = (- tPUptVegW + tPExcrVegW + tPMortVegPO4W + tPEgesBirdPO4) /sDepthW
+ !total_P_flux_from_Vegetation_module_to_PO4_in_water
+
+wPBedDetW = (tPMortVegDetW + tPEgesBirdDet) / sDepthW
+ !total_P_flux_from_Vegetation_module_to_water_detritus
+
+tPBedPO4S = - tPUptVegS + tPExcrVegS + tPMortVegPO4S
+ !total_P_flux_from_Vegetation_module_to_pore_water_PO4
+
+tPBedDetS = tPMortVegDetS
+ !total_P_flux_from_Vegetation_module_to_sediment_detritus
+
+tPBedTotT = tPMigrVeg - tPManVeg - tPAssVegBird
+ !total_P_flux_from_Vegetation_module
+
+wNBedNH4W = (- tNUptNH4VegW + tNExcrVegW + tNMortVegNH4W + tNEgesBirdNH4) / sDepthW
+ !total_N_flux_from_Vegetation_module_to_NH4_in_water
+
+wNBedNO3W = - tNUptNO3VegW / sDepthW
+ !total_N_flux_from_Vegetation_module_to_NO3_in_water
+
+wNBedDetW = (tNMortVegDetW + tNEgesBirdDet) / sDepthW
+ !total_N_flux_from_Vegetation_module_to_water_detritus
+
+tNBedNH4S = - tNUptNH4VegS + tNExcrVegS + tNMortVegNH4S
+ !total_N_flux_from_Vegetation_module_to_NH4_in_pore_water
+
+tNBedNO3S = - tNUptNO3VegS
+ !total_N_flux_from_Vegetation_module_to_NO3_in_pore_water
+
+tNBedDetS = tNMortVegDetS
+ !total_N_flux_from_Vegetation_module_to_sediment_detritus
+
+tNBedTotT = tNMigrVeg - tNManVeg - tNAssVegBird
+ !total_N_flux_from_Vegetation_module
+
+tO2BedW = tO2ProdVegW - tO2RespVegW + tO2UptNO3VegW
+ !total_water_O2_flux_in_vegetation_module
+
+tO2BedS = tO2ProdVegS - tO2RespVegS + tO2UptNO3VegS
+ !total_sediment_O2_flux_in_vegetation_module
+
+IF (InclWeb) THEN
+   UseLoss = 0.0 
+ELSE
+   UseLoss = 1.0 
+ENDIF
+ !-
+
+uFunTmLoss = EXP(-0.5/(cSigTmLoss*cSigTmLoss) *((uTm-cTmOptLoss)*(uTm-cTmOptLoss) -(cTmRef-cTmOptLoss)*(cTmRef-cTmOptLoss)))
+ !temp_function_of_grazing
+
+rPDBlueW = sPBlueW /(sDBlueW+NearZero)
+ !P/D_ratio_of_Algae
+
+rNDBlueW = sNBlueW /(sDBlueW+NearZero)
+ !N/D_ratio_of_Algae
+
+rPDBlueS = sPBlueS /(sDBlueS+NearZero)
+ !P/D_ratio_of_Algae
+
+rNDBlueS = sNBlueS /(sDBlueS+NearZero)
+ !N/D_ratio_of_Algae
+
+uFunTmBlue = EXP(-0.5/(cSigTmBlue*cSigTmBlue) *((uTm-cTmOptBlue)*(uTm-cTmOptBlue) - (cTmRef-cTmOptBlue)*(cTmRef-cTmOptBlue)))
+ !temperature_function_of_Algae
+
+uFunTmProdBlue = uFunTmBlue
+ !temperature_function_of_Algae
+
+uFunTmRespBlue = uFunTmBlue
+ !temperature_function_of_Algae
+
+aVPUptMaxCrBlue = MAX(0.0,cVPUptMaxBlue * uFunTmProdBlue *(cPDBlueMax - rPDBlueW) /(cPDBlueMax - cPDBlueMin))
+ !maximum_P_uptake_rate_of_Algaecorrected_for_P/D_ratio
+
+aVPUptBlue = sPO4W * aVPUptMaxCrBlue /(aVPUptMaxCrBlue / cAffPUptBlue + sPO4W)
+ !P_uptake_rate_of_Algae
+
+wPUptBlue = aVPUptBlue * sDBlueW
+ !P_uptake_Algae
+
+aVNUptMaxCrBlue = MAX(0.0,cVNUptMaxBlue * uFunTmProdBlue * (cNDBlueMax - rNDBlueW) /(cNDBlueMax - cNDBlueMin))
+ !maximum_N_uptake_rate_of_Algaecorrected_for_N/D_ratio
+
+ahNUptBlue = aVNUptMaxCrBlue / cAffNUptBlue
+ !half-sat_NDissW_for_uptake_by_Algae
+
+aVNUptBlue = oNDissW * aVNUptMaxCrBlue /(ahNUptBlue + oNDissW)
+ !N_uptake_rate_of_Algae
+
+wNUptBlue = aVNUptBlue * sDBlueW
+ !N_uptake_Algae
+
+afNH4UptBlue = sNH4W * sNO3W /((ahNUptBlue + sNH4W) *(ahNUptBlue + sNO3W)) + sNH4W * ahNUptBlue /((sNH4W + sNO3W) *(ahNUptBlue + sNO3W))
+ !fraction_ammonium_uptake_by_Algae
+
+wNUptNH4Blue = afNH4UptBlue * wNUptBlue
+ !ammonium_uptake_by_Algae
+
+wNUptNO3Blue = wNUptBlue - wNUptNH4Blue
+ !nitrate_uptake_by_Algae
+
+uMuMaxTmBlue = cMuMaxBlue * uFunTmProdBlue
+ !max_growth_rate_of_Algae_at_ambient_temperature
+
+aPLimBlue = MAX(0.0,(1.0 - cPDBlueMin / rPDBlueW) * cPDBlueMax /(cPDBlueMax - cPDBlueMin))
+ !Droop_function(P)_for_Algae
+
+aNLimBlue = MAX(0.0,(1.0 - cNDBlueMin / rNDBlueW) * cNDBlueMax /(cNDBlueMax - cNDBlueMin))
+ !Droop_function(N)_for_Algae
+
+aSiLimBlue = sSiO2W /(hSiAssBlue + sSiO2W)
+ !silica_dependence_of_growth_rate
+
+aLLimBlue = UseSteeleBlue *(EXP(1.0) /(aExtCoef * sDepthW) *(EXP(- aLPARBot /(cLOptRefBlue * uFunTmProdBlue)) - EXP(- uLPARSurf /(cLOptRefBlue * uFunTmProdBlue)))) +(1.0 - UseSteeleBlue) *(1.0 /(aExtCoef * sDepthW) * LOG((1.0 + uLPARSurf / (hLRefBlue * uFunTmProdBlue)) / (1.0 + aLPARBot /(hLRefBlue * uFunTmProdBlue))))
+ !Light_function
+
+aMuTmLBlue = ufDay *(1.0 - afCovSurfVeg) * aLLimBlue * uMuMaxTmBlue
+ !growth_rate_at_current_light_AND_temp
+
+aNutLimBlue = MIN(aPLimBlue,(MIN(aNLimBlue,aSiLimBlue)))
+ !nutrient_limitation_function_of_Algae
+
+aMuBlue = aNutLimBlue * aMuTmLBlue
+ !growth_rate
+
+wDAssBlue = aMuBlue*sDBlueW
+ !assimilation_Algae
+
+rChDBlue = cChDBlueMax -(cChDBlueMax - cChDBlueMin) * aLLimBlue
+ !chlorophyll-a/DW_ratio_Algae
+
+oChlaBlue = mgPerg * rChDBlue * sDBlueW
+ !chlorophyll-a_conc
+
+aExtChBlue = cExtSpBlue / rChDBlue
+ !specific_extinction_per_unit_chlorophyll-a
+
+ukDRespTmBlue = kDRespBlue * uFunTmRespBlue
+ !temp_corrected_respiration_constant_of_Algae
+
+wDRespBlueW = ukDRespTmBlue * sDBlueW
+ !respiration_of_Algae_in_water
+
+ukLossTmBlue = UseLoss * kLossBlue * uFunTmLoss
+ !daily_grazing_on_Algae
+
+wDLossBlue = ukLossTmBlue * sDBlueW
+ !Algae_grazing_loss
+
+wDMortBlueW = kMortBlueW * sDBlueW
+ !mortality_in_water
+
+uCorVSetBlue = cVSetBlue * aFunTauSetOM * uFunTmSet
+ !corrected_sedimentation_velocity_of_Algae
+
+tDSetBlue = uCorVSetBlue * sDBlueW
+ !sedimentation_flux_of_Algae
+
+tDResusBlue = sDBlueS /(aDPhytS+NearZero) * tDResusPhytTot
+ !resuspension_DW_blue-greens
+
+tDRespBlueS = ukDRespTmBlue * sDBlueS
+ !respiration_of_sediment_Algae
+
+tDMortBlueS = kMortBlueS * sDBlueS
+ !mortality_in_sed
+
+ukDDecBlue = ukDRespTmBlue + ukLossTmBlue + kMortBlueW +(uCorVSetBlue * uFunTmSet) / sDepthW
+ !total_loss_rate_of_algae_in_water(excl_dilution)
+
+wPExcrBlueW = (rPDBlueW * 2.0 )/(cPDBlueMax + rPDBlueW) * rPDBlueW * wDRespBlueW
+ !P_excretion_Algae_in_water
+
+wPLossBlue = rPDBlueW * wDLossBlue
+ !Algae_grazing_loss
+
+wPMortBlueW = kMortBlueW * sPBlueW
+ !mortality_Algae_in_water
+
+tPSetBlue = rPDBlueW * tDSetBlue
+ !sedimentation
+
+tPResusBlue = rPDBlueS * tDResusBlue
+ !Resuspension_of_algae
+
+tPExcrBlueS = (rPDBlueS *2.0)/(cPDBlueMax + rPDBlueS) * rPDBlueS * tDRespBlueS
+ !P_excretion_of_algae_in_sediment
+
+tPMortBlueS = kMortBlueS * sPBlueS
+ !P_mortality_of_algae_in_sediment
+
+wNExcrBlueW = (rNDBlueW *2.0)/(cNDBlueMax + rNDBlueW) * rNDBlueW * wDRespBlueW
+ !N_excretion_Algae_in_water
+
+wNLossBlue = rNDBlueW * wDLossBlue
+ !Algae_grazing_loss
+
+wNMortBlueW = kMortBlueW * sNBlueW
+ !mortality_Algae_in_water
+
+tNSetBlue = rNDBlueW * tDSetBlue
+ !sedimentation
+
+tNResusBlue = rNDBlueS * tDResusBlue
+ !Resuspension_of_algae
+
+tNExcrBlueS = (2.0 * rNDBlueS) /(cNDBlueMax + rNDBlueS) * rNDBlueS * tDRespBlueS
+ !N_excretion_of_algae_in_sediment
+
+tNMortBlueS = kMortBlueS * sNBlueS
+ !N_mortality_of_algae_in_sediment
+
+wDPrimBlueW = wDAssBlue - wDRespBlueW - wDLossBlue - wDMortBlueW -(tDSetBlue - tDResusBlue) / sDepthW
+ !total_PRIM_flux_to_algae_in_water
+
+wPPrimBlueW = wPUptBlue - wPExcrBlueW - wPLossBlue - wPMortBlueW -(tPSetBlue - tPResusBlue) / sDepthW
+ !Total_PRIM_flux_to_Algae
+
+wNPrimBlueW = wNUptBlue - wNExcrBlueW - wNLossBlue - wNMortBlueW -(tNSetBlue - tNResusBlue) / sDepthW
+ !Total_PRIM_flux_to_Algae
+
+IF (InclPhytS) THEN
+   tDPrimBlueS = tDSetBlue - tDResusBlue - tDMortBlueS - tDRespBlueS 
+ELSE
+   tDPrimBlueS = 0.0 
+ENDIF
+ !total_flux_from_PRIM_module_to_sediment_Algae
+
+IF (InclPhytS) THEN
+   tPPrimBlueS = tPSetBlue - tPResusBlue - tPMortBlueS - tPExcrBlueS 
+ELSE
+   tPPrimBlueS = 0.0 
+ENDIF
+ !total_flux_from_PRIM_module_to_sediment_Algae
+
+IF (InclPhytS) THEN
+   tNPrimBlueS = tNSetBlue - tNResusBlue - tNMortBlueS - tNExcrBlueS 
+ELSE
+   tNPrimBlueS = 0.0 
+ENDIF
+ !total_flux_from_PRIM_module_to_sediment_Algae
+
+rPDGrenW = sPGrenW /(sDGrenW+NearZero)
+ !P/D_ratio_of_Algae
+
+rNDGrenW = sNGrenW /(sDGrenW+NearZero)
+ !N/D_ratio_of_Algae
+
+rPDGrenS = sPGrenS /(sDGrenS+NearZero)
+ !P/D_ratio_of_Algae
+
+rNDGrenS = sNGrenS /(sDGrenS+NearZero)
+ !N/D_ratio_of_Algae
+
+uFunTmGren = EXP(-0.5/(cSigTmGren*cSigTmGren) *((uTm-cTmOptGren)*(uTm-cTmOptGren) - (cTmRef-cTmOptGren)*(cTmRef-cTmOptGren)))
+ !temperature_function_of_Algae
+
+uFunTmProdGren = uFunTmGren
+ !temperature_function_of_Algae
+
+uFunTmRespGren = uFunTmGren
+ !temperature_function_of_Algae
+
+aVPUptMaxCrGren = MAX(0.0,cVPUptMaxGren * uFunTmProdGren *(cPDGrenMax - rPDGrenW) /(cPDGrenMax - cPDGrenMin))
+ !maximum_P_uptake_rate_of_Algaecorrected_for_P/D_ratio
+
+aVPUptGren = sPO4W * aVPUptMaxCrGren /(aVPUptMaxCrGren / cAffPUptGren + sPO4W)
+ !P_uptake_rate_of_Algae
+
+wPUptGren = aVPUptGren * sDGrenW
+ !P_uptake_Algae
+
+aVNUptMaxCrGren = MAX(0.0,cVNUptMaxGren * uFunTmProdGren * (cNDGrenMax - rNDGrenW) /(cNDGrenMax - cNDGrenMin))
+ !maximum_N_uptake_rate_of_Algaecorrected_for_N/D_ratio
+
+ahNUptGren = aVNUptMaxCrGren / cAffNUptGren
+ !half-sat_NDissW_for_uptake_by_Algae
+
+aVNUptGren = oNDissW * aVNUptMaxCrGren /(ahNUptGren + oNDissW)
+ !N_uptake_rate_of_Algae
+
+wNUptGren = aVNUptGren * sDGrenW
+ !N_uptake_Algae
+
+afNH4UptGren = sNH4W * sNO3W /((ahNUptGren + sNH4W) *(ahNUptGren + sNO3W)) + sNH4W * ahNUptGren /((sNH4W + sNO3W) *(ahNUptGren + sNO3W))
+ !fraction_ammonium_uptake_by_Algae
+
+wNUptNH4Gren = afNH4UptGren * wNUptGren
+ !ammonium_uptake_by_Algae
+
+wNUptNO3Gren = wNUptGren - wNUptNH4Gren
+ !nitrate_uptake_by_Algae
+
+uMuMaxTmGren = cMuMaxGren * uFunTmProdGren
+ !max_growth_rate_of_Algae_at_ambient_temperature
+
+aPLimGren = MAX(0.0,(1.0 - cPDGrenMin / rPDGrenW) * cPDGrenMax /(cPDGrenMax - cPDGrenMin))
+ !Droop_function(P)_for_Algae
+
+aNLimGren = MAX(0.0,(1.0 - cNDGrenMin / rNDGrenW) * cNDGrenMax /(cNDGrenMax - cNDGrenMin))
+ !Droop_function(N)_for_Algae
+
+aSiLimGren = sSiO2W /(hSiAssGren + sSiO2W)
+ !silica_dependence_of_growth_rate
+
+aLLimGren = UseSteeleGren *(EXP(1.0) /(aExtCoef * sDepthW) *(EXP(- aLPARBot /(cLOptRefGren * uFunTmProdGren)) - EXP(- uLPARSurf /(cLOptRefGren * uFunTmProdGren)))) +(1.0 - UseSteeleGren) *(1.0 /(aExtCoef * sDepthW) * LOG((1.0 + uLPARSurf / (hLRefGren * uFunTmProdGren)) / (1.0 + aLPARBot /(hLRefGren * uFunTmProdGren))))
+ !Light_function
+
+aMuTmLGren = ufDay *(1.0 - afCovSurfVeg) * aLLimGren * uMuMaxTmGren
+ !growth_rate_at_current_light_AND_temp
+
+aNutLimGren = MIN(aPLimGren,(MIN(aNLimGren,aSiLimGren)))
+ !nutrient_limitation_function_of_Algae
+
+aMuGren = aNutLimGren * aMuTmLGren
+ !growth_rate
+
+wDAssGren = aMuGren*sDGrenW
+ !assimilation_Algae
+
+rChDGren = cChDGrenMax -(cChDGrenMax - cChDGrenMin) * aLLimGren
+ !chlorophyll-a/DW_ratio_Algae
+
+oChlaGren = mgPerg * rChDGren * sDGrenW
+ !chlorophyll-a_conc
+
+aExtChGren = cExtSpGren / rChDGren
+ !specific_extinction_per_unit_chlorophyll-a
+
+ukDRespTmGren = kDRespGren * uFunTmRespGren
+ !temp_corrected_respiration_constant_of_Algae
+
+wDRespGrenW = ukDRespTmGren * sDGrenW
+ !respiration_of_Algae_in_water
+
+ukLossTmGren = UseLoss * kLossGren * uFunTmLoss
+ !daily_grazing_on_Algae
+
+wDLossGren = ukLossTmGren * sDGrenW
+ !Algae_grazing_loss
+
+wDMortGrenW = kMortGrenW * sDGrenW
+ !mortality_in_water
+
+uCorVSetGren = cVSetGren * aFunTauSetOM * uFunTmSet
+ !corrected_sedimentation_velocity_of_Algae
+
+tDSetGren = uCorVSetGren * sDGrenW
+ !sedimentation_flux_of_Algae
+
+tDResusGren = sDGrenS /(aDPhytS+NearZero) * tDResusPhytTot
+ !resuspension_of_Algae
+
+tDRespGrenS = ukDRespTmGren * sDGrenS
+ !respiration_of_sediment_Algae
+
+tDMortGrenS = kMortGrenS * sDGrenS
+ !mortality_in_sed
+
+ukDDecGren = ukDRespTmGren + ukLossTmGren + kMortGrenW +(uCorVSetGren * uFunTmSet) / sDepthW
+ !total_loss_rate_of_algae_in_water(excl_dilution)
+
+wPExcrGrenW = (2.0 *rPDGrenW) /(cPDGrenMax + rPDGrenW) * rPDGrenW * wDRespGrenW
+ !P_excretion_Algae_in_water
+
+wPLossGren = rPDGrenW * wDLossGren
+ !Algae_grazing_loss
+
+wPMortGrenW = kMortGrenW * sPGrenW
+ !mortality_Algae_in_water
+
+tPSetGren = rPDGrenW * tDSetGren
+ !sedimentation
+
+tPResusGren = rPDGrenS * tDResusGren
+ !Resuspension_of_algae
+
+tPExcrGrenS = (2.0 * rPDGrenS) /(cPDGrenMax + rPDGrenS) * rPDGrenS * tDRespGrenS
+ !P_excretion_of_algae_in_sediment
+
+tPMortGrenS = kMortGrenS * sPGrenS
+ !P_mortality_of_algae_in_sediment
+
+wNExcrGrenW = (2.0 * rNDGrenW) /(cNDGrenMax + rNDGrenW) * rNDGrenW * wDRespGrenW
+ !N_excretion_Algae_in_water
+
+wNLossGren = rNDGrenW * wDLossGren
+ !Algae_grazing_loss
+
+wNMortGrenW = kMortGrenW * sNGrenW
+ !mortality_Algae_in_water
+
+tNSetGren = rNDGrenW * tDSetGren
+ !sedimentation
+
+tNResusGren = rNDGrenS * tDResusGren
+ !Resuspension_of_algae
+
+tNExcrGrenS = (2.0 * rNDGrenS) /(cNDGrenMax + rNDGrenS) * rNDGrenS * tDRespGrenS
+ !N_excretion_of_algae_in_sediment
+
+tNMortGrenS = kMortGrenS * sNGrenS
+ !N_mortality_of_algae_in_sediment
+
+wDPrimGrenW = wDAssGren - wDRespGrenW - wDLossGren - wDMortGrenW -(tDSetGren - tDResusGren) / sDepthW
+ !total_PRIM_flux_to_algae_in_water
+
+wPPrimGrenW = wPUptGren - wPExcrGrenW - wPLossGren - wPMortGrenW -(tPSetGren - tPResusGren) / sDepthW
+ !Total_PRIM_flux_to_Algae
+
+wNPrimGrenW = wNUptGren - wNExcrGrenW - wNLossGren - wNMortGrenW -(tNSetGren - tNResusGren) / sDepthW
+ !Total_PRIM_flux_to_Algae
+
+IF (InclPhytS) THEN
+   tDPrimGrenS = tDSetGren - tDResusGren - tDMortGrenS - tDRespGrenS 
+ELSE
+   tDPrimGrenS = 0.0 
+ENDIF
+ !total_flux_from_PRIM_module_to_sediment_Algae
+
+IF (InclPhytS) THEN
+   tPPrimGrenS = tPSetGren - tPResusGren - tPMortGrenS - tPExcrGrenS 
+ELSE
+   tPPrimGrenS = 0.0 
+ENDIF
+ !total_flux_from_PRIM_module_to_sediment_Algae
+
+IF (InclPhytS) THEN
+   tNPrimGrenS = tNSetGren - tNResusGren - tNMortGrenS - tNExcrGrenS 
+ELSE
+   tNPrimGrenS = 0.0 
+ENDIF
+ !total_flux_from_PRIM_module_to_sediment_Algae
+
+rPDDiatW = sPDiatW /(sDDiatW+NearZero)
+ !P/D_ratio_of_Algae
+
+rNDDiatW = sNDiatW /(sDDiatW+NearZero)
+ !N/D_ratio_of_Algae
+
+rPDDiatS = sPDiatS /(sDDiatS+NearZero)
+ !P/D_ratio_of_Algae
+
+rNDDiatS = sNDiatS /(sDDiatS+NearZero)
+ !N/D_ratio_of_Algae
+
+uFunTmDiat = EXP(-0.5/(cSigTmDiat*cSigTmDiat) *((uTm-cTmOptDiat)*(uTm-cTmOptDiat) - (cTmRef-cTmOptDiat)*(cTmRef-cTmOptDiat)))
+ !temperature_function_of_Algae
+
+uFunTmProdDiat = uFunTmDiat
+ !temperature_function_production_of_Algae
+
+uFunTmRespDiat = uFunTmDiat
+ !temperature_function_respiration_of_Algae
+
+aVPUptMaxCrDiat = MAX(0.0,cVPUptMaxDiat * uFunTmProdDiat *(cPDDiatMax - rPDDiatW) /(cPDDiatMax - cPDDiatMin))
+ !maximum_P_uptake_rate_of_Algaecorrected_for_P/D_ratio
+
+aVPUptDiat = sPO4W * aVPUptMaxCrDiat /(aVPUptMaxCrDiat / cAffPUptDiat + sPO4W)
+ !P_uptake_rate_of_Algae
+
+wPUptDiat = aVPUptDiat * sDDiatW
+ !P_uptake_Algae
+
+aVNUptMaxCrDiat = MAX(0.0,cVNUptMaxDiat * uFunTmProdDiat * (cNDDiatMax - rNDDiatW) /(cNDDiatMax - cNDDiatMin))
+ !maximum_N_uptake_rate_of_Algaecorrected_for_N/D_ratio
+
+ahNUptDiat = aVNUptMaxCrDiat / cAffNUptDiat
+ !half-sat_NDissW_for_uptake_by_Algae
+
+aVNUptDiat = oNDissW * aVNUptMaxCrDiat /(ahNUptDiat + oNDissW)
+ !N_uptake_rate_of_Algae
+
+wNUptDiat = aVNUptDiat * sDDiatW
+ !N_uptake_Algae
+
+afNH4UptDiat = sNH4W * sNO3W /((ahNUptDiat + sNH4W) *(ahNUptDiat + sNO3W)) + sNH4W * ahNUptDiat /((sNH4W + sNO3W) *(ahNUptDiat + sNO3W))
+ !fraction_ammonium_uptake_by_Algae
+
+wNUptNH4Diat = afNH4UptDiat * wNUptDiat
+ !ammonium_uptake_by_Algae
+
+wNUptNO3Diat = wNUptDiat - wNUptNH4Diat
+ !nitrate_uptake_by_Algae
+
+uMuMaxTmDiat = cMuMaxDiat * uFunTmProdDiat
+ !max_growth_rate_of_Algae_at_ambient_temperature
+
+aPLimDiat = MAX(0.0,(1.0 - cPDDiatMin / rPDDiatW) * cPDDiatMax /(cPDDiatMax - cPDDiatMin))
+ !Droop_function(P)_for_Algae
+
+aNLimDiat = MAX(0.0,(1.0 - cNDDiatMin / rNDDiatW) * cNDDiatMax /(cNDDiatMax - cNDDiatMin))
+ !Droop_function(N)_for_Algae
+
+aSiLimDiat = sSiO2W /(hSiAssDiat + sSiO2W)
+ !silica_dependence_of_growth_rate
+
+aLLimDiat = UseSteeleDiat *(EXP(1.0) /(aExtCoef * sDepthW) *(EXP(- aLPARBot /(cLOptRefDiat * uFunTmProdDiat)) - EXP(- uLPARSurf /(cLOptRefDiat * uFunTmProdDiat)))) +(1.0 - UseSteeleDiat) *(1.0 /(aExtCoef * sDepthW) * LOG((1.0 + uLPARSurf / (hLRefDiat * uFunTmProdDiat)) / (1.0 + aLPARBot /(hLRefDiat * uFunTmProdDiat))))
+ !Light_function
+
+aMuTmLDiat = ufDay *(1.0 - afCovSurfVeg) * aLLimDiat * uMuMaxTmDiat
+ !growth_rate_at_current_light_AND_temp
+
+aNutLimDiat = MIN(aPLimDiat,(MIN(aNLimDiat,aSiLimDiat)))
+ !nutrient_limitation_function_of_Algae
+
+aMuDiat = aNutLimDiat * aMuTmLDiat
+ !growth_rate
+
+wDAssDiat = aMuDiat*sDDiatW
+ !assimilation_Algae
+
+rChDDiat = cChDDiatMax -(cChDDiatMax - cChDDiatMin) * aLLimDiat
+ !chlorophyll-a/DW_ratio_Algae
+
+oChlaDiat = mgPerg * rChDDiat * sDDiatW
+ !chlorophyll-a_conc
+
+aExtChDiat = cExtSpDiat / rChDDiat
+ !specific_extinction_per_unit_chlorophyll-a
+
+ukDRespTmDiat = kDRespDiat * uFunTmRespDiat
+ !temp_corrected_respiration_constant_of_Algae
+
+wDRespDiatW = ukDRespTmDiat * sDDiatW
+ !respiration_of_Algae_in_water
+
+ukLossTmDiat = UseLoss * kLossDiat * uFunTmLoss
+ !daily_grazing_on_Algae
+
+wDLossDiat = ukLossTmDiat * sDDiatW
+ !Algae_grazing_loss
+
+wDMortDiatW = kMortDiatW * sDDiatW
+ !mortality_in_water
+
+uCorVSetDiat = cVSetDiat * aFunTauSetOM * uFunTmSet
+ !corrected_sedimentation_velocity_of_Algae
+
+tDSetDiat = uCorVSetDiat * sDDiatW
+ !sedimentation_flux_of_Algae
+
+tDResusDiat = sDDiatS /(aDPhytS+NearZero) * tDResusPhytTot
+ !resuspension_of_Algae
+
+tDRespDiatS = ukDRespTmDiat * sDDiatS
+ !respiration_of_sediment_Algae
+
+tDMortDiatS = kMortDiatS * sDDiatS
+ !mortality_in_sed
+
+ukDDecDiat = ukDRespTmDiat + ukLossTmDiat + kMortDiatW +(uCorVSetDiat * uFunTmSet) / sDepthW
+ !total_loss_rate_of_algae_in_water(excl_dilution)
+
+wPExcrDiatW = (2.0 * rPDDiatW) /(cPDDiatMax + rPDDiatW) * rPDDiatW * wDRespDiatW
+ !P_excretion_Algae_in_water
+
+wPLossDiat = rPDDiatW * wDLossDiat
+ !Algae_grazing_loss
+
+wPMortDiatW = kMortDiatW * sPDiatW
+ !mortality_Algae_in_water
+
+tPSetDiat = rPDDiatW * tDSetDiat
+ !sedimentation
+
+tPResusDiat = rPDDiatS * tDResusDiat
+ !Resuspension_of_algae
+
+tPExcrDiatS = (2.0 * rPDDiatS) /(cPDDiatMax + rPDDiatS) * rPDDiatS * tDRespDiatS
+ !P_excretion_of_algae_in_sediment
+
+tPMortDiatS = kMortDiatS * sPDiatS
+ !P_mortality_of_algae_in_sediment
+
+wNExcrDiatW = (2.0 * rNDDiatW) /(cNDDiatMax + rNDDiatW) * rNDDiatW * wDRespDiatW
+ !N_excretion_Algae_in_water
+
+wNLossDiat = rNDDiatW * wDLossDiat
+ !Algae_grazing_loss
+
+wNMortDiatW = kMortDiatW * sNDiatW
+ !mortality_Algae_in_water
+
+tNSetDiat = rNDDiatW * tDSetDiat
+ !sedimentation
+
+tNResusDiat = rNDDiatS * tDResusDiat
+ !Resuspension_of_algae
+
+tNExcrDiatS = (2.0 * rNDDiatS) /(cNDDiatMax + rNDDiatS) * rNDDiatS * tDRespDiatS
+ !N_excretion_of_algae_in_sediment
+
+tNMortDiatS = kMortDiatS * sNDiatS
+ !N_mortality_of_algae_in_sediment
+
+wDPrimDiatW = wDAssDiat - wDRespDiatW - wDLossDiat - wDMortDiatW -(tDSetDiat - tDResusDiat) / sDepthW
+ !total_PRIM_flux_to_algae_in_water
+
+wPPrimDiatW = wPUptDiat - wPExcrDiatW - wPLossDiat - wPMortDiatW -(tPSetDiat - tPResusDiat) / sDepthW
+ !Total_PRIM_flux_to_Algae
+
+wNPrimDiatW = wNUptDiat - wNExcrDiatW - wNLossDiat - wNMortDiatW -(tNSetDiat - tNResusDiat) / sDepthW
+ !Total_PRIM_flux_to_Algae
+
+IF (InclPhytS) THEN
+   tDPrimDiatS = tDSetDiat - tDResusDiat - tDMortDiatS - tDRespDiatS 
+ELSE
+   tDPrimDiatS = 0.0 
+ENDIF
+ !total_flux_from_PRIM_module_to_sediment_Algae
+
+IF (InclPhytS) THEN
+   tPPrimDiatS = tPSetDiat - tPResusDiat - tPMortDiatS - tPExcrDiatS 
+ELSE
+   tPPrimDiatS = 0.0 
+ENDIF
+ !total_flux_from_PRIM_module_to_sediment_Algae
+
+IF (InclPhytS) THEN
+   tNPrimDiatS = tNSetDiat - tNResusDiat - tNMortDiatS - tNExcrDiatS 
+ELSE
+   tNPrimDiatS = 0.0 
+ENDIF
+ !total_flux_from_PRIM_module_to_sediment_Algae
+
+oChla = oChlaDiat + oChlaGren + oChlaBlue
+ !total_chlorophyll-a
+
+wDAssPhyt = wDAssDiat + wDAssGren + wDAssBlue
+ !total_algal_growth
+
+wDRespPhytW = wDRespDiatW + wDRespGrenW + wDRespBlueW
+ !total_algal_respiration_in_water
+
+wDMortPhytW = wDMortDiatW + wDMortGrenW + wDMortBlueW
+ !total_algal_mortality_in_water
+
+tDSetPhyt = tDSetDiat + tDSetGren + tDSetBlue
+ !total_phytoplankton_sedimentation
+
+wDLossPhyt = wDLossDiat + wDLossGren + wDLossBlue
+ !total_phytoplankton_grazing_loss
+
+wDPrimPhytW = wDPrimDiatW + wDPrimGrenW + wDPrimBlueW
+ !total_of_PRIM_processes_of_algae_in_water
+
+wPUptPhyt = wPUptDiat + wPUptGren + wPUptBlue
+ !total_P_uptake_phytoplankton
+
+wPExcrPhytW = wPExcrDiatW + wPExcrGrenW + wPExcrBlueW
+ !total_P_excretion_phytoplankton_in_water
+
+wPMortPhytW = wPMortDiatW + wPMortGrenW + wPMortBlueW
+ !total_P_mortality_phytoplankton_in_water
+
+tPSetPhyt = tPSetDiat + tPSetGren + tPSetBlue
+ !total_sedimentation_of_algae
+
+tPResusPhyt = tPResusDiat + tPResusGren + tPResusBlue
+ !-
+
+wPLossPhyt = wPLossDiat + wPLossGren + wPLossBlue
+ !total_grazing_loss
+
+wPPrimPhytW = wPPrimDiatW + wPPrimGrenW + wPPrimBlueW
+ !total_of_PRIM_processes_of_algae_in_water
+
+wNUptPhyt = wNUptDiat + wNUptGren + wNUptBlue
+ !total_N_uptake_phytoplankton
+
+wNUptNH4Phyt = wNUptNH4Diat + wNUptNH4Gren + wNUptNH4Blue
+ !total_ammonium-N_uptake_phytoplankton
+
+wNUptNO3Phyt = wNUptNO3Diat + wNUptNO3Gren + wNUptNO3Blue
+ !total_nitrate-N_uptake_phytoplankton
+
+wNExcrPhytW = wNExcrDiatW + wNExcrGrenW + wNExcrBlueW
+ !total_N_excretion_phytoplankton_in_water
+
+wNMortPhytW = wNMortDiatW + wNMortGrenW + wNMortBlueW
+ !total_N_mortality_phytoplankton_in_water
+
+tNSetPhyt = tNSetDiat + tNSetGren + tNSetBlue
+ !total_sedimentation_of_algae
+
+tNResusPhyt = tNResusDiat + tNResusGren + tNResusBlue
+ !-
+
+wNLossPhyt = wNLossDiat + wNLossGren + wNLossBlue
+ !total_grazing_loss
+
+wNPrimPhytW = wNPrimDiatW + wNPrimGrenW + wNPrimBlueW
+ !total_of_PRIM_processes_of_algae_in_water
+
+tDRespPhytS = tDRespDiatS + tDRespGrenS + tDRespBlueS
+ !respiration_of_algae_on_bottom
+
+tDMortPhytS = tDMortDiatS + tDMortGrenS + tDMortBlueS
+ !mortality_of_algae_on_bottom
+
+tDPrimPhytS = tDPrimDiatS + tDPrimGrenS + tDPrimBlueS
+ !total_flux_of_algae_on_bottom
+
+tPExcrPhytS = tPExcrDiatS + tPExcrGrenS + tPExcrBlueS
+ !total_P_excretion_sediment_phytoplankton
+
+tPMortPhytS = tPMortDiatS + tPMortGrenS + tPMortBlueS
+ !total_phytoplankton_mortality
+
+tPPrimPhytS = tPPrimDiatS + tPPrimGrenS + tPPrimBlueS
+ !total_flux_of_algae_on_bottom
+
+tNExcrPhytS = tNExcrDiatS + tNExcrGrenS + tNExcrBlueS
+ !total_N_excretion_sediment_phytoplankton
+
+tNMortPhytS = tNMortDiatS + tNMortGrenS + tNMortBlueS
+ !total_phytoplankton_mortality
+
+tNPrimPhytS = tNPrimDiatS + tNPrimGrenS + tNPrimBlueS
+ !total_flux_of_algae_on_bottom
+
+wSiUptDiat = cSiDDiat * wDAssDiat
+ !Diatoms_silica_uptake
+
+wSiExcrDiatW = cSiDDiat * wDRespDiatW
+ !Si_excretion
+
+wSiLossDiat = cSiDDiat * wDLossDiat
+ !diatom_grazing_loss
+
+wSiMortDiatW = cSiDDiat * wDMortDiatW
+ !Diatoms_mortality_in_water
+
+tSiSetDiat = cSiDDiat * tDSetDiat
+ !Diatoms_sedimentation
+
+tSiResusDiat = cSiDDiat * tDResusDiat
+ !Diatoms_sedimentation
+
+wSiPrimDiatW = wSiUptDiat - tSiSetDiat / sDepthW - wSiExcrDiatW - wSiMortDiatW - wSiLossDiat + tSiResusDiat / sDepthW
+ !total_Si_flux_to_sed_diatoms_in_PRIM_module
+
+rCyDBlue = cCyDBlueMax -(cCyDBlueMax - cCyDBlueMin) * aLLimBlue
+ !C-phycocyanin/DW-ratio_blue-greens
+
+oCyan = rCyDBlue * sDBlueW * mgPerg
+ !C-phycocyanin
+
+fDDiat = sDDiatW /(sDDiatW + sDGrenW + sDBlueW + NearZero)
+ !DW_fraction_of_algal_group_of_total_algae
+
+wDPrimDetW = wDMortPhytW + wDLossPhyt
+ !Flux_to_water_detritus
+
+IF (InclPhytS) THEN
+   tDPrimDetS = tDMortPhytS 
+ELSE
+   tDPrimDetS = tDSetPhyt 
+ENDIF
+ !Flux_to_sediment_detritus
+
+tDPrimTotT = (wDAssPhyt - wDRespPhytW) * sDepthW - tDRespPhytS
+ !total_DW_flux
+
+wO2ProdPhyt = molO2molC * cCPerDW * wDAssPhyt
+ !O2_production_by_phytoplankton
+
+wO2RespPhytW = molO2molC * cCPerDW * wDRespPhytW * aCorO2BOD
+ !O2_production_by_phytoplankton
+
+wO2UptNO3Phyt = O2PerNO3 * molO2molN * wNUptNO3Phyt
+ !O2_production_due_to_NO3_uptake_by_phytopl
+
+wO2PrimW = wO2ProdPhyt - wO2RespPhytW + wO2UptNO3Phyt
+ !O2_flux_by_water_algae
+
+tO2RespPhytS = molO2molC * cCPerDW * tDRespPhytS * afOxySed
+ !O2_respiration_by_sediment_algae
+
+tO2PrimS = tO2RespPhytS
+ !O2_flux_by_sediment_algae
+
+wPMortPhytPO4W = fDissMortPhyt * wPMortPhytW
+ !soluble_P_flux_from_died_Algae
+
+wPMortPhytDetW = wPMortPhytW - wPMortPhytPO4W
+ !detrital_P_flux_from_died_Algae
+
+wPLossPhytPO4 = fDissLoss * wPLossPhyt
+ !soluble_P_grazing_loss
+
+wPLossPhytDet = wPLossPhyt - wPLossPhytPO4
+ !detrital_P_grazing_loss
+
+wPPrimPO4W = - wPUptPhyt + wPExcrPhytW + wPLossPhytPO4 + wPMortPhytPO4W
+ !SRP_in_water
+
+wPPrimDetW = wPLossPhytDet + wPMortPhytDetW
+ !Detritus_in_water
+
+tPMortPhytPO4S = fDissMortPhyt * tPMortPhytS
+ !soluble_P_flux_from_died_Algae
+
+tPMortPhytDetS = tPMortPhytS - tPMortPhytPO4S
+ !detrital_P_flux_from_died_Algae
+
+IF (InclPhytS) THEN
+   tPPrimDetS = tPMortPhytDetS 
+ELSE
+   tPPrimDetS = tPSetPhyt 
+ENDIF
+ !Sediment_detritus
+
+tPPrimPO4S = tPExcrPhytS + tPMortPhytPO4S
+ !Pore_water_P
+
+tPPrimTotT = 0.0
+ !total_P_flux
+
+wNMortPhytNH4W = fDissMortPhyt * wNMortPhytW
+ !ammonium_flux_from_died_Algae
+
+wNMortPhytDetW = wNMortPhytW - wNMortPhytNH4W
+ !detrital_N_flux_from_died_Algae
+
+wNLossPhytNH4 = fDissLoss * wNLossPhyt
+ !NH4-N_grazing_loss
+
+wNLossPhytDet = wNLossPhyt - wNLossPhytNH4
+ !detrital_N_grazing_loss
+
+wNPrimNH4W = - wNUptNH4Phyt + wNExcrPhytW + wNLossPhytNH4 + wNMortPhytNH4W
+ !ammonium_in_water
+
+wNPrimNO3W = - wNUptNO3Phyt
+ !nitrate_in_water
+
+wNPrimDetW = wNLossPhytDet + wNMortPhytDetW
+ !Detritus_in_water
+
+tNMortPhytNH4S = fDissMortPhyt * tNMortPhytS
+ !ammonium_flux_from_died_Algae
+
+tNMortPhytDetS = tNMortPhytS - tNMortPhytNH4S
+ !detrital_N_flux_from_died_Algae
+
+tNPrimNH4S = tNExcrPhytS + tNMortPhytNH4S
+ !Pore_water_ammonium
+
+tNPrimNO3S = 0.0
+ !Pore_water_nitrate
+
+IF (InclPhytS) THEN
+   tNPrimDetS = tNMortPhytDetS 
+ELSE
+   tNPrimDetS = tNSetPhyt 
+ENDIF
+ !Sediment_detritus
+
+tNPrimTotT = 0.0
+ !total_N_flux
+
+tSiExcrDiatS = cSiDDiat * tDRespDiatS
+ !Si_excretion_of_bottom_Algae
+
+tSiMortDiatS = cSiDDiat * tDMortDiatS
+ !mortality_of_bottom_Algae
+
+wSiPrimSiO2W = wSiExcrDiatW - wSiUptDiat + tSiExcrDiatS / sDepthW
+ !total_Si_flux_to_SiO2_in_PRIM_module
+
+wSiPrimDetW = wSiMortDiatW + wSiLossDiat
+ !total_Si_flux_to_sed_detritus_in_PRIM_module
+
+IF (InclPhytS) THEN
+   tSiPrimDiatS = tSiSetDiat - tSiResusDiat - tSiExcrDiatS - tSiMortDiatS 
+ELSE
+   tSiPrimDiatS = 0.0 
+ENDIF
+ !total_Si_flux_to_sed_diatoms_in_PRIM_module
+
+IF (InclPhytS) THEN
+   tSiPrimDetS = tSiMortDiatS 
+ELSE
+   tSiPrimDetS = tSiSetDiat 
+ENDIF
+ !Sediment_detritus
+
+tSiPrimTotT = 0.0
+ !total_Si_flux
+
+aPACoef = cPACoefMin +(cPACoefMax - cPACoefMin) * hPACoef / (hPACoef + oDOMW)
+ !Poole-Atkins_coefficient
+
+bSecchiMax = sDepthW + cSecchiPlus
+ !max_Secchi_depth
+
+aSecchi = MIN(bSecchiMax,aPACoef / aExtCoefOpen)
+ !Secchi_depth
+
+aTransparency = aSecchi / sDepthW
+ !Secchi_depth
+
+aDepthEuph = cEuph * aSecchi
+ !euphotic_depth
+
+aRelDepthEuph = aDepthEuph / sDepthW
+ !relative_euphotic_depth
+
+aChlaH = oChla * sDepthW
+ !Chla_per_m2
+
+aCovPhytW = cCovSpPhyt *(oDPhytW * sDepthW)
+ !%_cover_with_algae
+
+rExtChPhyt = aExtPhyt /(oChla / mgPerg + NearZero)
+ !average_spec_extinction_of_algae_per_unit_chl-a
+
+uFunTmZoo = EXP(-0.5/(cSigTmZoo*cSigTmZoo) *((uTm-cTmOptZoo)*(uTm-cTmOptZoo) -(cTmRef-cTmOptZoo)*(cTmRef-cTmOptZoo)))
+ !temp_function_of_zooplankton
+
+rPDZoo = sPZoo /(sDZoo+NearZero)
+ !P/D_ratio_herbzooplankton
+
+rNDZoo = sNZoo/(sDZoo+NearZero)
+ !N/C_ratio_herbzooplankton
+
+oDFoodZoo = cPrefDiat * sDDiatW + cPrefGren * sDGrenW + cPrefBlue * sDBlueW + cPrefDet * sDDetW
+ !food_for_zooplankton
+
+aFilt = cFiltMax * uFunTmZoo * hFilt /(hFilt + oDOMW)
+ !filtering_rate
+
+ukDAssTmZoo = fDAssZoo * cFiltMax * uFunTmZoo * hFilt
+ !max_assimilation_rate_of_zooplanktontemp_corrected
+
+aDSatZoo = oDFoodZoo /(hFilt + oDOMW)
+ !food_saturation_function_of_zooplankton
+
+ukDRespTmZoo = kDRespZoo * uFunTmZoo
+ !respiration_constant_of_zooplankton
+
+ukDIncrZoo = ukDAssTmZoo - ukDRespTmZoo - kMortZoo
+ !intrinsic_rate_of_increase_of_zooplankton
+
+wDEnvZoo = MAX(0.0,ukDIncrZoo / cDCarrZoo * sDZoo*sDZoo)
+ !environmental_correction_of_zooplankton
+
+wDAssZoo = aDSatZoo *(ukDAssTmZoo * sDZoo - wDEnvZoo)
+ !assimilation_of_zooplankton
+
+wDConsZoo = wDAssZoo / fDAssZoo
+ !consumption_of_zooplankton
+
+wDConsDetZoo = cPrefDet*sDDetW / oDFoodZoo * wDConsZoo
+ !DW_detritus_consumption_by_zooplankton
+
+wDConsDiatZoo = cPrefDiat*sDDiatW / oDFoodZoo * wDConsZoo
+ !DW_diatoms_consumption_by_zooplankton
+
+wDConsGrenZoo = cPrefGren*sDGrenW / oDFoodZoo * wDConsZoo
+ !DW_greens_consumption_by_zooplankton
+
+wDConsBlueZoo = cPrefBlue*sDBlueW / oDFoodZoo * wDConsZoo
+ !DW_blue-greens_consumption_by_zooplankton
+
+wDConsPhytZoo = wDConsDiatZoo + wDConsGrenZoo + wDConsBlueZoo
+ !phytoplankton_consumption_by_zooplankton
+
+wDEgesZoo = wDConsZoo - wDAssZoo
+ !egestion_of_zooplankton
+
+aCorDRespZoo = MAX(cPDZooRef / rPDZoo,cNDZooRef / rNDZoo)
+ !corr_factor_of_zoopl_respiration_for_P_and_N_content
+
+wDRespZoo = aCorDRespZoo * ukDRespTmZoo * sDZoo
+ !zoopl_respiration
+
+wDMortZoo = kMortZoo * sDZoo +(1.0 - aDSatZoo) * wDEnvZoo
+ !zoopl_mortalityincl_environmental_correction
+
+oPFoodZoo = cPrefDiat*sPDiatW + cPrefGren*sPGrenW + cPrefBlue*sPBlueW + cPrefDet * sPDetW
+ !Zooplankton_food
+
+rPDFoodZoo = oPFoodZoo /(oDFoodZoo+NearZero)
+ !P/D_ratio_of_zooplankton_food
+
+wPConsDiatZoo = rPDDiatW * wDConsDiatZoo
+ !P_diatom_consumption_by_zoopl
+
+wPConsGrenZoo = rPDGrenW * wDConsGrenZoo
+ !P_green_consumption_by_zoopl
+
+wPConsBlueZoo = rPDBlueW * wDConsBlueZoo
+ !P_bluegreen_consumption_by_zoopl
+
+wPConsPhytZoo = wPConsDiatZoo + wPConsGrenZoo + wPConsBlueZoo
+ !total_P_phytoplankton_consumption_by_zoopl
+
+wPConsDetZoo = rPDDetW * wDConsDetZoo
+ !consumption_of_detrital_P
+
+wPConsZoo = wPConsPhytZoo + wPConsDetZoo
+ !total_P_consumption
+
+afPAssZoo = MIN(1.0,cPDZooRef / rPDFoodZoo * fDAssZoo)
+ !P_assimilation_efficiency_of_herbivores
+
+wPAssZoo = afPAssZoo * wPConsZoo
+ !assimilation_by_herbivores
+
+wPEgesZoo = wPConsZoo - wPAssZoo
+ !P_egestion
+
+wPEgesZooPO4 = fDissEgesZoo*wPEgesZoo
+ !soluble_P_egestion
+
+wPEgesZooDet = wPEgesZoo - wPEgesZooPO4
+ !detrital_P_egestion
+
+akPExcrZoo = rPDZoo / cPDZooRef * kDRespZoo * uFunTmZoo
+ !P_excretion_rate_of_herbivores
+
+wPExcrZoo = akPExcrZoo*sPZoo
+ !P_excretion
+
+wPMortZoo = rPDZoo * wDMortZoo
+ !mortality
+
+wPMortZooPO4 = fDissMortZoo * wPMortZoo
+ !soluble_P_mortality
+
+wPMortZooDet = wPMortZoo - wPMortZooPO4
+ !detrital_P_mortality
+
+oNFoodZoo = cPrefDiat*sNDiatW + cPrefGren*sNGrenW + cPrefBlue*sNBlueW + cPrefDet*sNDetW
+ !Zooplankton_food
+
+rNDFoodZoo = oNFoodZoo /(oDFoodZoo+NearZero)
+ !N/C_ratio_of_zooplankton_food
+
+wNConsDiatZoo = rNDDiatW*wDConsDiatZoo
+ !N_diatom_consumption_by_zoopl
+
+wNConsGrenZoo = rNDGrenW*wDConsGrenZoo
+ !N_green_consumption_by_zoopl
+
+wNConsBlueZoo = rNDBlueW*wDConsBlueZoo
+ !N_bluegreen_consumption_by_zoopl
+
+wNConsPhytZoo = wNConsDiatZoo + wNConsGrenZoo + wNConsBlueZoo
+ !total_N_phytoplankton_consumption_by_zoopl
+
+wNConsDetZoo = rNDDetW*wDConsDetZoo
+ !consumption_of_detrital_N
+
+wNConsZoo = wNConsPhytZoo + wNConsDetZoo
+ !total_N_consumption
+
+afNAssZoo = MIN(1.0,cNDZooRef / rNDFoodZoo * fDAssZoo)
+ !N_assimilation_efficiency_of_herbivores
+
+wNAssZoo = afNAssZoo*wNConsZoo
+ !assimilation_by_herbivores
+
+wNEgesZoo = wNConsZoo - wNAssZoo
+ !N_egestion
+
+wNEgesZooNH4 = fDissEgesZoo*wNEgesZoo
+ !soluble_N_egestion
+
+wNEgesZooDet = wNEgesZoo - wNEgesZooNH4
+ !detrital_N_egestion
+
+kNExcrZoo = rNDZoo / cNDZooRef * kDRespZoo * uFunTmZoo
+ !N_excretion_rate_of_herbivores
+
+wNExcrZoo = kNExcrZoo*sNZoo
+ !N_excretion
+
+wNMortZoo = rNDZoo*wDMortZoo
+ !mortality
+
+wNMortZooNH4 = fDissMortZoo*wNMortZoo
+ !soluble_N_mortality
+
+wNMortZooDet = wNMortZoo - wNMortZooNH4
+ !detrital_N_mortality
+
+wSiConsDiatZoo = cSiDDiat * wDConsDiatZoo
+ !consumption_of_diatoms
+
+uFunTmBent = EXP(-0.5/(cSigTmBent*cSigTmBent) *((uTm-cTmOptBent)*(uTm-cTmOptBent) - (cTmRef-cTmOptBent)*(cTmRef-cTmOptBent)))
+ !temp_function_of_zoobenthos
+
+aDFoodBent = sDDetS + aDPhytS
+ !food_for_zoobenthos
+
+rPDBent = sPBent /(sDBent+NearZero)
+ !P/D_ratio_of_zoobenthos
+
+rNDBent = sNBent /(sDBent+NearZero)
+ !N/D_ratio_of_zoobenthos
+
+tDMigrBent = kMigrBent *(cDBentIn - sDBent)
+ !migration_flux
+
+aDSatBent = aDFoodBent /(hDFoodBent + aDFoodBent)
+ !food_limitation_function_of_zoobenthos
+
+ukDIncrBent = (kDAssBent - kDRespBent) * uFunTmBent - kMortBent
+ !intrinsic_net_increase_rate_of_zoobenthos
+
+tDEnvBent = MAX(0.0,ukDIncrBent / cDCarrBent * sDBent*sDBent)
+ !environmental_correction_of_zoobenthos
+
+tDAssBent = aDSatBent *(kDAssBent * uFunTmBent * sDBent - tDEnvBent)
+ !assimilation_of_zoobenthos
+
+aDAssBentSp = tDAssBent / sDBent
+ !specific_assimilation_rate_of_zoobenthos
+
+tDConsBent = tDAssBent / fDAssBent
+ !consumption_of_zoobenthos
+
+tDConsDetBent = sDDetS / aDFoodBent * tDConsBent
+ !detritus_consumption_by_zoobenthos
+
+tDConsDiatBent = sDDiatS / aDFoodBent * tDConsBent
+ !diatoms_consumption_by_zoobenthos
+
+tDConsGrenBent = sDGrenS / aDFoodBent * tDConsBent
+ !greens_consumption_by_zoobenthos
+
+tDConsBlueBent = sDBlueS / aDFoodBent * tDConsBent
+ !blue-greens_consumption_by_zoobenthos
+
+tDConsPhytBent = tDConsDiatBent + tDConsGrenBent + tDConsBlueBent
+ !phutoplankton_consumption_by_zoobenthos
+
+tDEgesBent = tDConsBent - tDAssBent
+ !egestion_of_zoobenthos
+
+tDRespBent = (cPDBentRef / rPDBent) * kDRespBent * uFunTmBent * sDBent
+ !respiration_of_zoobenthos
+
+tDMortBent = kMortBent*sDBent +(1.0 - aDSatBent) * tDEnvBent
+ !zoobenthos_mortality_incl_environmental_correction
+
+aPFoodBent = sPDetS + aPPhytS
+ !food_for_zoobenthos
+
+rPDFoodBent = aPFoodBent /(aDFoodBent+NearZero)
+ !average_P/D_ratio_of_zoobenthos_food
+
+tPConsDetBent = rPDDetS * tDConsDetBent
+ !detrital_P_consumption_by_zoobenthos
+
+tPConsDiatBent = rPDDiatS * tDConsDiatBent
+ !diatom_P_consumption_by_zoobenthos
+
+tPConsGrenBent = rPDGrenS * tDConsGrenBent
+ !greens_P_consumption_by_zoobenthos
+
+tPConsBlueBent = rPDBlueS * tDConsBlueBent
+ !blue-greens_P_consumption_by_zoobenthos
+
+tPConsPhytBent = tPConsDiatBent + tPConsGrenBent + tPConsBlueBent
+ !phytoplankton_P_consumption_by_zoobenthos
+
+tPConsBent = tPConsDetBent + tPConsPhytBent
+ !total_P_consumption_of_zoobenthos
+
+afPAssBent = MIN(1.0,cPDBentRef / rPDFoodBent * fDAssBent)
+ !P_assim_efficiency_of_zoobenthos
+
+tPAssBent = afPAssBent * tPConsBent
+ !P_assimilation_of_zoobenthos
+
+tPEgesBent = tPConsBent - tPAssBent
+ !egestion_of_zoobenthos
+
+tPEgesBentPO4 = fDissEgesBent * tPEgesBent
+ !SRP_egestion_of_zoobenthos
+
+tPEgesBentDet = (1.0 - fDissEgesBent) * tPEgesBent
+ !detrital_P_egestion_of_zoobenthos
+
+tPExcrBent = (rPDBent / cPDBentRef) * kDRespBent * uFunTmBent * sPBent
+ !P_excretion_of_zoobenthos
+
+tPMortBent = rPDBent * tDMortBent
+ !mortality_of_zoobenthos
+
+tPMortBentPO4 = fDissMortBent * tPMortBent
+ !part_of_died_zoobenthos_P_becoming_dissolved_P
+
+tPMortBentDet = (1.0-fDissMortBent)*tPMortBent
+ !part_of_died_zoobenthos_P_becoming_detrital_P
+
+tPMigrBent = kMigrBent *(cPDBentRef*cDBentIn - sPBent)
+ !net_migration_flux
+
+aNFoodBent = sNDetS + aNPhytS
+ !food_for_zoobenthos
+
+rNDFoodBent = aNFoodBent /(aDFoodBent+NearZero)
+ !average_N/D_ratio_of_zoobenthos_food
+
+tNMigrBent = kMigrBent *(cNDBentRef*cDBentIn - sNBent)
+ !Net_migration_flux
+
+tNConsDetBent = rNDDetS * tDConsDetBent
+ !detrital_N_consumption_by_zoobenthos
+
+tNConsDiatBent = rNDDiatS * tDConsDiatBent
+ !diatom_N_consumption_by_zoobenthos
+
+tNConsGrenBent = rNDGrenS * tDConsGrenBent
+ !greens_N_consumption_by_zoobenthos
+
+tNConsBlueBent = rNDBlueS * tDConsBlueBent
+ !blue-greens_N_consumption_by_zoobenthos
+
+tNConsPhytBent = tNConsDiatBent + tNConsGrenBent + tNConsBlueBent
+ !phytoplankton_N_consumption_by_zoobenthos
+
+tNConsBent = tNConsDetBent + tNConsPhytBent
+ !total_N_consumption_of_zoobenthos
+
+afNAssBent = MIN(1.0,cNDBentRef / rNDFoodBent * fDAssBent)
+ !N_assim_efficiency_of_zoobenthos
+
+tNAssBent = afNAssBent * tNConsBent
+ !N_assimilation_of_zoobenthos
+
+tNEgesBent = tNConsBent - tNAssBent
+ !egestion_of_zoobenthos
+
+tNEgesBentNH4 = fDissEgesBent * tNEgesBent
+ !NH4_egestion_of_zoobenthos
+
+tNEgesBentDet = (1.0 - fDissEgesBent) * tNEgesBent
+ !detrital_N_egestion_of_zoobenthos
+
+tNExcrBent = (rNDBent / cNDBentRef) * kDRespBent * uFunTmBent * sNBent
+ !N_excretion_of_zoobenthos
+
+tNMortBent = rNDBent * tDMortBent
+ !mortality_of_zoobenthos
+
+tNMortBentNH4 = fDissMortBent*tNMortBent
+ !part_of_died_zoobenthos_N_becoming_ammonium-N
+
+tNMortBentDet = (1.0-fDissMortBent)*tNMortBent
+ !part_of_died_zoobenthos_N_becoming_detrital_N
+
+tSiConsDiatBent = cSiDDiat * tDConsDiatBent
+ !diatom_consumption_by_zoobenthos
+
+aDFish = sDFiJv + sDFiAd
+ !total_fish_biomass
+
+aPFish = sPFiJv + sPFiAd
+ !total_fish_biomass
+
+aNFish = sNFiJv + sNFiAd
+ !total_fish_biomass
+
+rPDFiJv = sPFiJv /(sDFiJv+NearZero)
+ !P/D_ratio_of_young_fish
+
+rPDFiAd = sPFiAd /(sDFiAd+NearZero)
+ !P/D_ratio_of_adult_fish
+
+rNDFiJv = sNFiJv /(sDFiJv+NearZero)
+ !N/D_ratio_of_young_fish
+
+rNDFiAd = sNFiAd /(sDFiAd+NearZero)
+ !N/D_ratio_of_adult_fish
+
+IF (.NOT. InclSeason) THEN
+   tDReprFish = ((1/DaysPerYear)*fReprFish) * sDFiAd 
+ELSEIF (Day .GE. cDayReprFish .AND. Day .LT. cDayReprFish + 1.0) THEN
+   tDReprFish = fReprFish * sDFiAd 
+ELSE
+   tDReprFish = 0.0 
+ENDIF
+ !Reproduction_flux
+
+IF (.NOT. InclSeason) THEN
+   tDAgeFish = ((1/DaysPerYear)*fAgeFish) * sDFiJv 
+ELSEIF (Day .GE. 364.0) THEN
+   tDAgeFish = fAgeFish * sDFiJv 
+ELSE
+   tDAgeFish = 0.0 
+ENDIF
+ !Ageing
+
+aFunVegFish = MAX(0.0,1.0 - cRelVegFish * aCovVeg)
+ !vegetation_dependence_of_fish_feeding
+
+aDSatFiJv = (sDZoo * sDepthW) *(sDZoo * sDepthW) /(hDZooFiJv * hDZooFiJv + (sDZoo * sDepthW) *(sDZoo * sDepthW))
+ !food_limitation_function_of_young_fish
+
+ukDIncrFiJv = (kDAssFiJv - kDRespFiJv) * uFunTmFish - kMortFiJv
+ !intrinsic_net_increase_rate_of_fish
+
+tDEnvFiJv = MAX(0.0,ukDIncrFiJv /(cDCarrFish - sDFiAd) * sDFiJv*sDFiJv)
+ !environmental_correction_of_fish
+
+tDAssFiJv = aDSatFiJv *(kDAssFiJv * uFunTmFish * sDFiJv - tDEnvFiJv)
+ !assimilation_of_fish
+
+tDConsFiJv = tDAssFiJv / fDAssFiJv
+ !zooplankton_consumption_of_fish
+
+tDEgesFiJv = tDConsFiJv - tDAssFiJv
+ !egestion_of_fish
+
+tDRespFiJv = (cPDFishRef / rPDFiJv) * kDRespFiJv * uFunTmFish * sDFiJv
+ !respiration_of_fish
+
+tDMortFiJv = kMortFiJv * sDFiJv +(1.0 - aDSatFiJv) * tDEnvFiJv
+ !fish_mortality_incl_environmental_correction
+
+tDMigrFiJv = kMigrFish *(cDFiJvIn - sDFiJv)
+ !migration_flux
+
+aDSatFiAd = (aFunVegFish * sDBent) *(aFunVegFish * sDBent) /(hDBentFiAd * hDBentFiAd + (aFunVegFish * sDBent) *(aFunVegFish * sDBent))
+ !food_limitation_function_of_adult_fish
+
+ukDIncrFiAd = (kDAssFiAd - kDRespFiAd) * uFunTmFish - kMortFiAd
+ !intrinsic_net_increase_rate_of_fish
+
+tDEnvFiAd = MAX(0.0,ukDIncrFiAd /(cDCarrFish - sDFiJv) * sDFiAd*sDFiAd)
+ !environmental_correction_of_fish
+
+tDAssFiAd = aDSatFiAd *(kDAssFiAd * uFunTmFish * sDFiAd - tDEnvFiAd)
+ !assimilation_of_fish
+
+tDConsFiAd = tDAssFiAd / fDAssFiAd
+ !zoobenthos_consumption_of_fish
+
+tDEgesFiAd = tDConsFiAd - tDAssFiAd
+ !egestion_of_fish
+
+tDRespFiAd = (cPDFishRef / rPDFiAd) * kDRespFiAd * uFunTmFish * sDFiAd
+ !respiration_of_fish
+
+tDMortFiAd = kMortFiAd * sDFiAd +(1.0 - aDSatFiAd) * tDEnvFiAd
+ !fish_mortality_incl_environmental_correction
+
+IF (COS(2.0 * Pi * sTime / DaysPerYear) .GT. 0.1) THEN
+   ukHarvFish = kHarvFishWin 
+ELSE
+   ukHarvFish = kHarvFishSum 
+ENDIF
+ !fish_harvesting_constant
+
+tDHarvFish = ukHarvFish * sDFiAd
+ !harvesting_of_fish
+
+tDMigrFiAd = kMigrFish *(cDFiAdIn - sDFiAd)
+ !migration_flux
+
+tDMortFish = tDMortFiJv + tDMortFiAd
+ !bent_fish_mortality
+
+tDMortFishBot = fDBone * tDMortFish
+ !part_of_died_fish_DW_fixed_in_bones_and_scales
+
+tDMortFishDet = tDMortFish - tDMortFishBot
+ !part_of_died_fish_DW_becoming_detritus
+
+tPReprFish = rPDFiAd * tDReprFish
+ !Reproduction_flux
+
+tPAgeFish = rPDFiJv * tDAgeFish
+ !Ageing
+
+tPMigrFiJv = kMigrFish *(cPDFishRef * cDFiJvIn - sPFiJv)
+ !net_migration_flux
+
+tPConsFiJv = rPDZoo * tDConsFiJv
+ !(zooplankton)_P_consumption_by_FiJv
+
+afPAssFiJv = MIN(1.0,cPDFishRef / rPDZoo * fDAssFiJv)
+ !P_assim_efficiency_of_FiJv
+
+tPAssFiJv = afPAssFiJv * tPConsFiJv
+ !P_assimilation_of_FiJv
+
+tPEgesFiJv = tPConsFiJv - tPAssFiJv
+ !egestion_of_FiJv
+
+tPExcrFiJv = (rPDFiJv / cPDFishRef) * kDRespFiJv * uFunTmFish * sPFiJv
+ !P_excretion_of_FiJv
+
+tPMortFiJv = rPDFiJv * tDMortFiJv
+ !mortality_of_FiJv
+
+tPMigrFiAd = kMigrFish *(cPDFishRef * cDFiAdIn - sPFiAd)
+ !net_migration_flux
+
+tPConsFiAd = rPDBent * tDConsFiAd
+ !(zoobenthos)_P_consumption_by_FiAd
+
+afPAssFiAd = MIN(1.0,cPDFishRef / rPDBent * fDAssFiAd)
+ !P_assim_efficiency_of_FiAd
+
+tPAssFiAd = afPAssFiAd * tPConsFiAd
+ !P_assimilation_of_FiAd
+
+tPEgesFiAd = tPConsFiAd - tPAssFiAd
+ !egestion_of_FiAd
+
+tPExcrFiAd = (rPDFiAd / cPDFishRef) * kDRespFiAd * uFunTmFish * sPFiAd
+ !P_excretion_of_FiAd
+
+tPMortFiAd = rPDFiAd * tDMortFiAd
+ !mortality_of_FiAd
+
+tPHarvFish = rPDFiAd * tDHarvFish
+ !harvesting_of_FiAd
+
+tPMortFish = tPMortFiJv + tPMortFiAd
+ !-
+
+tPMortFishBot = fPBone * tPMortFish
+ !part_of_died_fish_P_fixed_in_bones_AND_scales
+
+tPMortFishPO4 = fDissMortFish *(tPMortFish - tPMortFishBot)
+ !part_of_died_fish_P_becoming_dissolved_P
+
+tPMortFishDet = tPMortFish - tPMortFishBot - tPMortFishPO4
+ !part_of_died_fish_PW_becoming_detritus
+
+tPEgesFish = tPEgesFiJv + tPEgesFiAd
+ !total_fish_egestion
+
+tPEgesFishPO4 = fDissEgesFish * tPEgesFish
+ !SRP_egestion_of_fish
+
+tPEgesFishDet = tPEgesFish - tPEgesFishPO4
+ !detrital_P_egestion_of_fish
+
+tNReprFish = rNDFiAd * tDReprFish
+ !Reproduction_flux
+
+tNAgeFish = rNDFiJv * tDAgeFish
+ !Ageing
+
+tNMigrFiJv = kMigrFish *(cNDFishRef * cDFiJvIn - sNFiJv)
+ !net_migration_flux
+
+tNConsFiJv = rNDZoo * tDConsFiJv
+ !(zooplankton)_N_consumption_by_FiJv
+
+afNAssFiJv = MIN(1.0,cNDFishRef / rNDZoo * fDAssFiJv)
+ !N_assim_efficiency_of_FiJv
+
+tNAssFiJv = afNAssFiJv * tNConsFiJv
+ !N_assimilation_of_FiJv
+
+tNEgesFiJv = tNConsFiJv - tNAssFiJv
+ !egestion_of_FiJv
+
+tNExcrFiJv = (rNDFiJv / cNDFishRef) * kDRespFiJv * uFunTmFish * sNFiJv
+ !N_excretion_of_FiJv
+
+tNMortFiJv = rNDFiJv * tDMortFiJv
+ !mortality_of_FiJv
+
+tNMigrFiAd = kMigrFish *(cNDFishRef * cDFiAdIn - sNFiAd)
+ !net_migration_flux
+
+tNConsFiAd = rNDBent * tDConsFiAd
+ !(zoobenthos)_N_consumption_by_FiAd
+
+afNAssFiAd = MIN(1.0,cNDFishRef / rNDBent * fDAssFiAd)
+ !N_assim_efficiency_of_FiAd
+
+tNAssFiAd = afNAssFiAd * tNConsFiAd
+ !N_assimilation_of_FiAd
+
+tNEgesFiAd = tNConsFiAd - tNAssFiAd
+ !egestion_of_FiAd
+
+tNExcrFiAd = (rNDFiAd / cNDFishRef) * kDRespFiAd * uFunTmFish * sNFiAd
+ !N_excretion_of_FiAd
+
+tNMortFiAd = rNDFiAd * tDMortFiAd
+ !mortality_of_FiAd
+
+tNHarvFish = rNDFiAd * tDHarvFish
+ !harvesting_of_FiAd
+
+tNMortFish = tNMortFiJv + tNMortFiAd
+ !-
+
+tNMortFishBot = fDBone * tNMortFish
+ !part_of_died_fish_N_fixed_in_bones_AND_scales
+
+tNMortFishNH4 = fDissMortFish *(tNMortFish - tNMortFishBot)
+ !part_of_died_fish_N_becoming_dissolved_N
+
+tNMortFishDet = tNMortFish - tNMortFishBot - tNMortFishNH4
+ !part_of_died_fish_NW_becoming_detritus
+
+tNEgesFish = tNEgesFiJv + tNEgesFiAd
+ !total_fish_egestion
+
+tNEgesFishNH4 = fDissEgesFish * tNEgesFish
+ !NH4_egestion_of_fish
+
+tNEgesFishDet = tNEgesFish - tNEgesFishNH4
+ !detrital_xN_egestion_of_fish
+
+uFunTmPisc = EXP(-0.5 /(cSigTmPisc*cSigTmPisc) *((uTm - cTmOptPisc)*(uTm - cTmOptPisc) - (cTmRef - cTmOptPisc)*(cTmRef - cTmOptPisc)))
+ !temp_function_of_Pisc
+
+tDMigrPisc = kMigrPisc *(cDPiscIn - sDPisc)
+ !migration_flux
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   aDCarrPisc = MAX(cDCarrPiscMin,MIN(cDCarrPiscMax,cDCarrPiscBare)) 
+ELSEIF (sDShootPhra .LT. cDPhraMinPisc) THEN
+   aDCarrPisc = cDCarrPiscMin 
+ELSEIF (aCovVeg .LT. cCovVegMin) THEN
+   aDCarrPisc = MAX(cDCarrPiscMin,MIN(cDCarrPiscMax,fMarsh *(1.0/PerCent) * cRelPhraPisc)) 
+ELSE
+   aDCarrPisc = MAX(cDCarrPiscMin,MIN(cDCarrPiscMax,fMarsh *(1.0/PerCent) *(cRelPhraPisc + cRelVegPisc))) 
+ENDIF
+ !Carrying_capacity_of_Pisc_for_lake_without_OR_with_marsh_zone_resp
+
+aFunVegPisc = aDSubVeg /(hDVegPisc + aDSubVeg + NearZero)
+ !vegetation_dependence_of_Pisc_growth_rate
+
+aDSatPisc = aDFish*aDFish /(hDFishPisc*hDFishPisc + aDFish*aDFish)
+ !food_limitation_function_of_Pisc
+
+akDIncrPisc = (kDAssPisc * aFunVegPisc - kDRespPisc) * uFunTmPisc - kMortPisc
+ !intrinsic_net_increase_rate_of_Pisc
+
+tDEnvPisc = MAX(0.0,akDIncrPisc / aDCarrPisc * sDPisc*sDPisc)
+ !environmental_correction_of_Pisc
+
+tDAssPisc = aDSatPisc *(kDAssPisc * aFunVegPisc * uFunTmPisc * sDPisc - tDEnvPisc)
+ !assimilation_of_Pisc
+
+tDConsPisc = tDAssPisc / fDAssPisc
+ !consumption_of_Pisc
+
+tDEgesPisc = tDConsPisc - tDAssPisc
+ !egestion_of_Pisc
+
+tDConsFiJvPisc = sDFiJv / aDFish * tDConsPisc
+ !young_fish_consumption_by_Pisc
+
+tDConsFiAdPisc = tDConsPisc - tDConsFiJvPisc
+ !adult_fish_consumption_by_Pisc
+
+tDRespPisc = kDRespPisc * uFunTmPisc * sDPisc
+ !respiration_of_Pisc
+
+tDMortPisc = kMortPisc * sDPisc +(1.0 - aDSatPisc) * tDEnvPisc
+ !mortality_of_Pisc(incl_environmental_correction)
+
+tDMortPiscBot = fDBone * tDMortPisc
+ !part_of_died_fish_DW_fixed_in_bones_AND_scales
+
+tDMortPiscDet = tDMortPisc - tDMortPiscBot
+ !part_of_died_Pisc_DW_becoming_detritus
+
+IF (COS(2.0*Pi * sTime / DaysPerYear) .GT. 0.1) THEN
+   ukHarvPisc = kHarvPiscWin 
+ELSE
+   ukHarvPisc = kHarvPiscSum 
+ENDIF
+ !fish_harvesting_constant
+
+tDHarvPisc = ukHarvPisc * sDPisc
+ !harvesting_of_Pisc
+
+aPPisc = cPDPisc * sDPisc
+ !_Piscivorous_fish
+
+tPConsFiJvPisc = rPDFiJv * tDConsFiJvPisc
+ !young_fish_consumption_by_Pisc
+
+tPConsFiAdPisc = rPDFiAd * tDConsFiAdPisc
+ !adult_fish_consumption_by_Pisc
+
+tPConsPisc = tPConsFiJvPisc + tPConsFiAdPisc
+ !total_P_consumption_by_Pisc
+
+rPDFoodPisc = tPConsPisc / tDConsPisc
+ !average_P/D_ratio_of_Pisc_food
+
+afPAssPisc = MIN(1.0,cPDPisc / rPDFoodPisc * fDAssPisc)
+ !P_assim_efficiency_of_Pisc
+
+tPAssPisc = afPAssPisc * tPConsPisc
+ !P_assimilation_of_Pisc
+
+tPEgesPisc = tPConsPisc - tPAssPisc
+ !egestion_of_Pisc
+
+tPEgesPiscPO4 = fDissEgesPisc * tPEgesPisc
+ !SRP_egestion_of_Pisc
+
+tPEgesPiscDet = tPEgesPisc - tPEgesPiscPO4
+ !detrital_P_egestion_of_Pisc
+
+tPExcrPisc = cPDPisc * tDRespPisc
+ !respiration_of_Pisc
+
+tPMortPisc = cPDPisc * tDMortPisc
+ !mortality_of_Pisc
+
+tPMortPiscBot = fPBone * tPMortPisc
+ !part_of_died_Pisc_P_fixed_in_bones_AND_scales
+
+tPMortPiscPO4 = fDissMortPisc *(tPMortPisc - tPMortPiscBot)
+ !part_of_died_fish_P_becoming_dissolved_P
+
+tPMortPiscDet = tPMortPisc - tPMortPiscBot - tPMortPiscPO4
+ !part_of_died_Pisc_P_becoming_detrital_P
+
+tPMigrPisc = kMigrPisc *(cPDPisc * cDPiscIn - aPPisc)
+ !net_migration_flux
+
+tPHarvPisc = cPDPisc * tDHarvPisc
+ !harvesting_of_Pisc
+
+aNPisc = cNDPisc * sDPisc
+ !Piscivorous_fish
+
+tNConsFiJvPisc = rNDFiJv * tDConsFiJvPisc
+ !young_fish_consumption_by_Pisc
+
+tNConsFiAdPisc = rNDFiAd * tDConsFiAdPisc
+ !adult_fish_consumption_by_Pisc
+
+tNConsPisc = tNConsFiJvPisc + tNConsFiAdPisc
+ !total_N_consumption_by_Pisc
+
+rNDFoodPisc = tNConsPisc / tDConsPisc
+ !average_N/D_ratio_of_Pisc_food
+
+afNAssPisc = MIN(1.0,cNDPisc / rNDFoodPisc * fDAssPisc)
+ !N_assim_efficiency_of_Pisc
+
+tNAssPisc = afNAssPisc * tNConsPisc
+ !N_assimilation_of_Pisc
+
+tNEgesPisc = tNConsPisc - tNAssPisc
+ !egestion_of_Pisc
+
+tNEgesPiscNH4 = fDissEgesPisc * tNEgesPisc
+ !SRN_egestion_of_Pisc
+
+tNEgesPiscDet = tNEgesPisc - tNEgesPiscNH4
+ !detrital_N_egestion_of_Pisc
+
+tNExcrPisc = cNDPisc * tDRespPisc
+ !respiration_of_Pisc
+
+tNMortPisc = cNDPisc * tDMortPisc
+ !mortality_of_Pisc
+
+tNMortPiscBot = fDBone * tNMortPisc
+ !part_of_died_Pisc_N_fixed_in_bones_AND_scales
+
+tNMortPiscNH4 = fDissMortPisc *(tNMortPisc - tNMortPiscBot)
+ !part_of_died_fish_N_becoming_dissolved_N
+
+tNMortPiscDet = tNMortPisc - tNMortPiscBot - tNMortPiscNH4
+ !part_of_died_Pisc_N_becoming_detrital_N
+
+tNMigrPisc = kMigrPisc *(cNDPisc * cDPiscIn - aNPisc)
+ !net_migration_flux
+
+tNHarvPisc = cNDPisc * tDHarvPisc
+ !harvesting_of_Pisc
+
+wDWebZoo = wDAssZoo - wDRespZoo - wDMortZoo - tDConsFiJv / sDepthW
+ !total_foodweb_flux_of_DW_in_Herbivorous_zooplankton
+
+wPWebZoo = wPAssZoo - wPExcrZoo - wPMortZoo - tPConsFiJv / sDepthW
+ !total_foodweb_flux_of_P_in_Herbivorous_zooplankton
+
+wNWebZoo = wNAssZoo - wNExcrZoo - wNMortZoo - tNConsFiJv / sDepthW
+ !total_foodweb_flux_of_N_in_Herbivorous_zooplankton
+
+tDWebBent = tDMigrBent + tDAssBent - tDConsFiAd - tDRespBent - tDMortBent
+ !total_foodweb_flux_of_DW_in_Zoobenthos
+
+tPWebBent = tPMigrBent + tPAssBent - tPConsFiAd - tPExcrBent - tPMortBent
+ !total_foodweb_flux_of_P_in_Zoobenthos
+
+tNWebBent = tNMigrBent + tNAssBent - tNConsFiAd - tNExcrBent - tNMortBent
+ !total_foodweb_flux_of_N_in_Zoobenthos
+
+tDWebFiJv = tDMigrFiJv + tDReprFish - tDAgeFish + tDAssFiJv - tDRespFiJv - tDMortFiJv - tDConsFiJvPisc
+ !total_foodweb_flux_of_DW_in_Young_fish
+
+tPWebFiJv = tPMigrFiJv + tPReprFish - tPAgeFish + tPAssFiJv - tPExcrFiJv - tPMortFiJv - tPConsFiJvPisc
+ !total_foodweb_flux_of_P_in_Young_fish
+
+tNWebFiJv = tNMigrFiJv + tNReprFish - tNAgeFish + tNAssFiJv - tNExcrFiJv - tNMortFiJv - tNConsFiJvPisc
+ !total_foodweb_flux_of_N_in_Young_fish
+
+tDWebFiAd = tDMigrFiAd + tDAssFiAd - tDRespFiAd - tDMortFiAd - tDReprFish + tDAgeFish - tDConsFiAdPisc - tDHarvFish
+ !total_foodweb_flux_of_DW_in_Adult_fish
+
+tPWebFiAd = tPMigrFiAd + tPAssFiAd - tPExcrFiAd - tPMortFiAd - tPReprFish + tPAgeFish - tPConsFiAdPisc - tPHarvFish
+ !total_foodweb_flux_of_P_in_Adult_fish
+
+tNWebFiAd = tNMigrFiAd + tNAssFiAd - tNExcrFiAd - tNMortFiAd - tNReprFish + tNAgeFish - tNConsFiAdPisc - tNHarvFish
+ !total_foodweb_flux_of_N_in_Adult_fish
+
+tDWebPisc = tDMigrPisc + tDAssPisc - tDRespPisc - tDMortPisc - tDHarvPisc
+ !total_foodweb_flux_of_DW_in_predatory_fish
+
+IF (.NOT. InclWeb) THEN
+   wDWebDetW = 0.0 
+ELSE
+   wDWebDetW = - wDConsDetZoo + wDEgesZoo + wDMortZoo +(tDEgesFiJv + tDEgesFiAd + tDMortFishDet + tDEgesPisc + tDMortPiscDet) / sDepthW 
+ENDIF
+ !total_foodweb_flux_of_DW_in_Detritus_in_lake_water
+
+IF (.NOT. InclWeb) THEN
+   wDWebDiatW = 0.0 
+ELSE
+   wDWebDiatW = - wDConsDiatZoo 
+ENDIF
+ !total_foodweb_flux_of_DW_in_Diatoms_in_lake_water
+
+IF (.NOT. InclWeb) THEN
+   wDWebGrenW = 0.0 
+ELSE
+   wDWebGrenW = - wDConsGrenZoo 
+ENDIF
+ !total_foodweb_flux_of_DW_in_Greens_in_lake_water
+
+IF (.NOT. InclWeb) THEN
+   wDWebBlueW = 0.0 
+ELSE
+   wDWebBlueW = - wDConsBlueZoo 
+ENDIF
+ !total_foodweb_flux_of_DW_in_Blue-greens_in_lake_water
+
+IF (.NOT. InclWeb) THEN
+   tDWebDetS = 0.0 
+ELSE
+   tDWebDetS = - tDConsDetBent + tDEgesBent + tDMortBent 
+ENDIF
+ !total_foodweb_flux_of_DW_in_Sediment_detritus_in_lake
+
+IF (.NOT. InclWeb) THEN
+   tDWebDiatS = 0.0 
+ELSE
+   tDWebDiatS = - tDConsDiatBent 
+ENDIF
+ !total_foodweb_flux_of_DW_in_sediment_diatoms_in_lake
+
+IF (.NOT. InclWeb) THEN
+   tDWebGrenS = 0.0 
+ELSE
+   tDWebGrenS = - tDConsGrenBent 
+ENDIF
+ !total_foodweb_flux_of_DW_in_sediment_greens_in_lake
+
+IF (.NOT. InclWeb) THEN
+   tDWebBlueS = 0.0 
+ELSE
+   tDWebBlueS = - tDConsBlueBent 
+ENDIF
+ !total_foodweb_flux_of_DW_in_sediment_blue-greens_in_lake
+
+tDWebPhytS = tDWebDiatS + tDWebGrenS + tDWebBlueS
+ !total_food_web_flux_of_sediment_algae
+
+IF (.NOT. InclWeb) THEN
+   tDWebTotT = 0.0 
+ELSE
+   tDWebTotT = - wDRespZoo * sDepthW + tDMigrFiJv + tDMigrFiAd + tDMigrPisc + tDMigrBent - tDRespFiJv - tDRespFiAd - tDRespPisc - tDRespBent - tDMortFishBot - tDMortPiscBot - tDHarvFish - tDHarvPisc 
+ENDIF
+ !total_DW_in_system
+
+IF (.NOT. InclWeb) THEN
+   wPWebPO4W = 0.0 
+ELSE
+   wPWebPO4W = wPExcrZoo + wPEgesZooPO4 + wPMortZooPO4 +(tPExcrFiJv + tPExcrFiAd + tPEgesFishPO4 + tPMortFishPO4 + tPExcrPisc + tPEgesPiscPO4 + tPMortPiscPO4) / sDepthW 
+ENDIF
+ !total_foodweb_flux_of_P_in_SRP_in_water_in_lake_water
+
+IF (.NOT. InclWeb) THEN
+   wPWebDetW = 0.0 
+ELSE
+   wPWebDetW = - wPConsDetZoo + wPEgesZooDet + wPMortZooDet +(tPEgesFishDet + tPMortFishDet + tPEgesPiscDet + tPMortPiscDet) / sDepthW 
+ENDIF
+ !total_foodweb_flux_of_P_in_Detritus_in_lake_water
+
+IF (.NOT. InclWeb) THEN
+   wPWebDiatW = 0.0 
+ELSE
+   wPWebDiatW = - wPConsDiatZoo 
+ENDIF
+ !total_foodweb_flux_of_P_in_Diatoms_in_lake_water
+
+IF (.NOT. InclWeb) THEN
+   wPWebGrenW = 0.0 
+ELSE
+   wPWebGrenW = - wPConsGrenZoo 
+ENDIF
+ !total_foodweb_flux_of_P_in_Greens_in_lake_water
+
+IF (.NOT. InclWeb) THEN
+   wPWebBlueW = 0.0 
+ELSE
+   wPWebBlueW = - wPConsBlueZoo 
+ENDIF
+ !total_foodweb_flux_of_P_in_Blue-greens_in_lake_water
+
+IF (.NOT. InclWeb) THEN
+   tPWebPO4S = 0.0 
+ELSE
+   tPWebPO4S = tPExcrBent + tPEgesBentPO4 + tPMortBentPO4 
+ENDIF
+ !total_foodweb_flux_of_P_in_Pore_water_P_in_lake_sediment
+
+IF (.NOT. InclWeb) THEN
+   tPWebDetS = 0.0 
+ELSE
+   tPWebDetS = - tPConsDetBent + tPEgesBentDet + tPMortBentDet 
+ENDIF
+ !total_foodweb_flux_of_P_in_Sediment_P_in_lake
+
+IF (.NOT. InclWeb) THEN
+   tPWebDiatS = 0.0 
+ELSE
+   tPWebDiatS = - tPConsDiatBent 
+ENDIF
+ !total_foodweb_flux_of_P_in_sediment_diatoms_in_lake
+
+IF (.NOT. InclWeb) THEN
+   tPWebGrenS = 0.0 
+ELSE
+   tPWebGrenS = - tPConsGrenBent 
+ENDIF
+ !total_foodweb_flux_of_P_in_sediment_greens_in_lake
+
+IF (.NOT. InclWeb) THEN
+   tPWebBlueS = 0.0 
+ELSE
+   tPWebBlueS = - tPConsBlueBent 
+ENDIF
+ !total_foodweb_flux_of_P_in_sediment_blue-greens_in_lake
+
+tPWebPhytS = tPWebDiatS + tPWebGrenS + tPWebBlueS
+ !total_food_web_flux_of_sediment_algae
+
+IF (.NOT. InclWeb) THEN
+   tPWebTotT = 0.0 
+ELSE
+   tPWebTotT = tPMigrFiJv + tPMigrFiAd + tPMigrPisc + tPMigrBent - tPMortFishBot - tPMortPiscBot - tPHarvFish - tPHarvPisc 
+ENDIF
+ !total_P_in_system
+
+IF (.NOT. InclWeb) THEN
+   wNWebNH4W = 0.0 
+ELSE
+   wNWebNH4W = wNExcrZoo + wNEgesZooNH4 + wNMortZooNH4 +(tNExcrFiJv + tNExcrFiAd + tNEgesFishNH4 + tNMortFishNH4 + tNExcrPisc + tNEgesPiscNH4 + tNMortPiscNH4) / sDepthW 
+ENDIF
+ !total_foodweb_flux_of_N_in_ammonium_in_water_in_lake_water
+
+IF (.NOT. InclWeb) THEN
+   wNWebNO3W = 0.0 
+ELSE
+   wNWebNO3W = 0.0 
+ENDIF
+ !total_foodweb_flux_of_N_in_nitrate_in_water_in_lake_water
+
+IF (.NOT. InclWeb) THEN
+   wNWebDetW = 0.0 
+ELSE
+   wNWebDetW = - wNConsDetZoo + wNEgesZooDet + wNMortZooDet +(tNEgesFishDet + tNMortFishDet + tNEgesPiscDet + tNMortPiscDet) / sDepthW 
+ENDIF
+ !total_foodweb_flux_of_N_in_Detritus_in_lake_water
+
+IF (.NOT. InclWeb) THEN
+   wNWebDiatW = 0.0 
+ELSE
+   wNWebDiatW = - wNConsDiatZoo 
+ENDIF
+ !total_foodweb_flux_of_N_in_Diatoms_in_lake_water
+
+IF (.NOT. InclWeb) THEN
+   wNWebGrenW = 0.0 
+ELSE
+   wNWebGrenW = - wNConsGrenZoo 
+ENDIF
+ !total_foodweb_flux_of_N_in_Greens_in_lake_water
+
+IF (.NOT. InclWeb) THEN
+   wNWebBlueW = 0.0 
+ELSE
+   wNWebBlueW = - wNConsBlueZoo 
+ENDIF
+ !total_foodweb_flux_of_N_in_Blue-greens_in_lake_water
+
+IF (.NOT. InclWeb) THEN
+   tNWebNH4S = 0.0 
+ELSE
+   tNWebNH4S = tNExcrBent + tNEgesBentNH4 + tNMortBentNH4 
+ENDIF
+ !total_foodweb_flux_of_N_in_Pore_water_ammonium_in_lake_sediment
+
+IF (.NOT. InclWeb) THEN
+   tNWebNO3S = 0.0 
+ELSE
+   tNWebNO3S = 0.0 
+ENDIF
+ !total_foodweb_flux_of_N_in_Pore_water_nitrate_in_lake_sediment
+
+IF (.NOT. InclWeb) THEN
+   tNWebDetS = 0.0 
+ELSE
+   tNWebDetS = - tNConsDetBent + tNEgesBentDet + tNMortBentDet 
+ENDIF
+ !total_foodweb_flux_of_N_in_Sediment_N_in_lake_sediment
+
+IF (.NOT. InclWeb) THEN
+   tNWebDiatS = 0.0 
+ELSE
+   tNWebDiatS = - tNConsDiatBent 
+ENDIF
+ !total_foodweb_flux_of_N_in_sediment_diatoms_in_lake
+
+IF (.NOT. InclWeb) THEN
+   tNWebGrenS = 0.0 
+ELSE
+   tNWebGrenS = - tNConsGrenBent 
+ENDIF
+ !total_foodweb_flux_of_N_in_sediment_greens_in_lake
+
+IF (.NOT. InclWeb) THEN
+   tNWebBlueS = 0.0 
+ELSE
+   tNWebBlueS = - tNConsBlueBent 
+ENDIF
+ !total_foodweb_flux_of_N_in_sediment_blue-greens_in_lake
+
+tNWebPhytS = tNWebDiatS + tNWebGrenS + tNWebBlueS
+ !total_food_web_flux_of_sediment_algae
+
+IF (.NOT. InclWeb) THEN
+   tNWebTotT = 0.0 
+ELSE
+   tNWebTotT = tNMigrFiJv + tNMigrFiAd + tNMigrPisc + tNMigrBent - tNMortFishBot - tNMortPiscBot - tNHarvFish - tNHarvPisc 
+ENDIF
+ !total_N_in_system
+
+wSiWebSiO2W = 0.0
+ !total_foodweb_flux_of_silica_in_SiO2_lake_water
+
+IF (.NOT. InclWeb) THEN
+   wSiWebDetW = 0.0 
+ELSE
+   wSiWebDetW = wSiConsDiatZoo 
+ENDIF
+ !total_foodweb_flux_of_silica_in_lake_water_detritus
+
+IF (.NOT. InclWeb) THEN
+   tSiWebDetS = 0.0 
+ELSE
+   tSiWebDetS = tSiConsDiatBent 
+ENDIF
+ !total_foodweb_flux_of_silica_in_sediment_detritus
+
+IF (.NOT. InclWeb) THEN
+   tSiWebTotT = 0.0 
+ELSE
+   tSiWebTotT = 0.0 
+ENDIF
+ !total_foodweb_flux_of_silica
+
+aPrefAve = (cPrefDiat * sDDiatW + cPrefGren * sDGrenW + cPrefBlue * sDBlueW + cPrefDet * sDDetW) / oDOMW
+ !average_selection_factor
+
+wDConsZoo2 = aFilt * aPrefAve * oDOMW * sDZoo
+ !total_zoopl_consumption(check)
+
+aDConsZooSp = wDConsZoo / sDZoo
+ !specific_consumption_rate_of_zoopl(daily_ration)
+
+aDAssZooSp = wDAssZoo / sDZoo
+ !specific_C_assimilation_of_zooplankton
+
+aDGrazSp = wDConsZoo / oDOMW
+ !specific_DW_grazing(daily_grazing)
+
+aPConsZooSp = wPConsZoo / sPZoo
+ !specific_P_consumption_OR_daily_ration
+
+aPGrazSp = wPConsZoo / oPOMW
+ !specific_P_grazing_OR_daily_grazing
+
+aNConsZooSp = wNConsZoo / sNZoo
+ !specific_N_consumption_OR_daily_ration
+
+aNGrazSp = wNConsZoo / oNOMW
+ !specific_N_grazing_OR_daily_grazing
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   afDShootPhra = sDShootPhra /(sDRootPhra + sDShootPhra) 
+ELSE
+   afDShootPhra = 0.0 
+ENDIF
+ !Shoot/total_-ratio
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   rDSRPhra = sDShootPhra/sDRootPhra 
+ELSE
+   rDSRPhra = 0.0 
+ENDIF
+ !Shoot/Root_-ratio
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   rPDShootPhra = sPShootPhra/sDShootPhra 
+ELSE
+   rPDShootPhra = 0.0 
+ENDIF
+ !Shoot_P/D_-ratio
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   rNDShootPhra = sNShootPhra/sDShootPhra 
+ELSE
+   rNDShootPhra = 0.0 
+ENDIF
+ !Shoot_N/D_-ratio
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   rPDRootPhra = sPRootPhra/sDRootPhra 
+ELSE
+   rPDRootPhra = 0.0 
+ENDIF
+ !Root_P/D_-ratio
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   rNDRootPhra = sNRootPhra/sDRootPhra 
+ELSE
+   rNDRootPhra = 0.0 
+ENDIF
+ !Root_N/D_-ratio
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aLengShootPhra = sDShootPhra / cDStemPhra / cDensStemPhra 
+ELSE
+   aLengShootPhra = 0.0 
+ENDIF
+ !-
+
+IF (Day .LT. 1.0 .OR. sTime .LT. BeginTime + 1.0) THEN
+   bDayInitPhra = 367 
+ELSEIF (uTm .GE. cTmInitPhra .AND. bDayInitPhra .GT. 366) THEN
+   bDayInitPhra = Day 
+ELSE
+   bDayInitPhra = bDayInitPhra 
+ENDIF
+ !marks_start_of_root_allocation_to_shoot_of_phragmities
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   aDAllPhra = 0.0 
+ELSEIF (Day .LT. bDayInitPhra) THEN
+   aDAllPhra = 0.0 
+ELSEIF (Day .LE. bDayInitPhra + 1.0 / kDAllPhra) THEN
+   aDAllPhra = fDAllPhra * sDRootPhra 
+ELSE
+   aDAllPhra = 0.0 
+ENDIF
+ !root_biomass_available_for_allocation_to_shoot
+
+IF (.NOT. InclSeason) THEN
+   tDAllPhra = 0.0 
+ELSEIF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   tDAllPhra = 0.0 
+ELSEIF (Day .LT. bDayInitPhra) THEN
+   tDAllPhra = 0.0 
+ELSEIF (Day .LE. bDayInitPhra + 1.0 / kDAllPhra) THEN
+   tDAllPhra = kDAllPhra * aDAllPhra 
+ELSE
+   tDAllPhra = 0.0 
+ENDIF
+ !allocation_flux
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNTransPhra = rNDRootPhra * tDAllPhra 
+ELSE
+   tNTransPhra = 0.0 
+ENDIF
+ !translocation_of_N_initial_growth
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tPTransPhra = rPDRootPhra * tDAllPhra 
+ELSE
+   tPTransPhra = 0.0 
+ENDIF
+ !translocation_of_P_initial_growth
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aVNUptPhraMaxCr = MAX(0.0,cVNUptPhraMax * ((cQ10ProdPhra )** (0.1 *(uTm - cTmRef))) *(cNDPhraMax - rNDRootPhra) /(cNDPhraMax - cNDPhraMin)) 
+ELSE
+   aVNUptPhraMaxCr = 0.0 
+ENDIF
+ !max_uptake_rate_at_current_N/D_ratio_AND_temp
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   ahNUptPhraS = aVNUptPhraMaxCr / cAffNUptPhra 
+ELSE
+   ahNUptPhraS = 0.0 
+ENDIF
+ !half-saturating_N_concentration
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aVNUptPhraS = aVNUptPhraMaxCr * oNDissSM /(ahNUptPhraS + oNDissSM) 
+ELSE
+   aVNUptPhraS = 0.0 
+ENDIF
+ !N_uptake_rate(by_roots)
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNUptPhraS = aVNUptPhraS * sDRootPhra 
+ELSE
+   tNUptPhraS = 0.0 
+ENDIF
+ !Total_N_uptake_of_reed
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNUptNH4PhraS = sNH4SM / aNDissSM * tNUptPhraS 
+ELSE
+   tNUptNH4PhraS = 0.0 
+ENDIF
+ !NH4_uptake_of_reed
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNUptNO3PhraS = tNUptPhraS - tNUptNH4PhraS 
+ELSE
+   tNUptNO3PhraS = 0.0 
+ENDIF
+ !NO3_uptake_of_reed
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNUptShootPhra = afDShootPhra * tNUptPhraS 
+ELSE
+   tNUptShootPhra = 0.0 
+ENDIF
+ !N_uptake_shoot
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNUptRootPhra = tNUptPhraS - tNUptShootPhra 
+ELSE
+   tNUptRootPhra = 0.0 
+ENDIF
+ !N_uptake_root
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aVPUptPhraMaxCr = MAX(0.0,cVPUptPhraMax * ((cQ10ProdPhra )** (0.1 *(uTm - cTmRef))) *(cPDPhraMax - rPDRootPhra) /(cPDPhraMax - cPDPhraMin)) 
+ELSE
+   aVPUptPhraMaxCr = 0.0 
+ENDIF
+ !max_uptake_rate_at_current_P/D_ratio_AND_temp
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   ahPUptPhraS = aVPUptPhraMaxCr / cAffPUptPhra 
+ELSE
+   ahPUptPhraS = 0.0 
+ENDIF
+ !half-saturating_P_concentration
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aVPUptPhraS = aVPUptPhraMaxCr * oPO4SM /(ahPUptPhraS + oPO4SM) 
+ELSE
+   aVPUptPhraS = 0.0 
+ENDIF
+ !P_uptake_rate(by_roots)
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tPUptPhraS = aVPUptPhraS * sDRootPhra 
+ELSE
+   tPUptPhraS = 0.0 
+ENDIF
+ !Total_P_uptake_of_reed
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tPUptShootPhra = afDShootPhra * tPUptPhraS 
+ELSE
+   tPUptShootPhra = 0.0 
+ENDIF
+ !P_uptake_shoot
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tPUptRootPhra = tPUptPhraS - tPUptShootPhra 
+ELSE
+   tPUptRootPhra = 0.0 
+ENDIF
+ !P_uptake_root
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   uFunTmProdPhra = ((cQ10ProdPhra )** (0.1 *(uTm - cTmRef))) 
+ELSE
+   uFunTmProdPhra = 0.0 
+ENDIF
+ !tempfunction_production_vegetation
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   ukDRespTmPhra = kDRespPhra * ((cQ10RespPhra )** (0.1 *(uTm - cTmRef))) 
+ELSE
+   ukDRespTmPhra = 0.0 
+ENDIF
+ !maintenance_respiration_rate_at_current_temperature
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   aMuPhotPhra = 0.0 
+ELSEIF (aLengShootPhra .GE. sDepthWM) THEN
+   aMuPhotPhra = cMuPhraMax * uFunTmProdPhra * ufDay 
+ELSE
+   aMuPhotPhra = 0.0 
+ENDIF
+ !max_photosynthetic_rate_at_current_light_AND_temp
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aNLimProdPhra = (1.0 - cNDPhraMin / rNDRootPhra) * cNDPhraMax /(cNDPhraMax - cNDPhraMin) 
+ELSE
+   aNLimProdPhra = 0.0 
+ENDIF
+ !Droop_function_N-limitation
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aPLimProdPhra = (1.0 - cPDPhraMin / rPDRootPhra) * cPDPhraMax /(cPDPhraMax - cPDPhraMin) 
+ELSE
+   aPLimProdPhra = 0.0 
+ENDIF
+ !Droop_function_P-limitation
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aNutLimPhra = MIN(aNLimProdPhra,aPLimProdPhra) 
+ELSE
+   aNutLimPhra = 0.0 
+ENDIF
+ !nutrient_reduction_function
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aMuPhra = aMuPhotPhra * aNutLimPhra 
+ELSE
+   aMuPhra = 0.0 
+ENDIF
+ !growth_rate
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   akDIncrPhra = aMuPhotPhra - ukDRespTmPhra - kDMortShootPhra 
+ELSE
+   akDIncrPhra = 0.0 
+ENDIF
+ !intrinsic_net_increase_rate_of_reed
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tDDensPhra = MAX(0.0,akDIncrPhra / cDShootPhraMax * sDShootPhra * sDShootPhra) 
+ELSE
+   tDDensPhra = 0.0 
+ENDIF
+ !density_correction_of_reed
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tDDensProdPhra = aMuPhra / cMuPhraMax * tDDensPhra 
+ELSE
+   tDDensProdPhra = 0.0 
+ENDIF
+ !density_correction_of_production
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tDProdPhra = aMuPhra * sDShootPhra - tDDensProdPhra 
+ELSE
+   tDProdPhra = 0.0 
+ENDIF
+ !production_of_reed
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tDProdShootPhra = afDShootPhra * tDProdPhra 
+ELSE
+   tDProdShootPhra = 0.0 
+ENDIF
+ !production_shoot_of_reed
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tDProdRootPhra = tDProdPhra - tDProdShootPhra 
+ELSE
+   tDProdRootPhra = 0.0 
+ENDIF
+ !production_root_of_reed
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tDRespShootPhra = ukDRespTmPhra * sDShootPhra 
+ELSE
+   tDRespShootPhra = 0.0 
+ENDIF
+ !maintenance_respiration_shoot_of_reed
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tDRespRootPhra = ukDRespTmPhra * sDRootPhra 
+ELSE
+   tDRespRootPhra = 0.0 
+ENDIF
+ !maintenance_respiration_root_of_reed
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tO2RespRootPhra = molO2molC * cCPerDW * tDRespRootPhra * afOxySedM 
+ELSE
+   tO2RespRootPhra = 0.0 
+ENDIF
+ !root_O2_respiration
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tO2FlowPhra = tO2RespRootPhra 
+ELSE
+   tO2FlowPhra = 0.0 
+ENDIF
+ !O2_flux_to_sediment
+
+IF (Day .LT. 180.0) THEN
+   bDayRealPhra = 367 
+ELSEIF (ufDay .LE. fDayWin .AND. bDayRealPhra .GT. 366) THEN
+   bDayRealPhra = Day 
+ELSE
+   bDayRealPhra = bDayRealPhra 
+ENDIF
+ !-
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   aDRealPhra = 0.0 
+ELSEIF (Day .LT. bDayRealPhra) THEN
+   aDRealPhra = 0.0 
+ELSEIF (Day .LE. bDayRealPhra + 1.0 / kDRealPhra) THEN
+   aDRealPhra = fDRealPhra * sDShootPhra 
+ELSE
+   aDRealPhra = 0.0 
+ENDIF
+ !shoot_biomass_available_for_reallocation_to_root
+
+IF (.NOT. InclSeason) THEN
+   tDRealPhra = 0.0 
+ELSEIF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   tDRealPhra = 0.0 
+ELSEIF (Day .LT. bDayRealPhra) THEN
+   tDRealPhra = 0.0 
+ELSEIF (Day .LE. bDayRealPhra + 1.0 / kDRealPhra) THEN
+   tDRealPhra = kDRealPhra * aDRealPhra 
+ELSE
+   tDRealPhra = 0.0 
+ENDIF
+ !reallocation_of_D_per_day_at_end_of_growing_season
+
+IF  (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNRetrPhra = rNDShootPhra * tDRealPhra 
+ELSE
+   tNRetrPhra = 0.0 
+ENDIF
+ !retranslocation_of_N_end_growing_season
+
+IF  (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tPRetrPhra = rPDShootPhra * tDRealPhra 
+ELSE
+   tPRetrPhra = 0.0 
+ENDIF
+ !retranslocation_of_P_end_growing_season
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tDMortShootPhra = kDMortShootPhra * sDShootPhra 
+ELSE
+   tDMortShootPhra = 0.0 
+ENDIF
+ !mortality_of_shoots
+
+IF  (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNMortShootPhra = rNDShootPhra * tDMortShootPhra 
+ELSE
+   tNMortShootPhra = 0.0 
+ENDIF
+ !mortality_of_shoots
+
+IF  (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tPMortShootPhra = rPDShootPhra * tDMortShootPhra 
+ELSE
+   tPMortShootPhra = 0.0 
+ENDIF
+ !mortality_of_shoots
+
+IF  (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tDMortRootPhra = kDMortRootPhra * sDRootPhra 
+ELSE
+   tDMortRootPhra = 0.0 
+ENDIF
+ !mortality_of_roots
+
+IF  (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNMortRootPhra = rNDRootPhra * tDMortRootPhra 
+ELSE
+   tNMortRootPhra = 0.0 
+ENDIF
+ !mortality_of_roots
+
+IF  (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tPMortRootPhra = rPDRootPhra * tDMortRootPhra 
+ELSE
+   tPMortRootPhra = 0.0 
+ENDIF
+ !mortality_of_roots
+
+IF (.NOT. InclMarsh .OR. fMarsh .GT. NearZero) THEN
+   tDManShootPhra = 0.0 
+ELSEIF ((Day .GE. cDayManPhra) .AND. (Day .LT. cDayManPhra + 1.0)) THEN
+   tDManShootPhra = fManPhra * sDShootPhra 
+ELSE
+   tDManShootPhra = 0.0 
+ENDIF
+ !loss_flux_of_biomass_by_management
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNManShootPhra = tDManShootPhra * rNDShootPhra 
+ELSE
+   tNManShootPhra = 0.0 
+ENDIF
+ !loss_flux_of_N_through_management
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tPManShootPhra = tDManShootPhra * rPDShootPhra 
+ELSE
+   tPManShootPhra = 0.0 
+ENDIF
+ !loss_flux_of_P_through_management
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tDIMSM = tDSetIMM 
+ELSE
+   tDIMSM = 0.0 
+ENDIF
+ !increase_in_inorganic_matter_in_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tDHumSM = fRefrDetS * tDMinDetSM - tDMinHumSM 
+ELSE
+   tDHumSM = 0.0 
+ENDIF
+ !increase_in_sediment_humus_in_marsh
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tDDetSM = tDSetDetM - tDMinDetSM + tDSetPhytM + tDMortRootPhra 
+ELSE
+   tDDetSM = 0.0 
+ENDIF
+ !increase_in_sediment_detritus_in_marsh
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   vDeltaSM = (tDIMSM / cRhoIM +(tDHumSM + tDDetSM) / cRhoOM)/(1.0 - bPorS) 
+ELSE
+   vDeltaSM = 0.0 
+ENDIF
+ !turnover_depth_in_marsh
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   tDBurIMM = 0.0 
+ELSEIF (vDeltaSM .GE. 0.0) THEN
+   tDBurIMM = ((tDHumSM + tDDetSM) +(cRhoOM / cRhoIM) * tDIMSM) / ((sDHumSM + sDDetSM) / sDIMSM + cRhoOM / cRhoIM) 
+ELSE
+   tDBurIMM = ((tDHumSM + tDDetSM) +(cRhoOM / cRhoIM) * tDIMSM) / (fDOrgSoil /(1.0 - fDOrgSoil) + cRhoOM / cRhoIM) 
+ENDIF
+ !burial_flux_of_DW_in_inorganic_matter_in_marsh
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   tDBurOMM = 0.0 
+ELSEIF (vDeltaSM .GE. 0.0) THEN
+   tDBurOMM = (sDHumSM + sDDetSM) / sDIMSM * tDBurIMM 
+ELSE
+   tDBurOMM = fDOrgSoil /(1.0 - fDOrgSoil) * tDBurIMM 
+ENDIF
+ !burial_flux_of_DW_in_organic_matter_in_marsh
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   tDBurDetM = 0.0 
+ELSEIF (vDeltaSM .GE. 0.0) THEN
+   tDBurDetM = sDDetSM /(sDHumSM + sDDetSM) * tDBurOMM 
+ELSE
+   tDBurDetM = 0.0 
+ENDIF
+ !burial_flux_of_DW_in_detritus_in_marsh
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   tDBurHumM = 0.0 
+ELSEIF (vDeltaSM .GE. 0.0) THEN
+   tDBurHumM = tDBurOMM - tDBurDetM 
+ELSE
+   tDBurHumM = tDBurOMM 
+ENDIF
+ !burial_flux_of_DW_in_humus_in_marsh
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   tDBurTotM = 0.0 
+ELSEIF (vDeltaSM .GE. 0.0) THEN
+   tDBurTotM = tDBurIMM + tDBurOMM 
+ELSE
+   tDBurTotM = tDBurIMM + tDBurOMM 
+ENDIF
+ !total_DW_burial_flux_in_marsh
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   tPBurHumM = 0.0 
+ELSEIF (vDeltaSM .GE. 0.0) THEN
+   tPBurHumM = rPDHumSM * tDBurHumM 
+ELSE
+   tPBurHumM = cPDSoilOM * tDBurHumM 
+ENDIF
+ !burial_flux_of_P_in_humus_in_marsh
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   tPBurDetM = 0.0 
+ELSEIF (vDeltaSM .GE. 0.0) THEN
+   tPBurDetM = rPDDetSM * tDBurDetM 
+ELSE
+   tPBurDetM = 0.0 
+ENDIF
+ !burial_flux_of_P_in_detritus_in_marsh
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   tPBurAIMM = 0.0 
+ELSEIF (vDeltaSM .GE. 0.0) THEN
+   tPBurAIMM = sPAIMSM / sDIMSM * tDBurIMM 
+ELSE
+   tPBurAIMM = 0.0 
+ENDIF
+ !burial_flux_of_P_absorbed_onto_inorganic_matter_in_marsh
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   tPBurPO4M = 0.0 
+ELSEIF (vDeltaSM .GE. 0.0) THEN
+   tPBurPO4M = sPO4SM *(vDeltaSM / cDepthSM) 
+ELSE
+   tPBurPO4M = cPO4Ground *(bPorSM * vDeltaSM) 
+ENDIF
+ !burial_flux_of_dissolved_P_in_marsh
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   tPBurTotM = 0.0 
+ELSEIF (vDeltaSM .GE. 0.0) THEN
+   tPBurTotM = tPBurDetM + tPBurHumM + tPBurAIMM + tPBurPO4M 
+ELSE
+   tPBurTotM = tPBurHumM + tPBurAIMM + tPBurPO4M 
+ENDIF
+ !total_P_burial_flux_in_marsh
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   tNBurHumM = 0.0 
+ELSEIF (vDeltaSM .GE. 0.0) THEN
+   tNBurHumM = rNDHumSM * tDBurHumM 
+ELSE
+   tNBurHumM = cNDSoilOM * tDBurHumM 
+ENDIF
+ !burial_flux_of_N_in_humus_in_marsh
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   tNBurDetM = 0.0 
+ELSEIF (vDeltaSM .GE. 0.0) THEN
+   tNBurDetM = rNDDetSM * tDBurDetM 
+ELSE
+   tNBurDetM = 0.0 
+ENDIF
+ !burial_flux_of_N_in_detritus_in_marsh
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   tNBurNH4M = 0.0 
+ELSEIF (vDeltaSM .GE. 0.0) THEN
+   tNBurNH4M = sNH4SM *(vDeltaSM / cDepthSM) 
+ELSE
+   tNBurNH4M = cNH4Ground *(bPorSM * vDeltaSM) 
+ENDIF
+ !burial_flux_of_dissolved_NH4_in_marsh
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   tNBurNO3M = 0.0 
+ELSEIF (vDeltaSM .GE. 0.0) THEN
+   tNBurNO3M = sNO3SM *(vDeltaSM / cDepthSM) 
+ELSE
+   tNBurNO3M = cNO3Ground *(bPorSM * vDeltaSM) 
+ENDIF
+ !burial_flux_of_dissolved_NO3_in_marsh
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   tNBurTotM = 0.0 
+ELSEIF (vDeltaSM .GE. 0.0) THEN
+   tNBurTotM = tNBurDetM + tNBurHumM + tNBurNH4M + tNBurNO3M 
+ELSE
+   tNBurTotM = tNBurHumM + tNBurNH4M + tNBurNO3M 
+ENDIF
+ !total_N_burial_flux_in_marsh
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   tSiBurDetM = 0.0 
+ELSEIF (vDeltaSM .GE. 0.0) THEN
+   tSiBurDetM = rSiDDetSM * tDBurDetM 
+ELSE
+   tSiBurDetM = 0.0 
+ENDIF
+ !burial_flux_of_Si_in_detritus_in_marsh
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   tSiBurTotM = 0.0 
+ELSEIF (vDeltaSM .GE. 0.0) THEN
+   tSiBurTotM = tSiBurDetM 
+ELSE
+   tSiBurTotM = 0.0 
+ENDIF
+ !total_Si_burial_flux_in_marsh
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   vDeltaWM = 0.0 
+ELSEIF (ConstDepth) THEN
+   vDeltaWM = 0.0 
+ELSE
+   vDeltaWM = - vDeltaSM 
+ENDIF
+ !marsh_water_depth_change
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   aRelDeltaWM = vDeltaWM / sDepthWM 
+ELSE
+   aRelDeltaWM = 0.0 
+ENDIF
+ !relative_marsh_water_depth_change
+
+tDSetTot = tDSetIM + tDSetDet + tDSetPhyt
+ !total_settling
+
+tPSetTot = tPSetAIM + tPSetDet + tPSetPhyt
+ !total_settling
+
+tNSetTot = tNSetDet + tNSetPhyt
+ !total_settling
+
+tDResusTot = tDResusDead + tDResusPhytTot
+ !total_resuspension
+
+tPResusTot = tPResusDet + tPResusAIM + tPResusPhyt + tPResusPO4
+ !total_P_resuspension_flux
+
+tNResusTot = tNResusDet + tNResusNH4 + tNResusNO3 + tNResusPhyt
+ !total_N_resuspension_flux
+
+IF (sTime .GE. cDredStart * DaysPerYear) THEN
+   bTimeDred = (INT(TimeYears/cDredInterval) * cDredInterval) * DaysPerYear 
+ELSE
+   bTimeDred = -9999.999 
+ENDIF
+ !dredging_time(every_nth_year)
+
+IF (sTime .EQ. bTimeDred) THEN
+   aDepthStart = sDepthW 
+ELSE
+   aDepthStart = aDepthStart 
+ENDIF
+ !update_dredget_layer
+
+IF ((sTime .GE. bTimeDred) .AND. (sTime .LT. bTimeDred + cLengDred) .AND. (aDepthStart .LE. cDepthRef - cDepthS)) THEN
+   akDredDepth = (LOG(cDepthRef / aDepthStart)) / cLengDred 
+ELSE
+   akDredDepth = 0.0 
+ENDIF
+ !rate_constant_of_deepening
+
+IF ((sTime .GE. bTimeDred) .AND. (sTime .LT. bTimeDred + cLengDred) .AND. (aDepthStart .LE. cDepthRef - cDepthS)) THEN
+   akDred = (- LOG(1.0 - fEffDred)) / cLengDred 
+ELSE
+   akDred = 0.0 
+ENDIF
+ !rate_constant_of_dredging(exponential_function)
+
+IF ((sTime .GE. bTimeDred) .AND. (sTime .LT. bTimeDred + cLengDred) .AND. (aDepthStart .LE. cDepthRef - cDepthS)) THEN
+   akDredBent = (- LOG(1.0 - fEffDredBent)) / cLengDred 
+ELSE
+   akDredBent = 0.0 
+ENDIF
+ !rate_constant_of_dredging_for_zoobenthos
+
+vDredDepthW = akDredDepth * sDepthW
+ !change_in_water_depth_due_to_dredging
+
+tDDredDetS = akDred * sDDetS
+ !dredging_flux_of_DW_Detritus_in_lake_sediment
+
+tPDredDetS = akDred * sPDetS
+ !dredging_flux_of_P_Detritus_in_lake_sediment
+
+tNDredDetS = akDred * sNDetS
+ !dredging_flux_of_N_Detritus_in_lake_sediment
+
+tSiDredDetS = akDred * sSiDetS
+ !dredging_flux_of_Si_Det_in_lake_sediment
+
+tPDredAIMS = akDred * sPAIMS
+ !dredging_flux_of_P_absorbed_onto_inorganic_matter_in_lake_sediment
+
+bRhoSolidSoil = fDOrgSoil * cRhoOM +(1.0 - fDOrgSoil) * cRhoIM
+ !average_solid_density_of_soil_material
+
+tDDredNetSoil = -(tDDredDetS / cRhoOM) * bRhoSolidSoil
+ !dredging_flux_of_DW_NetSoil_in_lake_sediment
+
+tDDredNetIMS = (1.0 - fDOrgSoil) * tDDredNetSoil
+ !dredging_flux_of_DW_NetIMS_in_lake_sediment
+
+tDDredNetHumS = fDOrgSoil * tDDredNetSoil
+ !dredging_flux_of_DW_NetHum_in_lake_sediment
+
+tPDredNetHumS = cPDSoilOM * tDDredNetHumS
+ !dredging_flux_of_P_NetHum_in_lake_sediment
+
+tNDredNetHumS = cNDSoilOM * tDDredNetHumS
+ !dredging_flux_of_N_NetHum_in_lake_sediment
+
+tDDredDiatS = akDred * sDDiatS
+ !dredging_flux_of_DW_Diat_on_lake_sediment
+
+tPDredDiatS = akDred * sPDiatS
+ !dredging_flux_of_P_Diat_on_lake_sediment
+
+tNDredDiatS = akDred * sNDiatS
+ !dredging_flux_of_N_Diat_on_lake_sediment
+
+tDDredGrenS = akDred * sDGrenS
+ !dredging_flux_of_DW_Gren_on_lake_sediment
+
+tPDredGrenS = akDred * sPGrenS
+ !dredging_flux_of_P_Gren_on_lake_sediment
+
+tNDredGrenS = akDred * sNGrenS
+ !dredging_flux_of_N_Gren_on_lake_sediment
+
+tDDredBlueS = akDred * sDBlueS
+ !dredging_flux_of_DW_Blue_on_lake_sediment
+
+tPDredBlueS = akDred * sPBlueS
+ !dredging_flux_of_P_Blue_on_lake_sediment
+
+tNDredBlueS = akDred * sNBlueS
+ !dredging_flux_of_N_Blue_on_lake_sediment
+
+tDDredPhytS = tDDredDiatS+tDDredGrenS+tDDredBlueS
+ !dredging_flux_of_DW_Phyt_on_lake_sediment
+
+tPDredPhytS = tPDredDiatS+tPDredGrenS+tPDredBlueS
+ !dredging_flux_of_P_Phyt_on_lake_sediment
+
+tNDredPhytS = tNDredDiatS+tNDredGrenS+tNDredBlueS
+ !dredging_flux_of_N_Phyt_on_lake_sediment
+
+IF (InclWeb) THEN
+   tDDredBent = akDredBent * sDBent 
+ELSE
+   tDDredBent = 0.0 
+ENDIF
+ !dredging_flux_of_DW_Bent_on_lake_sediment
+
+IF (InclWeb) THEN
+   tPDredBent = akDredBent * sPBent 
+ELSE
+   tPDredBent = 0.0 
+ENDIF
+ !dredging_flux_of_P_Bent_on_lake_sediment
+
+IF (InclWeb) THEN
+   tNDredBent = akDredBent * sNBent 
+ELSE
+   tNDredBent = 0.0 
+ENDIF
+ !dredging_flux_of_N_Bent_on_lake_sediment
+
+tDDredVeg = akDred * sDVeg
+ !dredging_flux_of_DW_Veg_on_lake_sediment
+
+tPDredVeg = akDred * sPVeg
+ !dredging_flux_of_P_Veg_on_lake_sediment
+
+tNDredVeg = akDred * sNVeg
+ !dredging_flux_of_N_Veg_on_lake_sediment
+
+tDDredNetTot = tDDredDetS - tDDredNetSoil + tDDredPhytS + tDDredBent + tDDredVeg
+ !total_DW_dredging_flux
+
+tPDredNetTot = tPDredDetS - tPDredNetHumS + tPDredAIMS + tPDredPhytS + tPDredBent + tPDredVeg
+ !total_P_dredging_flux
+
+tNDredNetTot = tNDredDetS - tNDredNetHumS + tNDredPhytS + tNDredBent + tNDredVeg
+ !total_N_dredging_flux
+
+tSiDredTot = tSiDredDetS + cSiDDiat * tDDredDiatS
+ !total_Si_dredging_flux
+
+tDIMS = tDAbioIMS
+ !increase_in_inorganic_matter_in_sediment
+
+tDHumS = tDAbioHumS
+ !increase_in_sediment_humus_in_lake
+
+tDDetS = tDAbioDetS + tDPrimDetS + tDWebDetS + tDBedDetS
+ !increase_in_sediment_detritus_in_lake
+
+vDeltaS = (tDIMS / cRhoIM +(tDHumS + tDDetS) / cRhoOM)/(1.0 - bPorS)
+ !turnover_depth_in_lake
+
+IF (vDeltaS .GE. 0.0) THEN
+   tDBurIM = ((tDHumS + tDDetS) +(cRhoOM / cRhoIM) * tDIMS) / ((sDHumS + sDDetS) / sDIMS + cRhoOM / cRhoIM) 
+ELSE
+   tDBurIM = ((tDHumS + tDDetS) +(cRhoOM / cRhoIM) * tDIMS) / (fDOrgSoil /(1.0 - fDOrgSoil) + cRhoOM / cRhoIM) 
+ENDIF
+ !burial_flux_of_DW_in_inorganic_matter_in_lake
+
+IF (vDeltaS .GE. 0.0) THEN
+   tDBurOM = (sDHumS + sDDetS) / sDIMS * tDBurIM 
+ELSE
+   tDBurOM = fDOrgSoil /(1.0 - fDOrgSoil) * tDBurIM 
+ENDIF
+ !burial_flux_of_DW_in_organic_matter_in_lake
+
+IF (vDeltaS .GE. 0.0) THEN
+   tDBurDet = sDDetS /(sDHumS + sDDetS) * tDBurOM 
+ELSE
+   tDBurDet = 0.0 
+ENDIF
+ !burial_flux_of_DW_in_detritus_in_lake
+
+IF (vDeltaS .GE. 0.0) THEN
+   tDBurHum = tDBurOM - tDBurDet 
+ELSE
+   tDBurHum = tDBurOM 
+ENDIF
+ !burial_flux_of_DW_in_humus_in_lake
+
+IF (vDeltaS .GE. 0.0) THEN
+   tDBurTot = tDBurIM + tDBurOM 
+ELSE
+   tDBurTot = tDBurIM + tDBurOM 
+ENDIF
+ !total_DW_burial_flux_in_lake
+
+IF (vDeltaS .GE. 0.0) THEN
+   tPBurHum = rPDHumS * tDBurHum 
+ELSE
+   tPBurHum = cPDSoilOM * tDBurHum 
+ENDIF
+ !burial_flux_of_P_in_humus_in_lake
+
+IF (vDeltaS .GE. 0.0) THEN
+   tPBurDet = rPDDetS * tDBurDet 
+ELSE
+   tPBurDet = 0.0 
+ENDIF
+ !burial_flux_of_P_in_detritus_in_lake
+
+IF (vDeltaS .GE. 0.0) THEN
+   tPBurAIM = sPAIMS / sDIMS * tDBurIM 
+ELSE
+   tPBurAIM = 0.0 
+ENDIF
+ !burial_flux_of_P_absorbed_onto_inorganic_matter_in_lake
+
+IF (vDeltaS .GE. 0.0) THEN
+   tPBurPO4 = sPO4S *(vDeltaS / cDepthS) 
+ELSE
+   tPBurPO4 = cPO4Ground *(bPorS * vDeltaS) 
+ENDIF
+ !burial_flux_of_dissolved_P_in_lake
+
+IF (vDeltaS .GE. 0.0) THEN
+   tPBurTot = tPBurDet + tPBurHum + tPBurAIM + tPBurPO4 
+ELSE
+   tPBurTot = tPBurHum + tPBurAIM + tPBurPO4 
+ENDIF
+ !total_P_burial_flux_in_lake
+
+IF (vDeltaS .GE. 0.0) THEN
+   tNBurHum = rNDHumS * tDBurHum 
+ELSE
+   tNBurHum = cNDSoilOM * tDBurHum 
+ENDIF
+ !burial_flux_of_N_in_humus_in_lake
+
+IF (vDeltaS .GE. 0.0) THEN
+   tNBurDet = rNDDetS * tDBurDet 
+ELSE
+   tNBurDet = 0.0 
+ENDIF
+ !burial_flux_of_N_in_detritus_in_lake
+
+IF (vDeltaS .GE. 0.0) THEN
+   tNBurNH4 = sNH4S *(vDeltaS / cDepthS) 
+ELSE
+   tNBurNH4 = cNH4Ground *(bPorS * vDeltaS) 
+ENDIF
+ !burial_flux_of_dissolved_NH4_in_lake
+
+IF (vDeltaS .GE. 0.0) THEN
+   tNBurNO3 = sNO3S *(vDeltaS / cDepthS) 
+ELSE
+   tNBurNO3 = cNO3Ground *(bPorS * vDeltaS) 
+ENDIF
+ !burial_flux_of_dissolved_NO3_in_lake
+
+IF (vDeltaS .GE. 0.0) THEN
+   tNBurTot = tNBurDet + tNBurHum + tNBurNH4 + tNBurNO3 
+ELSE
+   tNBurTot = tNBurHum + tNBurNH4 + tNBurNO3 
+ENDIF
+ !total_N_burial_flux_in_lake
+
+IF (vDeltaS .GE. 0.0) THEN
+   tSiBurDet = rSiDDetS * tDBurDet 
+ELSE
+   tSiBurDet = 0.0 
+ENDIF
+ !burial_flux_of_Si_in_detritus_in_lake
+
+IF (vDeltaS .GE. 0.0) THEN
+   tSiBurTot = tSiBurDet 
+ELSE
+   tSiBurTot = 0.0 
+ENDIF
+ !total_Si_burial_flux_in_lake
+
+IF (ConstDepth) THEN
+   vDeltaW = 0.0 
+ELSE
+   vDeltaW = - vDeltaS 
+ENDIF
+ !lake_water_depth_change
+
+aRelDeltaW = (vDeltaW + vDredDepthW) / sDepthW
+ !relative_water_depth_change_due_to_sediment_turnover_AND_dredging
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tDMarsTotT = (- tDBurTotM - wDMinDetWM * sDepthWM -(1.0 - fRefrDetS) * tDMinDetSM - tDMinHumSM + tDProdPhra - tDRespShootPhra - tDRespRootPhra - tDManShootPhra) * fMarsh 
+ELSE
+   tDMarsTotT = 0.0 
+ENDIF
+ !Mass_balance_totals_of_DW_marsh_water_and_vegetation_module
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tPMarsTotT = (- tPInfPO4SM - tPDifGroundPO4M - tPBurTotM - tPChemPO4M - tPManShootPhra) * fMarsh 
+ELSE
+   tPMarsTotT = 0.0 
+ENDIF
+ !Mass_balance_totals_of_P_marsh_water_and_vegetation_module
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tNMarsTotT = (- tNInfNH4SM - tNInfNO3SM - tNDifGroundNO3M - tNDifGroundNH4M - tNBurTotM - wNDenitWM * sDepthWM - tNDenitSM - tNManShootPhra) * fMarsh 
+ELSE
+   tNMarsTotT = 0.0 
+ENDIF
+ !Mass_balance_totals_of_N_marsh_water_and_vegetation_module
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   tSiMarsTotT = - tSiBurDetM * fMarsh 
+ELSE
+   tSiMarsTotT = 0.0 
+ENDIF
+ !Mass_balance_totals_of_SI_marsh_water_and_vegetation_module
+
+aDTotT = (sDIMW+sDDetW+sDDiatW+sDGrenW+sDBlueW+sDZoo) * sDepthW +aDFish+sDPisc+aDVeg +sDIMS+sDHumS+sDDetS+sDDiatS+sDGrenS+sDBlueS+sDBent + aDTotM
+ !total_DW_in_system
+
+aNTotT = (sNH4W+sNO3W+sNDetW+sNDiatW+sNGrenW+sNBlueW +sNZoo)*sDepthW +aNFish+aNPisc+aNVeg +sNH4S+sNO3S+sNDetS+sNHumS+sNDiatS+sNGrenS+sNBlueS +sNBent + aNTotM
+ !total_N_in_system
+
+aPTotT = (sPO4W+sPDetW+sPDiatW+sPGrenW+sPBlueW +sPZoo+sPAIMW) * sDepthW +aPFish+aPPisc+aPVeg +sPO4S+sPDetS+sPHumS+sPDiatS+sPGrenS+sPBlueS +sPAIMS+sPBent + aPTotM
+ !total_P_in_system
+
+aSiTotT = (sSiO2W + sSiDetW + cSiDDiat*sDDiatW) *sDepthW + sSiDetS + cSiDDiat*sDDiatS + aSiTotM
+ !total_Si_in_system
+
+aDError = aDTotT - sDExtTotT
+ !DW_mass_balance_error
+
+aNError = aNTotT - sNExtTotT
+ !N_mass_balance_error
+
+aPError = aPTotT - sPExtTotT
+ !P_mass_balance_error
+
+aSiError = aSiTotT - sSiExtTotT
+ !Si_mass_balance_error
+
+dDepthW = vTranDepthW + vDeltaW + vDredDepthW
+ !derivative_for_water_depth_change_in_lake_water
+
+dNH4W = wNTranNH4W + wNAbioNH4W + wNPrimNH4W + wNBedNH4W + wNWebNH4W + cNBackLoad / sDepthW - aRelDeltaW * sNH4W - wNExchNH4
+ !derivative_for_N_ammonium_in_water_in_lake_water
+
+dNO3W = wNTranNO3W + wNAbioNO3W + wNPrimNO3W + wNBedNO3W + wNWebNO3W - aRelDeltaW * sNO3W - wNExchNO3
+ !derivative_for_N_nitrate_in_water_in_lake_water
+
+dPO4W = wPTranPO4W + wPAbioPO4W + wPPrimPO4W + wPBedPO4W + wPWebPO4W + cPBackLoad / sDepthW - aRelDeltaW * sPO4W - wPExchPO4
+ !derivative_for_P_SRP_in_water_in_lake_water
+
+dPAIMW = wPTranAIMW + wPAbioAIMW - aRelDeltaW * sPAIMW - wPExchAIM
+ !derivative_for_P_P-adsorbed_onto_IM_in_water_in_lake_water
+
+dSiO2W = wSiTranSiO2 + wSiAbioSiO2W + wSiPrimSiO2W - aRelDeltaW * sSiO2W - wSiExchSiO2
+ !derivative_for_Si_dissolved_silica_in_water_in_lake_water
+
+dO2W = wO2TranW + wO2AbioW + wO2PrimW + tO2BedW / sDepthW - aRelDeltaW * sO2W - wO2Exch
+ !derivative_for_O2_oxygen_in_water_in_lake_water
+
+dDDetW = wDTranDetW + wDAbioDetW + wDPrimDetW + wDBedDetW + wDWebDetW - aRelDeltaW * sDDetW - wDExchDet
+ !derivative_for_DW_Detritus_in_lake_water
+
+dNDetW = wNTranDetW + wNAbioDetW + wNPrimDetW + wNBedDetW + wNWebDetW - aRelDeltaW * sNDetW - wNExchDet
+ !derivative_for_N_Detritus_in_lake_water
+
+dPDetW = wPTranDetW + wPAbioDetW + wPPrimDetW + wPBedDetW + wPWebDetW - aRelDeltaW * sPDetW - wPExchDet
+ !derivative_for_P_Detritus_in_lake_water
+
+dSiDetW = wSiTranDetW + wSiAbioDetW + wSiPrimDetW + wSiWebDetW - aRelDeltaW * sSiDetW - wSiExchDet
+ !derivative_for_Si_Detritus_in_lake_water
+
+dDIMW = wDTranIMW + wDAbioIMW - aRelDeltaW * sDIMW - wDExchIM
+ !derivative_for_DW_inorg_matter_in_water_in_lake_water
+
+dDDiatW = wDTranDiat + wDPrimDiatW + wDWebDiatW - aRelDeltaW * sDDiatW - wDExchDiat
+ !derivative_for_DW_Diatoms_in_lake_water
+
+dNDiatW = wNTranDiat + wNPrimDiatW + wNWebDiatW - aRelDeltaW * sNDiatW - wNExchDiat
+ !derivative_for_N_Diatoms_in_lake_water
+
+dPDiatW = wPTranDiat + wPPrimDiatW + wPWebDiatW - aRelDeltaW * sPDiatW - wPExchDiat
+ !derivative_for_P_Diatoms_in_lake_water
+
+dDGrenW = wDTranGren + wDPrimGrenW + wDWebGrenW - aRelDeltaW * sDGrenW - wDExchGren
+ !derivative_for_DW_Greens_in_lake_water
+
+dNGrenW = wNTranGren + wNPrimGrenW + wNWebGrenW - aRelDeltaW * sNGrenW - wNExchGren
+ !derivative_for_N_Greens_in_lake_water
+
+dPGrenW = wPTranGren + wPPrimGrenW + wPWebGrenW - aRelDeltaW * sPGrenW - wPExchGren
+ !derivative_for_P_Greens_in_lake_water
+
+dDBlueW = wDTranBlue + wDPrimBlueW + wDWebBlueW - aRelDeltaW * sDBlueW - wDExchBlue
+ !derivative_for_DW_Bluegreens_in_lake_water
+
+dNBlueW = wNTranBlue + wNPrimBlueW + wNWebBlueW - aRelDeltaW * sNBlueW - wNExchBlue
+ !derivative_for_N_Bluegreens_in_lake_water
+
+dPBlueW = wPTranBlue + wPPrimBlueW + wPWebBlueW - aRelDeltaW * sPBlueW - wPExchBlue
+ !derivative_for_P_Bluegreens_in_lake_water
+
+dDZoo = wDTranZoo + wDWebZoo - aRelDeltaW * sDZoo - wDExchZoo
+ !derivative_for_DW_Zooplankton_in_lake_water
+
+dNZoo = wNTranZoo + wNWebZoo - aRelDeltaW * sNZoo - wNExchZoo
+ !derivative_for_N_Zooplankton_in_lake_water
+
+dPZoo = wPTranZoo + wPWebZoo - aRelDeltaW * sPZoo - wPExchZoo
+ !derivative_for_P_Zooplankton_in_lake_water
+
+dDFiAd = tDWebFiAd
+ !derivative_for_DW_Adult_whitefish_in_lake_water
+
+dDFiJv = tDWebFiJv
+ !derivative_for_DW_Juvenile_whitefish_in_lake_water
+
+dNFiAd = tNWebFiAd
+ !derivative_for_N_Adult_whitefish_in_lake_water
+
+dNFiJv = tNWebFiJv
+ !derivative_for_N_Juvenile_whitefish_in_lake_water
+
+dPFiAd = tPWebFiAd
+ !derivative_for_P_Adult_whitefish_in_lake_water
+
+dPFiJv = tPWebFiJv
+ !derivative_for_P_Juvenile_whitefish_in_lake_water
+
+dDPisc = tDWebPisc
+ !derivative_for_DW_predatory_fish_in_lake_water
+
+dNH4S = tNAbioNH4S - tNBurNH4 + tNPrimNH4S + tNBedNH4S + tNWebNH4S
+ !derivative_for_N_Pore_water_ammonium_in_lake_water
+
+dNO3S = tNAbioNO3S - tNBurNO3 + tNPrimNO3S + tNBedNO3S + tNWebNO3S
+ !derivative_for_N_Pore_water_nitrate_in_lake_water
+
+dPO4S = tPAbioPO4S - tPBurPO4 + tPPrimPO4S + tPBedPO4S + tPWebPO4S
+ !derivative_for_P_Pore_water_SRP_in_lake_water
+
+dPAIMS = tPAbioAIMS - tPBurAIM - tPDredAIMS
+ !derivative_for_P_P-adsorbed_onto_IM_in_sediment_in_lake_sediment
+
+dDDetS = tDAbioDetS - tDBurDet + tDPrimDetS + tDBedDetS + tDWebDetS - tDDredDetS
+ !derivative_for_DW_Sediment_detritus_in_lake_sediment
+
+dNDetS = tNAbioDetS - tNBurDet + tNPrimDetS + tNBedDetS + tNWebDetS - tNDredDetS
+ !derivative_for_N_Sediment_detritus_N_in_lake_sediment
+
+dPDetS = tPAbioDetS - tPBurDet + tPPrimDetS + tPBedDetS + tPWebDetS - tPDredDetS
+ !derivative_for_P_Sediment_detritus_P_in_lake_sediment
+
+dSiDetS = tSiAbioDetS - tSiBurDet + tSiPrimDetS + tSiWebDetS - tSiDredDetS
+ !derivative_for_Si_Sediment_detritus_Si_in_lake_sediment
+
+dDHumS = tDAbioHumS - tDBurHum - tDDredNetHumS
+ !derivative_for_DW_humus_in_lake_sediment
+
+dNHumS = tNAbioHumS - tNBurHum - tNDredNetHumS
+ !derivative_for_N_humus_in_lake_sediment
+
+dPHumS = tPAbioHumS - tPBurHum - tPDredNetHumS
+ !derivative_for_P_humus_in_lake_sediment
+
+dDIMS = tDAbioIMS - tDBurIM - tDDredNetIMS
+ !derivative_for_DW_inorg_matter_in_sediment_in_lake_sediment
+
+dDDiatS = tDPrimDiatS + tDWebDiatS - tDDredDiatS
+ !derivative_for_DW_Sed_Diatoms_in_lake_sediment
+
+dNDiatS = tNPrimDiatS + tNWebDiatS - tNDredDiatS
+ !derivative_for_N_Sediment_diatoms_in_lake_sediment
+
+dPDiatS = tPPrimDiatS + tPWebDiatS - tPDredDiatS
+ !derivative_for_P_Sediment_diatoms_in_lake_sediment
+
+dDGrenS = tDPrimGrenS + tDWebGrenS - tDDredGrenS
+ !derivative_for_DW_Sed_Greens_in_lake_sediment
+
+dNGrenS = tNPrimGrenS + tNWebGrenS - tPDredGrenS
+ !derivative_for_N_Sediment_green_algae_in_lake_sediment
+
+dPGrenS = tPPrimGrenS + tPWebGrenS - tPDredGrenS
+ !derivative_for_P_Sediment_green_algae_in_lake_sediment
+
+dDBlueS = tDPrimBlueS + tDWebBlueS - tDDredBlueS
+ !derivative_for_DW_Sed_Blue-greens_in_lake_sediment
+
+dNBlueS = tNPrimBlueS + tNWebBlueS - tNDredBlueS
+ !derivative_for_N_Sediment_blue-greens_in_lake_sediment
+
+dPBlueS = tPPrimBlueS + tPWebBlueS - tPDredBlueS
+ !derivative_for_P_Sediment_blue-greens_in_lake_sediment
+
+dDVeg = tDBedVeg - tDDredVeg
+ !derivative_for_DW_Vegetation_in_lake_sediment
+
+dNVeg = tNBedVeg - tNDredVeg
+ !derivative_for_N_Vegetation_in_lake_sediment
+
+dPVeg = tPBedVeg - tPDredVeg
+ !derivative_for_P_Vegetation_in_lake_sediment
+
+dDBent = tDWebBent - tDDredBent
+ !derivative_for_DW_Zoobenthos_in_lake_sediment
+
+dNBent = tNWebBent - tNDredBent
+ !derivative_for_N_Zoobenthos_in_lake_sediment
+
+dPBent = tPWebBent - tPDredBent
+ !derivative_for_P_Zoobenthos_in_lake_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dDepthWM = vTranDepthW + vDeltaWM 
+ELSE
+   dDepthWM = 0.0 
+ENDIF
+ !derivative_for_water_depth_change_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dNH4WM = tNDifNH4M/sDepthWM - wNNitrWM + wNMinDetWM - tNEvNH4WM/sDepthWM - tNInfNH4WM/sDepthWM + wNExchNH4M - aRelDeltaWM * sNH4WM 
+ELSE
+   dNH4WM = 0.0 
+ENDIF
+ !derivative_for_N_NH4_in_water_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dNO3WM = tNDifNO3M/sDepthWM + wNNitrWM - wNDenitWM - tNEvNO3WM/sDepthWM - tNInfNO3WM/sDepthWM + wNExchNO3M - aRelDeltaWM * sNO3WM 
+ELSE
+   dNO3WM = 0.0 
+ENDIF
+ !derivative_for_N_NO3_in_water_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dPO4WM = - tPInfPO4WM / sDepthWM + tPDifPO4M / sDepthWM + wPMinDetWM - tPEvPO4WM / sDepthWM - wPSorpIMWM + wPExchPO4M - aRelDeltaWM * sPO4WM 
+ELSE
+   dPO4WM = 0.0 
+ENDIF
+ !derivative_for_P_PO4_in_water_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dPAIMWM = - tPSetAIMM / sDepthWM + wPSorpIMWM + wPExchAIMM - aRelDeltaWM * sPAIMWM 
+ELSE
+   dPAIMWM = 0.0 
+ENDIF
+ !derivative_for_P_P_adsorbed_onto_IM_in_water_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dSiO2WM = wSiMinDetWM + tSiMinDetSM / sDepthWM + wSiExchSiO2M - aRelDeltaWM * sSiO2WM 
+ELSE
+   dSiO2WM = 0.0 
+ENDIF
+ !derivative_for_Si_SiO2_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dO2WM = tO2AerM / sDepthWM - wO2MinDetWM - wO2NitrWM -(tO2MinDetSM + tO2NitrSM) / sDepthWM + wO2ExchM - aRelDeltaWM * sO2WM 
+ELSE
+   dO2WM = 0.0 
+ENDIF
+ !derivative_for_O2_O2_in_water_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dDDetWM = tDMortShootPhra/sDepthWM - tDSetDetM/sDepthWM - wDMinDetWM + wDExchDetM - aRelDeltaWM * sDDetWM 
+ELSE
+   dDDetWM = 0.0 
+ENDIF
+ !derivative_for_DW_Detritus_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dNDetWM = tNMortShootPhra / sDepthWM - tNSetDetM / sDepthWM - wNMinDetWM + wNExchDetM - aRelDeltaWM * sNDetWM 
+ELSE
+   dNDetWM = 0.0 
+ENDIF
+ !derivative_for_N_detritus_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dPDetWM = tPMortShootPhra / sDepthWM - tPSetDetM / sDepthWM - wPMinDetWM + wPExchDetM - aRelDeltaWM * sPDetWM 
+ELSE
+   dPDetWM = 0.0 
+ENDIF
+ !derivative_for_P_detritus_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dSiDetWM = - tSiSetDetM / sDepthWM - wSiMinDetWM + wSiExchDetM - aRelDeltaWM * sSiDetWM 
+ELSE
+   dSiDetWM = 0.0 
+ENDIF
+ !derivative_for_Si_detritus_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dDIMWM = - tDSetIMM/sDepthWM + wDExchIMM - aRelDeltaWM * sDIMWM 
+ELSE
+   dDIMWM = 0.0 
+ENDIF
+ !derivative_for_DW_Inorg_matter_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dDDiatWM = wDExchDiatM - tDSetDiatM / sDepthWM - aRelDeltaWM * sDDiatWM 
+ELSE
+   dDDiatWM = 0.0 
+ENDIF
+ !derivative_for_DW_diatoms_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dNDiatWM = wNExchDiatM - tNSetDiatM / sDepthWM - aRelDeltaWM * sNDiatWM 
+ELSE
+   dNDiatWM = 0.0 
+ENDIF
+ !derivative_for_N_diatoms_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dPDiatWM = wPExchDiatM - tPSetDiatM / sDepthWM - aRelDeltaWM * sPDiatWM 
+ELSE
+   dPDiatWM = 0.0 
+ENDIF
+ !derivative_for_P_diatoms_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dDGrenWM = wDExchGrenM - tDSetGrenM / sDepthWM - aRelDeltaWM * sDGrenWM 
+ELSE
+   dDGrenWM = 0.0 
+ENDIF
+ !derivative_for_DW_greens_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dNGrenWM = wNExchGrenM - tNSetGrenM / sDepthWM - aRelDeltaWM * sNGrenWM 
+ELSE
+   dNGrenWM = 0.0 
+ENDIF
+ !derivative_for_N_greens_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dPGrenWM = wPExchGrenM - tPSetGrenM / sDepthWM - aRelDeltaWM * sPGrenWM 
+ELSE
+   dPGrenWM = 0.0 
+ENDIF
+ !derivative_for_P_greens_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dDBlueWM = wDExchBlueM - tDSetBlueM / sDepthWM - aRelDeltaWM * sDBlueWM 
+ELSE
+   dDBlueWM = 0.0 
+ENDIF
+ !derivative_for_DW_blue-greens_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dNBlueWM = wNExchBlueM - tNSetBlueM / sDepthWM - aRelDeltaWM * sNBlueWM 
+ELSE
+   dNBlueWM = 0.0 
+ENDIF
+ !derivative_for_N_blue-greens_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dPBlueWM = wPExchBlueM - tPSetBlueM / sDepthWM - aRelDeltaWM * sPBlueWM 
+ELSE
+   dPBlueWM = 0.0 
+ENDIF
+ !derivative_for_P_blue-greens_in_marsh_water
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   dDZooM = 0.0 
+ELSEIF (InclWeb) THEN
+   dDZooM = wDExchZooM - aRelDeltaWM * sDZooM 
+ELSE
+   dDZooM = 0.0 
+ENDIF
+ !derivative_for_DW_zooplankton_in_marsh_water
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   dNZooM = 0.0 
+ELSEIF (InclWeb) THEN
+   dNZooM = wNExchZooM - aRelDeltaWM * sNZooM 
+ELSE
+   dNZooM = 0.0 
+ENDIF
+ !derivative_for_N_zooplankton_in_marsh_water
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   dPZooM = 0.0 
+ELSEIF (InclWeb) THEN
+   dPZooM = wPExchZooM - aRelDeltaWM * sPZooM 
+ELSE
+   dPZooM = 0.0 
+ENDIF
+ !derivative_for_P_zooplankton_in_marsh_water
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dNH4SM = tNInfNH4WM - tNInfNH4SM +(1.0-fRefrDetS) * tNMinDetSM + tNMinHumSM - tNDifNH4M - tNDifGroundNH4M - tNNitrSM - tNBurNH4M - tNUptNH4PhraS + tNEvNH4WM 
+ELSE
+   dNH4SM = 0.0 
+ENDIF
+ !derivative_for_N_NH4_in_water_in_marsh_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dNO3SM = tNInfNO3WM - tNInfNO3SM + tNNitrSM - tNDenitSM - tNDifNO3M - tNDifGroundNO3M - tNBurNO3M - tNUptNO3PhraS + tNEvNO3WM 
+ELSE
+   dNO3SM = 0.0 
+ENDIF
+ !derivative_for_N_NO3_in_marsh_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dPO4SM = tPInfPO4WM - tPInfPO4SM + tPEvPO4WM +(1.0-fRefrDetS) * tPMinDetSM + tPMinHumSM - tPSorpIMSM - tPDifPO4M - tPDifGroundPO4M - tPChemPO4M - tPUptPhraS - tPBurPO4M 
+ELSE
+   dPO4SM = 0.0 
+ENDIF
+ !derivative_for_P_PO4_in_marsh_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dPAIMSM = tPSetAIMM - tPBurAIMM + tPSorpIMSM 
+ELSE
+   dPAIMSM = 0.0 
+ENDIF
+ !derivative_for_P_P_adsorbed_onto_IM_in_marsh_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dDDetSM = tDMortRootPhra + tDSetDetM - tDMinDetSM + tDSetPhytM - tDBurDetM 
+ELSE
+   dDDetSM = 0.0 
+ENDIF
+ !derivative_for_DW_Detritus_in_marsh_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dNDetSM = tNMortRootPhra + tNSetDetM - tNMinDetSM + tNSetPhytM - tNBurDetM 
+ELSE
+   dNDetSM = 0.0 
+ENDIF
+ !derivative_for_N_detritus_in_marsh_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dPDetSM = tPMortRootPhra + tPSetDetM - tPMinDetSM + tPSetPhytM - tPBurDetM 
+ELSE
+   dPDetSM = 0.0 
+ENDIF
+ !derivative_for_P_detritus_in_marsh_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dSiDetSM = tSiSetDetM - tSiMinDetSM + cSiDDiat * tDSetDiatM - tSiBurDetM 
+ELSE
+   dSiDetSM = 0.0 
+ENDIF
+ !derivative_for_P_detritus_in_marsh_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dDHumSM = fRefrDetS * tDMinDetSM - tDMinHumSM - tDBurHumM 
+ELSE
+   dDHumSM = 0.0 
+ENDIF
+ !derivative_for_DW_sediment_humus_in_marsh_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dNHumSM = fRefrDetS * tNMinDetSM - tNMinHumSM - tNBurHumM 
+ELSE
+   dNHumSM = 0.0 
+ENDIF
+ !derivative_for_N_sediment_humus_in_marsh_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dPHumSM = fRefrDetS * tPMinDetSM - tPMinHumSM - tPBurHumM 
+ELSE
+   dPHumSM = 0.0 
+ENDIF
+ !derivative_for_P_sediment_humus_in_marsh_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dDIMSM = tDSetIMM - tDBurIMM 
+ELSE
+   dDIMSM = 0.0 
+ENDIF
+ !derivative_for_DW_Inorg_matter_in_sediment_in_marsh_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dDRootPhra = tDProdRootPhra - tDRespRootPhra - tDMortRootPhra - tDAllPhra + tDRealPhra 
+ELSE
+   dDRootPhra = 0.0 
+ENDIF
+ !derivative_for_DW_biomass_root_reed_in_marsh_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dDShootPhra = tDProdShootPhra - tDRespShootPhra - tDMortShootPhra + tDAllPhra - tDRealPhra - tDManShootPhra 
+ELSE
+   dDShootPhra = 0.0 
+ENDIF
+ !derivative_for_DW_biomass_shoot_reed_in_marsh_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dNRootPhra = tNUptRootPhra - tNMortRootPhra - tNTransPhra + tNRetrPhra 
+ELSE
+   dNRootPhra = 0.0 
+ENDIF
+ !derivative_for_N_N_in_root_in_marsh_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dNShootPhra = tNUptShootPhra - tNMortShootPhra + tNTransPhra - tNRetrPhra - tNManShootPhra 
+ELSE
+   dNShootPhra = 0.0 
+ENDIF
+ !derivative_for_N_N_in_shoot_in_marsh_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dPRootPhra = tPUptRootPhra - tPMortRootPhra - tPTransPhra + tPRetrPhra 
+ELSE
+   dPRootPhra = 0.0 
+ENDIF
+ !derivative_for_P_P_in_root_in_marsh_sediment
+
+IF (InclMarsh .AND. fMarsh .GT. NearZero) THEN
+   dPShootPhra = tPUptShootPhra - tPMortShootPhra + tPTransPhra - tPRetrPhra - tPManShootPhra 
+ELSE
+   dPShootPhra = 0.0 
+ENDIF
+ !derivative_for_P_P_in_shoot_in_marsh_sediment
+
+dDExtTotT = uDLoad - wDOutflTot*sDepthW + wDTranZoo * sDepthW - tDBurTot + tDAbioTotT + tDPrimTotT + tDBedTotT + tDWebTotT + tDMarsTotT - tDDredNetTot
+ !derivative_for_total_external_DW_flux_
+
+dNExtTotT = uNLoad - wNOutflTot * sDepthW + wNTranZoo * sDepthW + cNBackLoad - tNBurTot + tNAbioTotT + tNPrimTotT + tNBedTotT + tNWebTotT + tNMarsTotT - tNDredNetTot
+ !derivative_for_total_external_N_flux_
+
+dPExtTotT = uPLoad - wPOutflTot * sDepthW + wPTranZoo * sDepthW + cPBackLoad - tPBurTot + tPAbioTotT + tPPrimTotT + tPBedTotT + tPWebTotT + tPMarsTotT - tPDredNetTot
+ !derivative_for_total_external_P_flux_
+
+dSiExtTotT = uSiLoad - wSiDilTot*sDepthW + tSiAbioTotT - tSiBurTot + tSiPrimTotT + tSiMarsTotT - tSiDredTot
+ !derivative_for_total_external_Si_flux_
+

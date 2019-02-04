@@ -1,0 +1,148 @@
+PROGRAM pclake
+
+! Eutrophication model for lakes
+! Made by J.H. Janse, RIVM/LWD/MNP/PBL
+! Model version: pl61316
+
+! General module, forms complete model together with:
+! "conversion.csl"                    ! Conversion parameters
+! "logical.csl"                       ! Logical parameters
+! "constant.csl"                      ! Other parameters
+! "initialstates.csl"                 ! Initial States
+! "derivatives.csl"                   ! Derivatives
+! "integration.csl"                   ! Integration
+
+!***********************************************************************
+
+ALGORITHM    IALG   = 8
+CINTERVAL    OutInt = 1.0
+NSTEPS       NSTP   = 200
+MAXTERVAL    MAXT   = 1.0
+MINTERVAL    MINT   = 1.0D-8
+XERROR       sPO4W  = 1.0D-8
+             !absolute error
+             !the first one applies to all states that are not specified
+MERROR       sPO4W  = 1.0D-5
+             !relative error
+             !the first one applies to all states that are not specified
+             !Error bound = MAX(XERROR,MERROR*state)
+VARIABLE     Time, BeginTime = 0.0    ! [d]
+CONSTANT     EndTime = 365.0          ! [d]  (=1 year)
+
+!***********************************************************************
+
+! Buffer for messages in file 'alog.txt'
+CHARACTER LogBuffer*256
+LogBuffer = ' '
+
+!***********************************************************************
+
+INITIAL                               ! INITIAL section of main model
+
+SORT
+
+! GENERAL CONVERSION FACTORS:
+
+INCLUDE 'conversion.csl'              ! Conversion parameters
+
+! Model configuration options
+
+INCLUDE 'logical.csl'                 ! Logical parameters
+
+! TABLE definitions: elements 1 to n = values, n+1 to 2n = days.
+! Names of measured variables start with the letter m, e.g. mQIn
+! Array sizes are defined by a PARAMETER statement.    
+
+! other measured variables
+INTEGER nmInpMax; PARAMETER (nmInpMax = 30000)
+
+TABLE mQIn, 1, nmInpMax / nmInpMax*0.0, nmInpMax*0.0/
+ !use_measured_time-series_of_inflow
+
+TABLE mQOut, 1, nmInpMax / nmInpMax*0.0, nmInpMax*0.0/
+ !use_measured_time-series_of_outflow
+
+TABLE mQEv, 1, nmInpMax / nmInpMax*0.0, nmInpMax*0.0/
+ !use_measured_time-series_of_evaporation
+
+TABLE mPLoad, 1, nmInpMax / nmInpMax*0.0, nmInpMax*0.0/
+ !use_measured_time-series_of_P_loading
+
+TABLE mPLoadPO4, 1, nmInpMax / nmInpMax*0.0, nmInpMax*0.0/
+ !use_measured_time-series_of_PO4_loading
+
+TABLE mPLoadOrg, 1, nmInpMax / nmInpMax*0.0, nmInpMax*0.0/
+ !use_measured_time-series_of_loading_P_bound_to_org_matter
+
+TABLE mPLoadPhytTot, 1, nmInpMax / nmInpMax*0.0, nmInpMax*0.0/
+ !use_measured_time-series_of_P_loading_algal_input
+
+TABLE mNLoad, 1, nmInpMax / nmInpMax*0.0, nmInpMax*0.0/
+ !use_measured_time-series_of_N_loading
+
+TABLE mNLoadNH4, 1, nmInpMax / nmInpMax*0.0, nmInpMax*0.0/
+ !use_measured_time-series_of_NH4_loading
+
+TABLE mNLoadNO3, 1, nmInpMax / nmInpMax*0.0, nmInpMax*0.0/
+ !use_measured_time-series_of_NO3_loading
+
+TABLE mNLoadOrg, 1, nmInpMax / nmInpMax*0.0, nmInpMax*0.0/
+ !use_measured_time-series_of_loading_N_bound_to_org_matter
+
+TABLE mDLoadDet, 1, nmInpMax / nmInpMax*0.0, nmInpMax*0.0/
+ !use_measured_time-series_of_Detritus_loading
+
+TABLE mDLoadIM, 1, nmInpMax / nmInpMax*0.0, nmInpMax*0.0/
+ !use_measured_time-series_of_loading_of_DW_of_inorg_matter
+
+! Temperature:
+INTEGER nmTempMax; PARAMETER (nmTempMax = 30000)
+TABLE mTemp, 1, nmTempMax / nmTempMax*0.0, nmTempMax*0.0 /
+
+! Light:
+INTEGER nmLOutMax; PARAMETER (nmLOutMax = 30000)
+TABLE mLOut, 1, nmLOutMax / nmLOutMax*0.0, nmLOutMax*0.0 /
+
+! Wind velocity:
+INTEGER nmVWindMax; PARAMETER (nmVWindMax = 30000)
+TABLE mVWind, 1, nmVWindMax / nmVWindMax*0.0, nmVWindMax*0.0 /
+
+INCLUDE 'constant.csl'                ! Other parameters
+
+! DERIVED INITIAL VALUES
+
+INCLUDE 'initialstates.csl'          ! Initial States
+
+END ! of INITIAL
+
+!***********************************************************************
+
+DYNAMIC
+
+DERIVATIVE
+
+INCLUDE 'derivatives.csl'             ! Derivatives
+
+! INTEGRATION CALLS
+
+INCLUDE 'integration.csl'             ! Integration
+
+END ! of DERIVATIVE
+
+! Other DYNAMIC code: (executed every OutInt)
+
+TERMT (Time .GE. EndTime)
+
+! Go to TERMINAL if EndTime is reached
+
+END ! of DYNAMIC
+
+!***********************************************************************
+
+TERMINAL
+
+END ! of TERMINAL
+
+!***********************************************************************
+
+END ! of PROGRAM pclake

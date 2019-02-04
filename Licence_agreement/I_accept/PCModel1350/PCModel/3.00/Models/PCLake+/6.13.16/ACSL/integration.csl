@@ -1,0 +1,208 @@
+sDepthW = INTEG(dDepthW,sDepthW0)
+ !Depth_of_lake_water
+sNH4W = INTEG(dNH4W,sNH4W0)
+ !N_in_NH4_in_lake_water
+sNO3W = INTEG(dNO3W,sNO3W0)
+ !N_in_NO3_in_lake_water
+sPO4W = INTEG(dPO4W,sPO4W0)
+ !P_in_PO4_in_lake_water
+sPAIMW = INTEG(dPAIMW,sPAIMW0)
+ !P_adsorbed_onto_IM_in_lake_water
+sSiO2W = INTEG(dSiO2W,sSiO2W0)
+ !Dissolved_Si_in_lake_water
+sO2W = INTEG(dO2W,sO2W0)
+ !Oxygen_in_lake_water
+sDDetW = INTEG(dDDetW,sDDetW0)
+ !Detritus_DW_in_lake_water
+sNDetW = INTEG(dNDetW,sNDetW0)
+ !Detritus_N_in_lake_water
+sPDetW = INTEG(dPDetW,sPDetW0)
+ !Detritus_P_in_lake_water
+sSiDetW = INTEG(dSiDetW,sSiDetW0)
+ !Detritus_Si_in_lake_water
+sDIMW = INTEG(dDIMW,sDIMW0)
+ !Inorganic_matter_in_lake_water
+sDDiatW = INTEG(dDDiatW,sDDiatW0)
+ !Diatoms_DW_in_lake_water
+sNDiatW = INTEG(dNDiatW,sNDiatW0)
+ !Diatoms_N_in_lake_water
+sPDiatW = INTEG(dPDiatW,sPDiatW0)
+ !Diatoms_P_in_lake_water
+sDGrenW = INTEG(dDGrenW,sDGrenW0)
+ !Green_algae_DW_in_lake_water
+sNGrenW = INTEG(dNGrenW,sNGrenW0)
+ !Green_algae_N_in_lake_water
+sPGrenW = INTEG(dPGrenW,sPGrenW0)
+ !Green_algae_P_in_lake_water
+sDBlueW = INTEG(dDBlueW,sDBlueW0)
+ !Blue-greens_DW_in_lake_water
+sNBlueW = INTEG(dNBlueW,sNBlueW0)
+ !Blue-greens_N_in_lake_water
+sPBlueW = INTEG(dPBlueW,sPBlueW0)
+ !Blue-greens_P_in_lake_water
+sDZoo = INTEG(dDZoo,sDZoo0)
+ !Zooplankton_DW_in_lake_water
+sNZoo = INTEG(dNZoo,sNZoo0)
+ !Zooplankton_N_in_lake_water
+sPZoo = INTEG(dPZoo,sPZoo0)
+ !Zooplankton_P_in_lake_water
+sDFiAd = INTEG(dDFiAd,sDFiAd0)
+ !Adult_fish_DW_in_lake_water
+sDFiJv = INTEG(dDFiJv,sDFiJv0)
+ !Young_fish_DW_in_lake_water
+sNFiAd = INTEG(dNFiAd,sNFiAd0)
+ !Adult_fish_N_in_lake_water
+sNFiJv = INTEG(dNFiJv,sNFiJv0)
+ !Young_fish_N_in_lake_water
+sPFiAd = INTEG(dPFiAd,sPFiAd0)
+ !Adult_fish_P_in_lake_water
+sPFiJv = INTEG(dPFiJv,sPFiJv0)
+ !Young_fish_P_in_lake_water
+sDPisc = INTEG(dDPisc,sDPisc0)
+ !Predatory_fish_DW_in_lake_water
+sNH4S = INTEG(dNH4S,sNH4S0)
+ !N_in_NH4_in_lake_sediment_pore_water
+sNO3S = INTEG(dNO3S,sNO3S0)
+ !N_in_NO3_in_lake_sediment_pore_water
+sPO4S = INTEG(dPO4S,sPO4S0)
+ !P_in_PO4_in_lake_sediment_pore_water
+sPAIMS = INTEG(dPAIMS,sPAIMS0)
+ !P_adsorbed_onto_IM_in_lake_sediment
+sDDetS = INTEG(dDDetS,sDDetS0)
+ !Detritus_DW_in_lake_sediment
+sNDetS = INTEG(dNDetS,sNDetS0)
+ !Detritus_N_in_lake_sediment
+sPDetS = INTEG(dPDetS,sPDetS0)
+ !Detritus_P_in_lake_sediment
+sSiDetS = INTEG(dSiDetS,sSiDetS0)
+ !Detritus_Si_in_lake_sediment
+sDHumS = INTEG(dDHumS,sDHumS0)
+ !Humus_DW_in_lake_sediment
+sNHumS = INTEG(dNHumS,sNHumS0)
+ !Humus_N_in_lake_sediment
+sPHumS = INTEG(dPHumS,sPHumS0)
+ !Humus_P_in_lake_sediment
+sDIMS = INTEG(dDIMS,sDIMS0)
+ !Inorganic_matter_in_lake_sediment
+sDDiatS = INTEG(dDDiatS,sDDiatS0)
+ !Diatoms_DW_on_lake_sediment
+sNDiatS = INTEG(dNDiatS,sNDiatS0)
+ !Diatoms_N_on_lake_sediment
+sPDiatS = INTEG(dPDiatS,sPDiatS0)
+ !Diatoms_P_on_lake_sediment
+sDGrenS = INTEG(dDGrenS,sDGrenS0)
+ !Green_algae_DW_on_lake_sediment
+sNGrenS = INTEG(dNGrenS,sNGrenS0)
+ !Green_algae_N_on_lake_sediment
+sPGrenS = INTEG(dPGrenS,sPGrenS0)
+ !Green_algae_P_on_lake_sediment
+sDBlueS = INTEG(dDBlueS,sDBlueS0)
+ !Blue-greens_DW_on_lake_sediment
+sNBlueS = INTEG(dNBlueS,sNBlueS0)
+ !Blue-greens_N_on_lake_sediment
+sPBlueS = INTEG(dPBlueS,sPBlueS0)
+ !Blue-greens_P_on_lake_sediment
+sDVeg = INTEG(dDVeg,sDVeg0)
+ !Vegetation_DW_in_lake_water
+sNVeg = INTEG(dNVeg,sNVeg0)
+ !Vegetation_N_in_lake_water
+sPVeg = INTEG(dPVeg,sPVeg0)
+ !Vegetation_P_in_lake_water
+sDBent = INTEG(dDBent,sDBent0)
+ !Zoobenthos_DW_in_lake_sediment
+sNBent = INTEG(dNBent,sNBent0)
+ !Zoobenthos_N_in_lake_sediment
+sPBent = INTEG(dPBent,sPBent0)
+ !Zoobenthos_P_in_lake_sediment
+sDepthWM = INTEG(dDepthWM,sDepthWM0)
+ !Depth_of_marsh_water
+sNH4WM = INTEG(dNH4WM,sNH4WM0)
+ !N_in_NH4_in_marsh_water
+sNO3WM = INTEG(dNO3WM,sNO3WM0)
+ !N_in_NO3_in_marsh_water
+sPO4WM = INTEG(dPO4WM,sPO4WM0)
+ !P_in_PO4_in_marsh_water
+sPAIMWM = INTEG(dPAIMWM,sPAIMWM0)
+ !P_adsorbed_onto_IM_in_marsh_water
+sSiO2WM = INTEG(dSiO2WM,sSiO2WM0)
+ !Dissolved_Si_in_marsh_water
+sO2WM = INTEG(dO2WM,sO2WM0)
+ !Oxygen_in_marsh_water
+sDDetWM = INTEG(dDDetWM,sDDetWM0)
+ !Detritus_DW_in_marsh_water
+sNDetWM = INTEG(dNDetWM,sNDetWM0)
+ !Detritus_N_in_marsh_water
+sPDetWM = INTEG(dPDetWM,sPDetWM0)
+ !Detritus_P_in_marsh_water
+sSiDetWM = INTEG(dSiDetWM,sSiDetWM0)
+ !Detritus_Si_in_marsh_water
+sDIMWM = INTEG(dDIMWM,sDIMWM0)
+ !Inorganic_matter_in_marsh_water
+sDDiatWM = INTEG(dDDiatWM,sDDiatWM0)
+ !Diatoms_DW_in_marsh_water
+sNDiatWM = INTEG(dNDiatWM,sNDiatWM0)
+ !Diatoms_N_in_marsh_water
+sPDiatWM = INTEG(dPDiatWM,sPDiatWM0)
+ !Diatoms_P_in_marsh_water
+sDGrenWM = INTEG(dDGrenWM,sDGrenWM0)
+ !Green_algae_DW_in_marsh_water
+sNGrenWM = INTEG(dNGrenWM,sNGrenWM0)
+ !Green_algae_N_in_marsh_water
+sPGrenWM = INTEG(dPGrenWM,sPGrenWM0)
+ !Green_algae_P_in_marsh_water
+sDBlueWM = INTEG(dDBlueWM,sDBlueWM0)
+ !Blue-greens_DW_in_marsh_water
+sNBlueWM = INTEG(dNBlueWM,sNBlueWM0)
+ !Blue-greens_N_in_marsh_water
+sPBlueWM = INTEG(dPBlueWM,sPBlueWM0)
+ !Blue-greens_P_in_marsh_water
+sDZooM = INTEG(dDZooM,sDZooM0)
+ !Zooplankton_DW_in_marsh_water
+sNZooM = INTEG(dNZooM,sNZooM0)
+ !Zooplankton_N_in_marsh_water
+sPZooM = INTEG(dPZooM,sPZooM0)
+ !Zooplankton_P_in_marsh_water
+sNH4SM = INTEG(dNH4SM,sNH4SM0)
+ !N_in_NH4_in_marsh_sediment_pore_water
+sNO3SM = INTEG(dNO3SM,sNO3SM0)
+ !N_in_NO3_in_marsh_sediment_pore_water
+sPO4SM = INTEG(dPO4SM,sPO4SM0)
+ !P_in_PO4_in_marsh_sediment_pore_water
+sPAIMSM = INTEG(dPAIMSM,sPAIMSM0)
+ !P_adsorbed_onto_IM_in_marsh_sediment
+sDDetSM = INTEG(dDDetSM,sDDetSM0)
+ !Detritus_DW_in_marsh_sediment
+sNDetSM = INTEG(dNDetSM,sNDetSM0)
+ !Detritus_N_in_marsh_sediment
+sPDetSM = INTEG(dPDetSM,sPDetSM0)
+ !Detritus_P_in_marsh_sediment
+sSiDetSM = INTEG(dSiDetSM,sSiDetSM0)
+ !Detritus_Si_in_marsh_sediment
+sDHumSM = INTEG(dDHumSM,sDHumSM0)
+ !Humus_DW_in_marsh_sediment
+sNHumSM = INTEG(dNHumSM,sNHumSM0)
+ !Humus_N_in_marsh_sediment
+sPHumSM = INTEG(dPHumSM,sPHumSM0)
+ !Humus_Pin_marsh_sediment
+sDIMSM = INTEG(dDIMSM,sDIMSM0)
+ !Inorganic_matter_in_marsh_sediment
+sDRootPhra = INTEG(dDRootPhra,sDRootPhra0)
+ !Root_biomass_DW_in_marsh_sediment
+sDShootPhra = INTEG(dDShootPhra,sDShootPhra0)
+ !Shoot_biomass_DW_in_marsh_water
+sNRootPhra = INTEG(dNRootPhra,sNRootPhra0)
+ !Root_biomass_N_in_marsh_sediment
+sNShootPhra = INTEG(dNShootPhra,sNShootPhra0)
+ !Shoot_biomass_N_in_marsh_water
+sPRootPhra = INTEG(dPRootPhra,sPRootPhra0)
+ !Root_biomass_P_in_marsh_sediment
+sPShootPhra = INTEG(dPShootPhra,sPShootPhra0)
+ !Shoot_biomass_P_in_marsh_water
+sDExtTotT = INTEG(dDExtTotT,sDExtTotT0)
+ !Total_amount_of_DW_moved_into_or_out_from_the_system
+sNExtTotT = INTEG(dNExtTotT,sNExtTotT0)
+ !Total_amount_of_N_moved_into_or_out_from_the_system
+sPExtTotT = INTEG(dPExtTotT,sPExtTotT0)
+ !Total_amount_of_P_moved_into_or_out_from_the_system
+sSiExtTotT = INTEG(dSiExtTotT,sSiExtTotT0)
+ !Total_amount_of_Si_moved_into_or_out_from_the_system

@@ -1,0 +1,896 @@
+CONSTANT cDepthW0 =  2 
+CONSTANT cNH4W0 =  0.10000000149 
+CONSTANT cNO3W0 =  0.10000000149 
+CONSTANT cPO4W0 =  0.00999999978 
+CONSTANT cPAIMW0 =  0 
+CONSTANT cSiO2W0 =  3 
+CONSTANT cO2W0 =  10 
+CONSTANT cDDetW0 =  2 
+CONSTANT cNDetW0 =  0.05000000075 
+CONSTANT cPDetW0 =  0.00499999989 
+CONSTANT cSiDetW0 =  0.01999999955 
+CONSTANT cDIMW0 =  5 
+CONSTANT cDDiatW0 =  0.5 
+CONSTANT cNDiatW0 =  0.05000000075 
+CONSTANT cPDiatW0 =  0.00499999989 
+CONSTANT cDGrenW0 =  0.5 
+CONSTANT cNGrenW0 =  0.05000000075 
+CONSTANT cPGrenW0 =  0.00499999989 
+CONSTANT cDBlueW0 =  3 
+CONSTANT cNBlueW0 =  0.30000000447 
+CONSTANT cPBlueW0 =  0.02999999933 
+CONSTANT cDZoo0 =  0.05000000075 
+CONSTANT cNZoo0 =  0.00350000007 
+CONSTANT cPZoo0 =  0.000499999996275 
+CONSTANT cDFiAd0 =  2 
+CONSTANT cDFiJv0 =  0.5 
+CONSTANT cNFiAd0 =  0.20000000298 
+CONSTANT cNFiJv0 =  0.05000000075 
+CONSTANT cPFiAd0 =  0.04399999976 
+CONSTANT cPFiJv0 =  0.01099999994 
+CONSTANT cDPisc0 =  0.00999999978 
+CONSTANT cNH4S0 =  0.01999999955 
+CONSTANT cNO3S0 =  0.00200000009 
+CONSTANT cPO4S0 =  0.18170283715 
+CONSTANT cPAIMS0 =  17.9885982064 
+CONSTANT cDDetS0 =  181.70300722 
+CONSTANT cNDetS0 =  4.54257524819 
+CONSTANT cPDetS0 =  0.4542575079 
+CONSTANT cSiDetS0 =  1.81703003159 
+CONSTANT cDHumS0 =  3452.35708303 
+CONSTANT cNHumS0 =  172.617856724 
+CONSTANT cPHumS0 =  17.2617850293 
+CONSTANT cDIMS0 =  32706.5402707 
+CONSTANT cDDiatS0 =  0.00100000005 
+CONSTANT cNDiatS0 =  0.00010000000624 
+CONSTANT cPDiatS0 =  1.00000002515E-05 
+CONSTANT cDGrenS0 =  0.00100000005 
+CONSTANT cNGrenS0 =  0.00010000000624 
+CONSTANT cPGrenS0 =  1.00000002515E-05 
+CONSTANT cDBlueS0 =  0.00100000005 
+CONSTANT cNBlueS0 =  0.00010000000624 
+CONSTANT cPBlueS0 =  1.00000002515E-05 
+CONSTANT cDVeg0 =  1 
+CONSTANT cNVeg0 =  0.01999999955 
+CONSTANT cPVeg0 =  0.00200000009 
+CONSTANT cDBent0 =  1 
+CONSTANT cNBent0 =  0.0700000003 
+CONSTANT cPBent0 =  0.00999999978 
+CONSTANT cDepthWM0 =  0.5 
+CONSTANT cNH4WM0 =  0.10000000149 
+CONSTANT cNO3WM0 =  0.10000000149 
+CONSTANT cPO4WM0 =  0.00999999978 
+CONSTANT cPAIMWM0 =  0 
+CONSTANT cSiO2WM0 =  3 
+CONSTANT cO2WM0 =  10 
+CONSTANT cDDetWM0 =  2 
+CONSTANT cNDetWM0 =  0.05000000075 
+CONSTANT cPDetWM0 =  0.00499999989 
+CONSTANT cSiDetWM0 =  0.01999999955 
+CONSTANT cDIMWM0 =  5 
+CONSTANT cDDiatWM0 =  0.5 
+CONSTANT cNDiatWM0 =  0.05000000075 
+CONSTANT cPDiatWM0 =  0.00499999989 
+CONSTANT cDGrenWM0 =  0.5 
+CONSTANT cNGrenWM0 =  0.05000000075 
+CONSTANT cPGrenWM0 =  0.00499999989 
+CONSTANT cDBlueWM0 =  3 
+CONSTANT cNBlueWM0 =  0.30000000447 
+CONSTANT cPBlueWM0 =  0.02999999933 
+CONSTANT cDZooM0 =  0.05000000075 
+CONSTANT cNZooM0 =  0.00350000007 
+CONSTANT cPZooM0 =  0.000499999996275 
+CONSTANT cNH4SM0 =  1 
+CONSTANT cNO3SM0 =  0.00999999978 
+CONSTANT cPO4SM0 =  0.18170283715 
+CONSTANT cPAIMSM0 =  17.9885982064 
+CONSTANT cDDetSM0 =  181.70300722 
+CONSTANT cNDetSM0 =  4.54257524819 
+CONSTANT cPDetSM0 =  0.4542575079 
+CONSTANT cSiDetSM0 =  1.81703003159 
+CONSTANT cDHumSM0 =  3452.35708303 
+CONSTANT cNHumSM0 =  172.617856724 
+CONSTANT cPHumSM0 =  17.2617850293 
+CONSTANT cDIMSM0 =  32706.5402707 
+CONSTANT cDRootPhra0 =  5000 
+CONSTANT cDShootPhra0 =  1000 
+CONSTANT cNRootPhra0 =  99.9999977648 
+CONSTANT cNShootPhra0 =  19.999999553 
+CONSTANT cPRootPhra0 =  10.000000475 
+CONSTANT cPShootPhra0 =  2.00000009499 
+CONSTANT cDExtTotT0 =  36367.21336 
+CONSTANT cNExtTotT0 =  178.830732 
+CONSTANT cPExtTotT0 =  36.06459358 
+CONSTANT cSiExtTotT0 =  8.007180153 
+sDepthW0 = cDepthW0
+ !Depth_of_lake_water
+
+sNH4W0 = cNH4W0
+ !N_in_NH4_in_lake_water
+
+sNO3W0 = cNO3W0
+ !N_in_NO3_in_lake_water
+
+sPO4W0 = cPO4W0
+ !P_in_PO4_in_lake_water
+
+sPAIMW0 = cPAIMW0
+ !P_adsorbed_onto_IM_in_lake_water
+
+sSiO2W0 = cSiO2W0
+ !Dissolved_Si_in_lake_water
+
+sO2W0 = cO2W0
+ !Oxygen_in_lake_water
+
+sDDetW0 = cDDetW0
+ !Detritus_DW_in_lake_water
+
+IF (InitCalc) THEN
+   sNDetW0 = cNDDet0 * sDDetW0
+ELSE
+   sNDetW0 = cNDetW0
+ENDIF
+ !Detritus_N_in_lake_water
+
+IF (InitCalc) THEN
+   sPDetW0 = cPDDet0 * sDDetW0
+ELSE
+   sPDetW0 = cPDetW0
+ENDIF
+ !Detritus_P_in_lake_water
+
+IF (InitCalc) THEN
+   sSiDetW0 = cSiDDet0 * sDDetW0
+ELSE
+   sSiDetW0 = cSiDetW0
+ENDIF
+ !Detritus_Si_in_lake_water
+
+sDIMW0 = cDIMW0
+ !Inorganic_matter_in_lake_water
+
+sDDiatW0 = cDDiatW0
+ !Diatoms_DW_in_lake_water
+
+IF (InitCalc) THEN
+   sNDiatW0 = cNDDiat0 * sDDiatW0
+ELSE
+   sNDiatW0 = cNDiatW0
+ENDIF
+ !Diatoms_N_in_lake_water
+
+IF (InitCalc) THEN
+   sPDiatW0 = cPDDiat0 * sDDiatW0
+ELSE
+   sPDiatW0 = cPDiatW0
+ENDIF
+ !Diatoms_P_in_lake_water
+
+sDGrenW0 = cDGrenW0
+ !Green_algae_DW_in_lake_water
+
+IF (InitCalc) THEN
+   sNGrenW0 = cNDGren0 * sDGrenW0
+ELSE
+   sNGrenW0 = cNGrenW0
+ENDIF
+ !Green_algae_N_in_lake_water
+
+IF (InitCalc) THEN
+   sPGrenW0 = cPDGren0 * sDGrenW0
+ELSE
+   sPGrenW0 = cPGrenW0
+ENDIF
+ !Green_algae_P_in_lake_water
+
+sDBlueW0 = cDBlueW0
+ !Blue-greens_DW_in_lake_water
+
+IF (InitCalc) THEN
+   sNBlueW0 = cNDBlue0 * sDBlueW0
+ELSE
+   sNBlueW0 = cNBlueW0
+ENDIF
+ !Blue-greens_N_in_lake_water
+
+IF (InitCalc) THEN
+   sPBlueW0 = cPDBlue0 * sDBlueW0
+ELSE
+   sPBlueW0 = cPBlueW0
+ENDIF
+ !Blue-greens_P_in_lake_water
+
+sDZoo0 = cDZoo0
+ !Zooplankton_DW_in_lake_water
+
+IF (InitCalc) THEN
+   sNZoo0 = cNDZooRef * sDZoo0
+ELSE
+   sNZoo0 = cNZoo0
+ENDIF
+ !Zooplankton_N_in_lake_water
+
+IF (InitCalc) THEN
+   sPZoo0 = cPDZooRef * sDZoo0
+ELSE
+   sPZoo0 = cPZoo0
+ENDIF
+ !Zooplankton_P_in_lake_water
+
+sDFiAd0 = cDFiAd0
+ !Adult_fish_DW_in_lake_water
+
+sDFiJv0 = cDFiJv0
+ !Young_fish_DW_in_lake_water
+
+IF (InitCalc) THEN
+   sNFiAd0 = cNDFishRef * sDFiAd0
+ELSE
+   sNFiAd0 = cNFiAd0
+ENDIF
+ !Adult_fish_N_in_lake_water
+
+IF (InitCalc) THEN
+   sNFiJv0 = cNDFishRef * sDFiJv0
+ELSE
+   sNFiJv0 = cNFiJv0
+ENDIF
+ !Young_fish_N_in_lake_water
+
+IF (InitCalc) THEN
+   sPFiAd0 = cPDFishRef * sDFiAd0
+ELSE
+   sPFiAd0 = cPFiAd0
+ENDIF
+ !Adult_fish_P_in_lake_water
+
+IF (InitCalc) THEN
+   sPFiJv0 = cPDFishRef * sDFiJv0
+ELSE
+   sPFiJv0 = cPFiJv0
+ENDIF
+ !Young_fish_P_in_lake_water
+
+sDPisc0 = cDPisc0
+ !Predatory_fish_DW_in_lake_water
+
+sNH4S0 = cNH4S0
+ !N_in_NH4_in_lake_sediment_pore_water
+
+sNO3S0 = cNO3S0
+ !N_in_NO3_in_lake_sediment_pore_water
+
+bRhoSolidS0 = fDOrgS0 * cRhoOM + (1.0 - fDOrgS0) * cRhoIM
+ !Average_density_of_solid_material
+
+bPorS0 = (1.0 - fDTotS0) * bRhoSolidS0 / cRhoWat / ( fDTotS0 + (1.0 - fDTotS0) &
+* bRhoSolidS0 / cRhoWat )
+ !Porosity
+
+bRhoTotS0 = bRhoSolidS0 * (1.0 - bPorS0)
+ !Bulk_density_of_sediment
+
+bDTotS0 = bRhoTotS0 * cDepthS
+ !Total_dry-weight_in_top_layer
+
+IF (InitCalc) THEN
+   sPO4S0 = (1.0 - fPAdsS0) * fPInorgS0 * bDTotS0
+ELSE
+   sPO4S0 = cPO4S0
+ENDIF
+ !P_in_PO4_in_lake_sediment_pore_water
+
+IF (InitCalc) THEN
+   sPAIMS0 = fPAdsS0 * fPInorgS0 * bDTotS0
+ELSE
+   sPAIMS0 = cPAIMS0
+ENDIF
+ !P_adsorbed_onto_IM_in_lake_sediment
+
+IF (InitCalc) THEN
+   sDDetS0 = fDDetS0 * fDOrgS0 * bDTotS0
+ELSE
+   sDDetS0 = cDDetS0
+ENDIF
+ !Detritus_DW_in_lake_sediment
+
+IF (InitCalc) THEN
+   sNDetS0 = cNDDet0 * sDDetS0
+ELSE
+   sNDetS0 = cNDetS0
+ENDIF
+ !Detritus_N_in_lake_sediment
+
+IF (InitCalc) THEN
+   sPDetS0 = cPDDet0 * sDDetS0
+ELSE
+   sPDetS0 = cPDetS0
+ENDIF
+ !Detritus_P_in_lake_sediment
+
+IF (InitCalc) THEN
+   sSiDetS0 = cSiDDet0 * sDDetS0
+ELSE
+   sSiDetS0 = cSiDetS0
+ENDIF
+ !Detritus_Si_in_lake_sediment
+
+IF (InitCalc) THEN
+   sDHumS0 = (1.0 - fDDetS0) * fDOrgS0 * bDTotS0
+ELSE
+   sDHumS0 = cDHumS0
+ENDIF
+ !Humus_DW_in_lake_sediment
+
+IF (InitCalc) THEN
+   sNHumS0 = cNDHum0 * sDHumS0
+ELSE
+   sNHumS0 = cNHumS0
+ENDIF
+ !Humus_N_in_lake_sediment
+
+IF (InitCalc) THEN
+   sPHumS0 = cPDHum0 * sDHumS0
+ELSE
+   sPHumS0 = cPHumS0
+ENDIF
+ !Humus_P_in_lake_sediment
+
+IF (InitCalc) THEN
+   sDIMS0 = bDTotS0 - sDHumS0 - sDDetS0
+ELSE
+   sDIMS0 = cDIMS0
+ENDIF
+ !Inorganic_matter_in_lake_sediment
+
+IF (InitCalc) THEN
+   sDDiatS0 = fSedPhyt0 * sDDiatW0
+ELSE
+   sDDiatS0 = cDDiatS0
+ENDIF
+ !Diatoms_DW_on_lake_sediment
+
+IF (InitCalc) THEN
+   sNDiatS0 = cNDDiat0 * sDDiatS0
+ELSE
+   sNDiatS0 = cNDiatS0
+ENDIF
+ !Diatoms_N_on_lake_sediment
+
+IF (InitCalc) THEN
+   sPDiatS0 = cPDDiat0 * sDDiatS0
+ELSE
+   sPDiatS0 = cPDiatS0
+ENDIF
+ !Diatoms_P_on_lake_sediment
+
+IF (InitCalc) THEN
+   sDGrenS0 = fSedPhyt0 * sDGrenW0
+ELSE
+   sDGrenS0 = cDGrenS0
+ENDIF
+ !Green_algae_DW_on_lake_sediment
+
+IF (InitCalc) THEN
+   sNGrenS0 = cNDGren0 * sDGrenS0
+ELSE
+   sNGrenS0 = cNGrenS0
+ENDIF
+ !Green_algae_N_on_lake_sediment
+
+IF (InitCalc) THEN
+   sPGrenS0 = cPDGren0 * sDGrenS0
+ELSE
+   sPGrenS0 = cPGrenS0
+ENDIF
+ !Green_algae_P_on_lake_sediment
+
+IF (InitCalc) THEN
+   sDBlueS0 = fSedPhyt0 * sDBlueW0
+ELSE
+   sDBlueS0 = cDBlueS0
+ENDIF
+ !Blue-greens_DW_on_lake_sediment
+
+IF (InitCalc) THEN
+   sNBlueS0 = cNDBlue0 * sDBlueS0
+ELSE
+   sNBlueS0 = cNBlueS0
+ENDIF
+ !Blue-greens_N_on_lake_sediment
+
+IF (InitCalc) THEN
+   sPBlueS0 = cPDBlue0 * sDBlueS0
+ELSE
+   sPBlueS0 = cPBlueS0
+ENDIF
+ !Blue-greens_P_on_lake_sediment
+
+sDVeg0 = cDVeg0
+ !Vegetation_DW_in_lake_water
+
+IF (InitCalc) THEN
+   sNVeg0 = cNDVeg0 * sDVeg0
+ELSE
+   sNVeg0 = cNVeg0
+ENDIF
+ !Vegetation_N_in_lake_water
+
+IF (InitCalc) THEN
+   sPVeg0 = cPDVeg0 * sDVeg0
+ELSE
+   sPVeg0 = cPVeg0
+ENDIF
+ !Vegetation_P_in_lake_water
+
+sDBent0 = cDBent0
+ !Zoobenthos_DW_in_lake_sediment
+
+IF (InitCalc) THEN
+   sNBent0 = cNDBentRef * sDBent0
+ELSE
+   sNBent0 = cNBent0
+ENDIF
+ !Zoobenthos_N_in_lake_sediment
+
+IF (InitCalc) THEN
+   sPBent0 = cPDBentRef * sDBent0
+ELSE
+   sPBent0 = cPBent0
+ENDIF
+ !Zoobenthos_P_in_lake_sediment
+
+sDepthWM0 = cDepthWM0
+ !Depth_of_marsh_water
+
+IF (InitCalc) THEN
+   sNH4WM0 = sNH4W0
+ELSE
+   sNH4WM0 = cNH4WM0
+ENDIF
+ !N_in_NH4_in_marsh_water
+
+IF (InitCalc) THEN
+   sNO3WM0 = sNO3W0
+ELSE
+   sNO3WM0 = cNO3WM0
+ENDIF
+ !N_in_NO3_in_marsh_water
+
+IF (InitCalc) THEN
+   sPO4WM0 = sPO4W0
+ELSE
+   sPO4WM0 = cPO4WM0
+ENDIF
+ !P_in_PO4_in_marsh_water
+
+IF (InitCalc) THEN
+   sPAIMWM0 = sPAIMW0
+ELSE
+   sPAIMWM0 = cPAIMWM0
+ENDIF
+ !P_adsorbed_onto_IM_in_marsh_water
+
+IF (InitCalc) THEN
+   sSiO2WM0 = sSiO2W0
+ELSE
+   sSiO2WM0 = cSiO2WM0
+ENDIF
+ !Dissolved_Si_in_marsh_water
+
+IF (InitCalc) THEN
+   sO2WM0 = sO2W0
+ELSE
+   sO2WM0 = cO2WM0
+ENDIF
+ !Oxygen_in_marsh_water
+
+IF (InitCalc) THEN
+   sDDetWM0 = sDDetW0
+ELSE
+   sDDetWM0 = cDDetWM0
+ENDIF
+ !Detritus_DW_in_marsh_water
+
+IF (InitCalc) THEN
+   sNDetWM0 = sNDetW0
+ELSE
+   sNDetWM0 = cNDetWM0
+ENDIF
+ !Detritus_N_in_marsh_water
+
+IF (InitCalc) THEN
+   sPDetWM0 = sPDetW0
+ELSE
+   sPDetWM0 = cPDetWM0
+ENDIF
+ !Detritus_P_in_marsh_water
+
+IF (InitCalc) THEN
+   sSiDetWM0 = sSiDetW0
+ELSE
+   sSiDetWM0 = cSiDetWM0
+ENDIF
+ !Detritus_Si_in_marsh_water
+
+IF (InitCalc) THEN
+   sDIMWM0 = sDIMW0
+ELSE
+   sDIMWM0 = cDIMWM0
+ENDIF
+ !Inorganic_matter_in_marsh_water
+
+IF (InitCalc) THEN
+   sDDiatWM0 = sDDiatW0
+ELSE
+   sDDiatWM0 = cDDiatWM0
+ENDIF
+ !Diatoms_DW_in_marsh_water
+
+IF (InitCalc) THEN
+   sNDiatWM0 = sNDiatW0
+ELSE
+   sNDiatWM0 = cNDiatWM0
+ENDIF
+ !Diatoms_N_in_marsh_water
+
+IF (InitCalc) THEN
+   sPDiatWM0 = sPDiatW0
+ELSE
+   sPDiatWM0 = cPDiatWM0
+ENDIF
+ !Diatoms_P_in_marsh_water
+
+IF (InitCalc) THEN
+   sDGrenWM0 = sDGrenW0
+ELSE
+   sDGrenWM0 = cDGrenWM0
+ENDIF
+ !Green_algae_DW_in_marsh_water
+
+IF (InitCalc) THEN
+   sNGrenWM0 = sNGrenW0
+ELSE
+   sNGrenWM0 = cNGrenWM0
+ENDIF
+ !Green_algae_N_in_marsh_water
+
+IF (InitCalc) THEN
+   sPGrenWM0 = sPGrenW0
+ELSE
+   sPGrenWM0 = cPGrenWM0
+ENDIF
+ !Green_algae_P_in_marsh_water
+
+IF (InitCalc) THEN
+   sDBlueWM0 = sDBlueW0
+ELSE
+   sDBlueWM0 = cDBlueWM0
+ENDIF
+ !Blue-greens_DW_in_marsh_water
+
+IF (InitCalc) THEN
+   sNBlueWM0 = sNBlueW0
+ELSE
+   sNBlueWM0 = cNBlueWM0
+ENDIF
+ !Blue-greens_N_in_marsh_water
+
+IF (InitCalc) THEN
+   sPBlueWM0 = sPBlueW0
+ELSE
+   sPBlueWM0 = cPBlueWM0
+ENDIF
+ !Blue-greens_P_in_marsh_water
+
+IF (InitCalc) THEN
+   sDZooM0 = sDZoo0
+ELSE
+   sDZooM0 = cDZooM0
+ENDIF
+ !Zooplankton_DW_in_marsh_water
+
+IF (InitCalc) THEN
+   sNZooM0 = sNZoo0
+ELSE
+   sNZooM0 = cNZooM0
+ENDIF
+ !Zooplankton_N_in_marsh_water
+
+IF (InitCalc) THEN
+   sPZooM0 = sPZoo0
+ELSE
+   sPZooM0 = cPZooM0
+ENDIF
+ !Zooplankton_P_in_marsh_water
+
+IF (InitCalc) THEN
+   sNH4SM0 = sNH4S0
+ELSE
+   sNH4SM0 = cNH4SM0
+ENDIF
+ !N_in_NH4_in_marsh_sediment_pore_water
+
+IF (InitCalc) THEN
+   sNO3SM0 = sNO3S0
+ELSE
+   sNO3SM0 = cNO3SM0
+ENDIF
+ !N_in_NO3_in_marsh_sediment_pore_water
+
+IF (InitCalc) THEN
+   bRhoSolidSM0 = fDOrgSM0 * cRhoOM +(1.0 - fDOrgSM0) * cRhoIM
+ELSE
+   bRhoSolidSM0 = fDOrgSM0 * cRhoOM +(1.0 - fDOrgSM0) * cRhoIM
+ENDIF
+ !Average_density_of_solid_material
+
+IF (InitCalc) THEN
+   bPorSM0 = (1.0 - fDTotSM0) * bRhoSolidSM0 / cRhoWat /(fDTotSM0 + (1.0 - &
+fDTotSM0) * bRhoSolidSM0 / cRhoWat)
+ELSE
+   bPorSM0 = (1.0 - fDTotSM0) * bRhoSolidSM0 / cRhoWat /(fDTotSM0 + (1.0 - &
+fDTotSM0) * bRhoSolidSM0 / cRhoWat)
+ENDIF
+ !Porosity
+
+IF (InitCalc) THEN
+   bRhoTotSM0 = bRhoSolidSM0 * (1.0 - bPorSM0)
+ELSE
+   bRhoTotSM0 = 0.0
+ENDIF
+ !Bulk_density_of_sediment
+
+IF (InitCalc) THEN
+   bDTotSM0 = bRhoTotSM0 * cDepthSM
+ELSE
+   bDTotSM0 = 0.0
+ENDIF
+ !Total_dry-weight_in_top_layer
+
+IF (InitCalc) THEN
+   fPAdsSM0 = fPAdsS0
+ELSE
+   fPAdsSM0 = 0.0
+ENDIF
+ !Adsorbed_fraction_of_inorg._P_in_sediment
+
+IF (InitCalc) THEN
+   sPO4SM0 = (1.0 - fPAdsSM0) * fPInorgSM0 * bDTotSM0
+ELSE
+   sPO4SM0 = cPO4SM0
+ENDIF
+ !P_in_PO4_in_marsh_sediment_pore_water
+
+IF (InitCalc) THEN
+   sPAIMSM0 = fPAdsSM0 * fPInorgSM0 * bDTotSM0
+ELSE
+   sPAIMSM0 = cPAIMSM0
+ENDIF
+ !P_adsorbed_onto_IM_in_marsh_sediment
+
+IF (InitCalc) THEN
+   sDDetSM0 = fDDetSM0 * fDOrgSM0 * bDTotSM0
+ELSE
+   sDDetSM0 = cDDetSM0
+ENDIF
+ !Detritus_DW_in_marsh_sediment
+
+IF (InitCalc) THEN
+   sNDetSM0 = cNDDet0 * sDDetSM0
+ELSE
+   sNDetSM0 = cNDetSM0
+ENDIF
+ !Detritus_N_in_marsh_sediment
+
+IF (InitCalc) THEN
+   sPDetSM0 = cPDDet0 * sDDetSM0
+ELSE
+   sPDetSM0 = cPDetSM0
+ENDIF
+ !Detritus_P_in_marsh_sediment
+
+IF (InitCalc) THEN
+   sSiDetSM0 = cSiDDet0 * sDDetSM0
+ELSE
+   sSiDetSM0 = cSiDetSM0
+ENDIF
+ !Detritus_Si_in_marsh_sediment
+
+IF (InitCalc) THEN
+   sDHumSM0 = (1.0 - fDDetSM0) * fDOrgSM0 * bDTotSM0
+ELSE
+   sDHumSM0 = cDHumSM0
+ENDIF
+ !Humus_DW_in_marsh_sediment
+
+IF (InitCalc) THEN
+   sNHumSM0 = cNDHum0 * sDHumSM0
+ELSE
+   sNHumSM0 = cNHumSM0
+ENDIF
+ !Humus_N_in_marsh_sediment
+
+IF (InitCalc) THEN
+   sPHumSM0 = cPDHum0 * sDHumSM0
+ELSE
+   sPHumSM0 = cPHumSM0
+ENDIF
+ !Humus_Pin_marsh_sediment
+
+IF (InitCalc) THEN
+   sDIMSM0 = bDTotSM0 - sDHumSM0 - sDDetSM0
+ELSE
+   sDIMSM0 = cDIMSM0
+ENDIF
+ !Inorganic_matter_in_marsh_sediment
+
+sDRootPhra0 = cDRootPhra0
+ !Root_biomass_DW_in_marsh_sediment
+
+sDShootPhra0 = cDShootPhra0
+ !Shoot_biomass_DW_in_marsh_water
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   sNRootPhra0 = cNRootPhra0
+ELSE
+   sNRootPhra0 = cNDPhra0 * sDRootPhra0
+ENDIF
+ !Root_biomass_N_in_marsh_sediment
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   sNShootPhra0 = cNShootPhra0
+ELSE
+   sNShootPhra0 = cNDPhra0 * sDShootPhra0
+ENDIF
+ !Shoot_biomass_N_in_marsh_water
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   sPRootPhra0 = cPRootPhra0
+ELSE
+   sPRootPhra0 = cPDPhra0 * sDRootPhra0
+ENDIF
+ !Root_biomass_P_in_marsh_sediment
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   sPShootPhra0 = cPShootPhra0
+ELSE
+   sPShootPhra0 = cPDPhra0 * sDShootPhra0
+ENDIF
+ !Shoot_biomass_P_in_marsh_water
+
+uDPhytW0 = sDDiatW0 + sDGrenW0 + sDBlueW0
+ !Total_initial_DW_in_phytoplankton_in_lake_water
+
+uPPhytW0 = sPDiatW0 + sPGrenW0 + sPBlueW0
+ !Total_initial_P_in_phytoplankton_in_lake_water
+
+uNPhytW0 = sNDiatW0 + sNGrenW0 + sNBlueW0
+ !Total_initial_N_in_phytoplankton_in_lake_water
+
+uDPhytS0 = sDDiatS0 + sDGrenS0 + sDBlueS0
+ !Total_initial_DW_in_phytoplankton_in_lake_sediment
+
+uPPhytS0 = sPDiatS0 + sPGrenS0 + sPBlueS0
+ !Total_initial_P_in_phytoplankton_in_lake_sediment
+
+uNPhytS0 = sNDiatS0 + sNGrenS0 + sNBlueS0
+ !Total_initial_N_in_phytoplankton_in_lake_sediment
+
+IF (InitCalc) THEN
+   uDPhytWM0 = uDPhytW0
+ELSE
+   uDPhytWM0 = cDGrenWM0 + cDDiatWM0 + cDBlueWM0
+ENDIF
+ !Total_initial_DW_in_phytoplankton_in_marsh_water
+
+IF (InitCalc) THEN
+   uPPhytWM0 = uPPhytW0
+ELSE
+   uPPhytWM0 = cPGrenWM0 + cPDiatWM0 + cPBlueWM0
+ENDIF
+ !Total_initial_P_in_phytoplankton_in_marsh_water
+
+IF (InitCalc) THEN
+   uNPhytWM0 = uNPhytW0
+ELSE
+   uNPhytWM0 = cNGrenWM0 + cNDiatWM0 + cNBlueWM0
+ENDIF
+ !Total_initial_N_in_phytoplankton_in_marsh_water
+
+IF (InitCalc) THEN
+   uSiDiatWM0 = cSiDDiat * sDDiatW0
+ELSE
+   uSiDiatWM0 = cSiDDiat * sDDiatWM0
+ENDIF
+ !Total_initial_Si_in_phytoplankton_in_marsh_water
+
+uDVeg0 = sDVeg0
+ !Total_initial_DW_vegetation_in_the_lake
+
+uPVeg0 = sPVeg0
+ !Total_initial_P_vegetation_in_the_lake
+
+uNVeg0 = sNVeg0
+ !Total_initial_N_vegetation_in_the_lake
+
+uDFish0 = sDFiJv0 + sDFiAd0
+ !Total_initial_DW_in_white_fish_in_the_lake
+
+uPFish0 = sPFiJv0 + sPFiAd0
+ !Total_initial_P_in_white_fish_in_the_lake
+
+uNFish0 = sNFiJv0 + sNFiAd0
+ !Total_initial_N_in_white_fish_in_the_lake
+
+uPPisc0 = cPDPisc * sDPisc0
+ !Total_initial_P_in_pisc_Fish_in_the_lake
+
+uNPisc0 = cNDPisc * sDPisc0
+ !Total_initial_N_in_pisc_Fish_in_the_lake
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   uDTotM0 = 0.0
+ELSE
+   uDTotM0 = ((sDIMWM0 + sDDetWM0 + uDPhytWM0 + sDZooM0) * sDepthWM0 + sDIMSM0 &
++ sDHumSM0 + sDDetSM0 + sDShootPhra0 + sDRootPhra0) * fMarsh
+ENDIF
+ !Total_initial_DW_in_the_marsh
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   uPTotM0 = 0.0
+ELSE
+   uPTotM0 = ((sPO4WM0 + sPDetWM0 + sPAIMWM0 + uPPhytWM0 + sPZooM0) * &
+sDepthWM0 + sPO4SM0 + sPDetSM0 + sPHumSM0 + sPAIMSM0 + sPShootPhra0 + &
+sPRootPhra0) * fMarsh
+ENDIF
+ !Total_initial_P_in_the_marsh
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   uNTotM0 = 0.0
+ELSE
+   uNTotM0 = ((sNH4WM0 + sNO3WM0 + sNDetWM0 + uNPhytWM0 + sNZooM0) * sDepthWM0 &
++ sNH4SM0 + sNO3SM0 + sNDetSM0 + sNHumSM0 + sNShootPhra0 + sNRootPhra0) * &
+fMarsh
+ENDIF
+ !Total_initial_N_in_the_marsh
+
+IF (.NOT. InclMarsh .OR. fMarsh .LE. NearZero) THEN
+   uSiTotM0 = 0.0
+ELSE
+   uSiTotM0 = ((sSiO2WM0 + sSiDetWM0 + uSiDiatWM0) * sDepthWM0 + sSiDetSM0) * &
+fMarsh
+ENDIF
+ !Total_initial_Si_in_the_marsh
+
+uDTotT0 = (sDIMW0 + sDDetW0 + uDPhytW0 + sDZoo0) * sDepthW0 + uDVeg0 + sDIMS0 &
++ sDHumS0 + sDDetS0 + uDPhytS0 + uDFish0 + sDPisc0 + sDBent0 + uDTotM0
+ !Total_initial_DW_in_the_lake
+
+uPTotT0 = (sPO4W0 + sPDetW0 + sPAIMW0 + uPPhytW0 + sPZoo0) * sDepthW0 + uPVeg0 &
++ sPO4S0 + sPDetS0 + sPAIMS0 + sPHumS0 + uPPhytS0 + uPFish0 + uPPisc0 + &
+sPBent0 + uPTotM0
+ !Total_initial_P_in_the_lake
+
+uNTotT0 = (sNH4W0 + sNO3W0 + sNDetW0 + uNPhytW0 + sNZoo0) * sDepthW0 + uNVeg0 &
++ sNH4S0 + sNO3S0 + sNDetS0 + uNPhytS0 + sNHumS0 + uNFish0 + uNPisc0 + sNBent0 &
++ uNTotM0
+ !Total_initial_N_in_the_lake
+
+uSiTotT0 =  (sSiO2W0 + sSiDetW0 + cSiDDiat * sDDiatW0) * sDepthW0 + sSiDetS0 + &
+cSiDDiat*sDDiatS0 + uSiTotM0
+ !Total_initial_Si_in_the_lake
+
+sDExtTotT0 = uDTotT0
+ !Total_amount_of_DW_moved_into_or_out_from_the_system
+
+sNExtTotT0 = uNTotT0
+ !Total_amount_of_N_moved_into_or_out_from_the_system
+
+sPExtTotT0 = uPTotT0
+ !Total_amount_of_P_moved_into_or_out_from_the_system
+
+sSiExtTotT0 = uSiTotT0
+ !Total_amount_of_Si_moved_into_or_out_from_the_system
+

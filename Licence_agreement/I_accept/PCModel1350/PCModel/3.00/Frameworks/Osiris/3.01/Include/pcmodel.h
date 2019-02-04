@@ -14,7 +14,6 @@
 #include "wmoptobj.h"
 // header of opt class
 #include "../pclake/pl61316dim.cpp"
-//#include "../pcditch/pd21316dim.cpp"
 // cpp file containing the dimensions of the arrays
 
 class PCModel;
@@ -475,8 +474,7 @@ class State : Variable
     // contains an in memory copy of the text file with the state information
     static double stateInitRep[MAX_STATE][4];
     //
-    static double initStateInitRep[MAX_STATE][4];
-    //
+
     StrObject *initStateNames;
     // declare a pointer to the array of derivative names
     double *initStateValue;
@@ -570,8 +568,6 @@ class Parameter : Variable
     //
     AscObject paramInp;
     // contains an in memory copy of the text file with the parameter information
-    static double paramInitRep[MAX_PARAM][4];
-    //
   friend class PCModel;
   //
   //friend class Sensitivity;

@@ -14,10 +14,6 @@ long Calibration::constructionId = 0;
 //
 long Bifurcation::constructionId = 0;
 //
-double Parameter::paramInitRep[MAX_PARAM][4];
-// array that holds the parameter data for the dump file
-double State::initStateInitRep[MAX_STATE][4];
-// array that holds the initial state data for the dump file
 double InitialAuxiliary::initAuxilInitRep[MAX_INIT_AUXIL][4];
 // array that holds the initAuxil data for the dump file
 double State::stateInitRep[MAX_STATE][4];
@@ -750,40 +746,23 @@ int runIdInitRep = 0;
 void PCModel::storeInitValues()
 {   int i, j;
     if (runIdInitRep >= 0 && runIdInitRep <= 3)
-    {   for (i = 0; i < param.maxParam; i++) param.paramInitRep[i][runIdInitRep] = param.paramValue[i];
-        for (i = 0; i < state.maxState; i++) state.initStateInitRep[i][runIdInitRep] = state.initStateValue[i];
-        for (i = 0; i < initAuxil.maxInitAuxil; i++) initAuxil.initAuxilInitRep[i][runIdInitRep] = initAuxil.initAuxilValue[i];
+    {   for (i = 0; i < initAuxil.maxInitAuxil; i++) initAuxil.initAuxilInitRep[i][runIdInitRep] = initAuxil.initAuxilValue[i];
         for (i = 0; i < state.maxState; i++) state.stateInitRep[i][runIdInitRep] = state.stateValue[i];
         for (i = 0; i < auxil.maxAuxil; i++) auxil.auxilInitRep[i][runIdInitRep] = auxil.auxilValue[i];
         for (i = 0; i < state.maxState; i++) state.derivInitRep[i][runIdInitRep] = state.derivValue[i];
         if (runIdInitRep == 3)
-        {
-//            for (i = 0; i < param.maxParam; i++)
-//            {   single.initRep << "Parameter" << " " << i << " " << param.paramNames[i];
-//                for (j = 0; j < 4; j++) single.initRep << " " << param.paramValue[i];
-//                for (j = 1; j < 4; j++) single.initRep << " 0";
-//                for (j = 1; j < 4; j++) single.initRep << " 0";
-//                single.initRep << endl;
-//            }
-            for (i = 0; i < param.maxParam; i++)
+        {   for (i = 0; i < param.maxParam; i++)
             {   single.initRep << "Parameter" << " " << i << " " << param.paramNames[i];
-                for (j = 0; j < 4; j++) single.initRep << " " << param.paramInitRep[i][j];
-                for (j = 1; j < 4; j++) single.initRep << " " << fabs((param.paramInitRep[i][j] - param.paramInitRep[i][0]) / (param.paramInitRep[i][0] + 1.0e-10));
-                for (j = 1; j < 4; j++) single.initRep << " " << (param.paramInitRep[i][j] != param.paramInitRep[i][0]);
+                for (j = 0; j < 4; j++) single.initRep << " " << param.paramValue[i];
+                for (j = 1; j < 4; j++) single.initRep << " 0";
+                for (j = 1; j < 4; j++) single.initRep << " 0";
                 single.initRep << endl;
             }
-//            for (i = 0; i < state.maxState; i++)
-//            {   single.initRep << "InitState" << " " << i << " " << state.initStateNames[i];
-//                for (j = 0; j < 4; j++) single.initRep << " " << state.initStateValue[i];
-//                for (j = 1; j < 4; j++) single.initRep << " 0";
-//                for (j = 1; j < 4; j++) single.initRep << " 0";
-//                single.initRep << endl;
-//            }
             for (i = 0; i < state.maxState; i++)
-            {   single.initRep << "State" << " " << i << " " << state.initStateNames[i];
-                for (j = 0; j < 4; j++) single.initRep << " " << state.initStateInitRep[i][j];
-                for (j = 1; j < 4; j++) single.initRep << " " << fabs((state.initStateInitRep[i][j] - state.initStateInitRep[i][0]) / (state.initStateInitRep[i][0] + 1.0e-10));
-                for (j = 1; j < 4; j++) single.initRep << " " << (state.initStateInitRep[i][j] != state.initStateInitRep[i][0]);
+            {   single.initRep << "InitState" << " " << i << " " << state.initStateNames[i];
+                for (j = 0; j < 4; j++) single.initRep << " " << state.initStateValue[i];
+                for (j = 1; j < 4; j++) single.initRep << " 0";
+                for (j = 1; j < 4; j++) single.initRep << " 0";
                 single.initRep << endl;
             }
             for (i = 0; i < initAuxil.maxInitAuxil; i++)
@@ -797,7 +776,7 @@ void PCModel::storeInitValues()
             {   single.initRep << "State" << " " << i << " " << state.stateNames[i];
                 for (j = 0; j < 4; j++) single.initRep << " " << state.stateInitRep[i][j];
                 for (j = 1; j < 4; j++) single.initRep << " " << fabs((state.stateInitRep[i][j] - state.stateInitRep[i][0]) / (state.stateInitRep[i][0] + 1.0e-10));
-                for (j = 1; j < 4; j++) single.initRep << " " << (state.stateInitRep[i][j] != state.stateInitRep[i][0]);
+                for (j = 0; j < 3; j++) single.initRep << " " << (state.stateInitRep[i][j] != state.stateInitRep[i][0]);
                 single.initRep << endl;
             }
             for (i = 0; i < auxil.maxAuxil; i++)

@@ -1,0 +1,48 @@
+DaysPerYear = 365
+ !DaysPerYear
+
+TenDays = 10
+ !TenDays
+
+HoursPerDay = 24
+ !HoursPerDay
+
+SecsPerDay = 86400
+ !SecsPerDay
+
+mmPerm = 1000
+ !mmPerm
+
+m2Perha = 10000
+ !m2Perha
+
+mgPerg = 1000
+ !mgPerg
+
+gPerkg = 1000
+ !gPerkg
+
+gPerton = 1000000
+ !gPerton
+
+PerCent = 0.01
+ !PerCent
+
+NearZero = 1E-28
+ !very_small_number_used_to_avoid_dividing_by_zero_
+
+molO2molC = 2.6667
+ !ratio_of_molweights
+
+molO2molN = 2.2857
+ !ratio_of_molweights
+
+molNmolC = 1.1667
+ !ratio_of_molweights
+
+cRhoWat = 1000000
+ !density_of_water
+
+Pi = 3.14159265358979
+ !Pi_(approx_314159)
+
