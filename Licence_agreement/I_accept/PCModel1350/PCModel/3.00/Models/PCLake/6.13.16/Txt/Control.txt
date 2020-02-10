@@ -39,7 +39,7 @@ dAvgEndWithinYear	210	210	210	210
 dSensitivityFactor	0.01	0.01	0.01	0.01																	
 dCalibScale	0.05	0.05	0.05	0.05																	
 dCalibAccuracy	0.001	0.001	0.001	0.001																	
-																					
+iGccCompiler	c:\rtools\gcc-4.6.3																				
 																					
 																					
 																					

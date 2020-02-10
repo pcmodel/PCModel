@@ -67,6 +67,7 @@ _afNInorgS_ = _aNDissS_ / _aDTotS_;
 _afNTotS_ = _aNTotS_ / _aDTotS_;
 _oNO3S_ = _sNO3S_ / _cDepthS_ / _bPorS_;
 _oNH4S_ = _sNH4S_ / _cDepthS_ / _bPorS_;
+_oO2W_ = _sO2W_ ;
 _oNDissS_ = _aNDissS_ / _cDepthS_ / _bPorS_;
 _rPDIMW_ = _sPAIMW_ / _sDIMW_;
 _rPDIMS_ = _sPAIMS_ / _sDIMS_;

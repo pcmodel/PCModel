@@ -40,7 +40,6 @@
 #define _FLOOR_ floor
 #define _COS_ cos
 #define _SIN_ sin
-#define _TAN_ tan
 #define _EXP_ exp
 #define _MIN_ min
 #define _MAX_ max
@@ -55,8 +54,6 @@
 #ifndef DEBUG_MATH
 
 #define _ACOS_ acos
-#define _ASIN_ asin
-#define _ATAN_ atan
 #define _POW_ pow
 #define _LN_ log
 #define _SQRT_ sqrt

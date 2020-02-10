@@ -1,0 +1,7 @@
+sediment type settings from Janse 2005					
+type	dry matter	organic matter	lutum	Fe	Al
+clay	0.3	0.08	0.4	0.04	0.04
+clay/peat	0.2	0.165	0.4	0.04	0.04
+clay/sand	0.4	0.08	0.215	0.0215	0.0215
+peat	0.1	0.25	0.4	0.04	0.04
+sand	0.5	0.08	0.03	0.003	0.003

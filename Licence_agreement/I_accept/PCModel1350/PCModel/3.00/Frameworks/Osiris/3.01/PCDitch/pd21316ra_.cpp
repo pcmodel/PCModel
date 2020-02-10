@@ -67,6 +67,7 @@ double _afNInorgS_;
 double _afNTotS_;
 double _oNO3S_;
 double _oNH4S_;
+double _oO2W_;
 double _oNDissS_;
 double _rPDIMW_;
 double _rPDIMS_;
@@ -1099,7 +1100,7 @@ double _aPTotT_;
 double _aDError_;
 double _aNError_;
 double _aPError_;
-#define MAX_AUXIL 1101
+#define MAX_AUXIL 1102
 _aDayInitElod_ = 0.0;
 _aDayInitChar_ = 0.0;
 _aDayInitCera_ = 0.0;

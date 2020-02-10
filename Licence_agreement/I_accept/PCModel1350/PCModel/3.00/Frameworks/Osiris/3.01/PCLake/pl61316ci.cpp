@@ -37,12 +37,24 @@
 #define _GE_ >=
 #define _AND_ &&
 #define _OR_ ||
-#define _POW_ pow
+#define _FLOOR_ floor
+#define _COS_ cos
+#define _EXP_ exp
+#define _MIN_ min
+#define _MAX_ max
 #define _IF_
 #define _THEN_ ?
 #define _ELSEIF_ :
 #define _ELSE_ :
 #define _ENDIF_
+#define _ACOS_ acos
+#define _POW_ pow
+#define _LN_ log
+#define _SQRT_ sqrt
+#define _SIN_ sin
+#define _TAN_ tan
+#define _ASIN_ asin
+#define _ATAN_ atan
 
 //
 void PCModel::calculateInitAuxilDef()
@@ -61,7 +73,7 @@ void PCModel::calculateInitAuxilDef()
 void PCModel::calculateInitAuxilSet0()
 {   double *param = PCModel::param.paramValue;
     double *initState = PCModel::state.initStateValue;
-    double *initAuxil = PCModel::auxil.auxilValue;
+    double *initAuxil = PCModel::initAuxil.initAuxilValue;
     double *state = PCModel::state.stateValue;
     #include "../pclake/pl61316rp.cpp" // declare parameters
     #include "../pclake/pl61316rc.cpp" // declare initial states
@@ -74,7 +86,7 @@ void PCModel::calculateInitAuxilSet0()
 void PCModel::calculateInitAuxilSet1()
 {   double *param = PCModel::param.paramValue;
     double *initState = PCModel::state.initStateValue;
-    double *initAuxil = PCModel::auxil.auxilValue;
+    double *initAuxil = PCModel::initAuxil.initAuxilValue;
     double *state = PCModel::state.stateValue;
     #include "../pclake/pl61316rp.cpp" // declare parameters
     #include "../pclake/pl61316rc.cpp" // declare initial states
@@ -87,7 +99,7 @@ void PCModel::calculateInitAuxilSet1()
 void PCModel::calculateInitAuxilSet2()
 {   double *param = PCModel::param.paramValue;
     double *initState = PCModel::state.initStateValue;
-    double *initAuxil = PCModel::auxil.auxilValue;
+    double *initAuxil = PCModel::initAuxil.initAuxilValue;
     double *state = PCModel::state.stateValue;
     #include "../pclake/pl61316rp.cpp" // declare parameters
     #include "../pclake/pl61316rc.cpp" // declare initial states
@@ -100,7 +112,7 @@ void PCModel::calculateInitAuxilSet2()
 void PCModel::calculateInitAuxilSet3()
 {   double *param = PCModel::param.paramValue;
     double *initState = PCModel::state.initStateValue;
-    double *initAuxil = PCModel::auxil.auxilValue;
+    double *initAuxil = PCModel::initAuxil.initAuxilValue;
     double *state = PCModel::state.stateValue;
     #include "../pclake/pl61316rp.cpp" // declare parameters
     #include "../pclake/pl61316rc.cpp" // declare initial states

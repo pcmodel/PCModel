@@ -2,5 +2,5 @@
 #define MAX_INIT_STATE 48
 #define MAX_INIT_AUXIL 64
 #define MAX_STATE 48
-#define MAX_AUXIL 1101
+#define MAX_AUXIL 1102
 #define MAX_DERIV 48

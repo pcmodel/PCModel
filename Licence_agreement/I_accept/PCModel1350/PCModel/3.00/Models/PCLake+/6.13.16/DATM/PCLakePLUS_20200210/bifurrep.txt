@@ -1,0 +1,1 @@
+RunId	BifurcationRunId	ParamBifurId	ParamBifurName	ParamBifurValue	AuxilBifurId	AuxilBifurName	AuxilBifurValue

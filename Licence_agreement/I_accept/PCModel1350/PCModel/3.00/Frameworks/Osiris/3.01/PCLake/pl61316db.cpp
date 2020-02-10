@@ -38,6 +38,7 @@
 #define _OR_ ||
 #define _FLOOR_ floor
 #define _COS_ cos
+#define _SIN_ sin
 #define _EXP_ exp
 #define _MIN_ min
 #define _MAX_ max

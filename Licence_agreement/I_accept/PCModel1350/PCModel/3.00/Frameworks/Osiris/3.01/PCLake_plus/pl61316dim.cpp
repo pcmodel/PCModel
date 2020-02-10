@@ -1,0 +1,6 @@
+#define MAX_PARAM 528
+#define MAX_INIT_STATE 129
+#define MAX_INIT_AUXIL 179
+#define MAX_STATE 129
+#define MAX_AUXIL 2197
+#define MAX_DERIV 129
