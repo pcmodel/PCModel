@@ -40,6 +40,7 @@
 #define _FLOOR_ floor
 #define _COS_ cos
 #define _SIN_ sin
+#define _TAN_ tan
 #define _EXP_ exp
 #define _MIN_ min
 #define _MAX_ max
@@ -53,7 +54,12 @@
 
 #ifndef DEBUG_MATH
 
+#define _ASIN_ asin
 #define _ACOS_ acos
+#define _ATAN_ atan
+#define _SINH_ sinh
+#define _COSH_ cosh
+#define _TANH_ tanh
 #define _POW_ pow
 #define _LN_ log
 #define _SQRT_ sqrt
@@ -90,8 +96,18 @@ inline double _POW_(double x, double y)
     }
 }
 
+inline double _ASIN_(double x)
+{   if (x >= -1000.0 && x <= 1000.0)
+    {   return asin(x);
+    }
+    else
+    {   cout << "invalid argument in function asin " << x << endl;
+        return 0;
+    }
+}
+
 inline double _ACOS_(double x)
-{   if (x >= -1.0 && x <= 1.0)
+{   if (x >= -1000.0 && x <= 1000.0)
     {   return acos(x);
     }
     else
@@ -100,42 +116,42 @@ inline double _ACOS_(double x)
     }
 }
 
-inline double _LN_(int i, double x)
-{   if (x > 0)
-    {   return log(x);
+inline double _ATAN_(double x)
+{   if (x >= -1000.0 && x <= 1000.0)
+    {   return atan(x);
     }
     else
-    {   cout << "invalid argument in function log " << i << " " << x << endl;
+    {   cout << "invalid argument in function atan " << x << endl;
         return 0;
     }
 }
 
-inline double _SQRT_(int i, double x)
-{   if (x >= 0)
-    {   return sqrt(x);
+inline double _SINH_(double x)
+{   if (x >= -1000.0 && x <= 1000.0)
+    {   return sinh(x);
     }
     else
-    {   cout << "invalid argument in function sqrt " << i << " " << x << endl;
+    {   cout << "invalid argument in function sinh " << x << endl;
         return 0;
     }
 }
 
-inline double _POW_(int i, double x, double y)
-{   if (x >= 0)
-    {   return pow(x, y);
+inline double _COSH_ (double x)
+{   if (x >= -1000.0 && x <= 1000.0)
+    {   return cosh(x);
     }
     else
-    {   cout << "invalid argument in function pow " << i << " " << x << endl;
+    {   cout << "invalid argument in function cosh " << x << endl;
         return 0;
     }
 }
 
-inline double _ACOS_(int i, double x)
-{   if (x >= -1.0 && x <= 1.0)
-    {   return acos(x);
+inline double _TANH_(double x)
+{   if (x >= -1000.0 && x <= 1000.0)
+    {   return tanh(x);
     }
     else
-    {   cout << "invalid argument in function acos " << i << " " << x << endl;
+    {   cout << "invalid argument in function tanh " << x << endl;
         return 0;
     }
 }

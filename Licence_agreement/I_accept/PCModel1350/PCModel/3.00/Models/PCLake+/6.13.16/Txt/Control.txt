@@ -30,13 +30,13 @@
 	Set0	Set1	Set2	Set3																				
 iRuniD	0	1	2	3																				
 iIntType	3	3	3	3																				
-iStateSet	0	1	1	1																				
-iParamSet	0	0	2	3																				
+iStateSet	0	1	2	3																				
+iParamSet	0	1	2	3																				
 iInitAuxilSet	0	0	0	0																				
 iAuxilset	0	0	0	0																				
 iCalibType	0	0	0	0																				
 iCalibMaxIter	50	50	50	50																				
-dReady	25	25	25	25																				
+dReady	10	10	10	10																				
 dIntStep	0.001	0.001	0.001	0.001																				
 dIntAccuracy	0.0001	0.0001	0.0001	0.0001																				
 dRepStart	0	0	0	0																				
@@ -49,7 +49,7 @@ dSensitivityFactor	0.01	0.01	0.01	0.01
 dCalibScale	0.05	0.05	0.05	0.05																				
 dCalibAccuracy	0.001	0.001	0.001	0.001																				
 iGccCompiler	c:\rtools\gcc-4.6.3																							
-iFilesDATM	DATM\PCLakePLUS_20200210\																							
+iFilesDATM	DATM\PCLakePLUS_20200828\																							
 																								
 																								
 																								

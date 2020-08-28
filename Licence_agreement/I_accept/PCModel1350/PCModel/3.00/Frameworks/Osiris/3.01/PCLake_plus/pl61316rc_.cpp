@@ -1,4 +1,5 @@
 double _cDepthW0_;
+double _cMixDepthW0_;
 double _cNH4WHyp0_;
 double _cNO3WHyp0_;
 double _cPO4WHyp0_;
@@ -122,9 +123,13 @@ double _cPBlueWEpi0_;
 double _cDZooEpi0_;
 double _cNZooEpi0_;
 double _cPZooEpi0_;
+double _cDBlueSurf0_;
+double _cNBlueSurf0_;
+double _cPBlueSurf0_;
 double _cDExtTotT0_;
 double _cNExtTotT0_;
 double _cPExtTotT0_;
 double _cSiExtTotT0_;
 double _cO2ExtTotT0_;
-#define MAX_INIT_STATE 129
+double _cDepthExtTotT0_;
+#define MAX_INIT_STATE 134

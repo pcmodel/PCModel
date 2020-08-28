@@ -55,6 +55,10 @@
 #define _TAN_ tan
 #define _ASIN_ asin
 #define _ATAN_ atan
+#define _ACOS_ acos
+#define _SINH_ sinh
+#define _COSH_ cosh
+#define _TANH_ tanh
 
 //
 inline double max(double a, double b) {double m = a; return b > m ? b : m;}

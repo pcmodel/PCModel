@@ -4,47 +4,47 @@ is used throughout this chapter and in the model code. The basic system is as fo
 type + element + process + component + layer (+ suffix)									
 – State variables: s + element + compartment + layer (+ 0)									
 (state) (D/P/N/Si/O2) (IM/Det/PO4/NH4/Phyt/Zoo/etc.) (W/S) (-/IC)									
-#NAME?									
+- Processes (fluxes): t/w + element + process + compartment + layer									
 (flux) (D/P/N/Si/O2) (Set/Min/etc.) (IM/Det/PO4/NO3/Phyt/etc.) (W/S)									
 									
-"Substances, elements:"	Processes:	Prefixes:							
-D- = dry weight 	Load = external loading	s- = state variable							
-P- = phosphorus 	Dil = dilution	s...0 = initial value of state variable 							
-N- = nitrogen 	Ev = evaporation	d- = derivative 							
-Si- = silica 	Outfl = surface outflow	"t- = transfer (flux, process) per area [g/m2/d] "							
-O2- = oxygen 	Inf = infiltration/seepage	"w- = flux (transfer, process) per volume of water [g/m3/d] "							
-Q- = water flow 	Eros = erosion	v- = volume change per area [m/d] 							
-L- = light 	Exch = exchange lake <-> marsh	r- = (dynamical) ratio [gA/gB] 							
-Tm = temperature 	"Set = settling, sedimentation"	o- = concentration [m/g/l] 							
-"Chla, Ch- = chlorophyll-a "	Resus = resuspension	a- = other auxiliary							
-	Bur = burial	c- = constant (general) 							
-Layers: 	Dif = diffusion	k- = rate constant [d-1] 							
-– W = water column 	Nitr = nitrification	h- = half-saturation constant 							
-– S = sediment top layer 	Deit = denitrification	f- = fraction [–] 							
-– T = total 	Sorp = ad-/desorption	b- = derived constant 							
-– M = marsh zone 	Min = mineralization	"u- = (derived) input variable, or derived constant "							
-– WM = water column in marsh zone 	Upt = uptake (of nutrients)	"m- = measurement, read variable "							
-– SM = sediment top layer in marsh zone	Ass = assimilation	"i-, j- = counters (integers) "							
-	Prod = production	n- = numbers (integers) 							
-Components: 	Cons = consumption	kd- = partitioning coefficient (used in sorption							
-– IM = inorganic matter 	Eges = egestion	equations) [(gX/gDW)/(gX/m3)]=[m3/g]							
-– Det = detritus 	Resp = respiration (DW)								
-– Hum = humus 	Excr = excretion (nutrients)	Other abbreviations:							
-"– PO4 = phosphate, -NH4 = ammonium, "	Graz = grazing	"-Fun- = function, dependence"							
-#NAME?	Pred = predation	"-C(o)r- = corrected, modified"							
-"– Diss = (total) dissolved, "	Mort = natural mortality	#NAME?							
-– AIM = adsorbed onto inorganic matter 	Loss = phytopl. grazing loss (in case food web not included	#NAME?							
-– Phyt = (total) phytoplankton 	Harv = harvesting	-V- = velocity [m/d]							
-– Diat = diatoms	"Man = management, mowing"	-Mu- = grwoth rate [d-1]							
-– Blue = Blue– greens	Dred = dredging	"-Carr- = carrying capacity, maximum biomass [gDW/m2 or gDW/m3]"							
-– Gren = small edible algae	Tran = total transport flux	"-Secchi = transparencym, Secchi dept [m]"							
-– OM = total organic matter	Abio = total flux from abiotic module								
-– Zoo = zooplankton	Prim = total flux from algae module								
-– Fish = whitefish	Bed = total flux from vegetation module								
-– FiAd = adult whitefish	Web = total flux from food web module								
-– FiJv = juvenile whitefish	Mars = total flux from marsh module								
-– Pisc = predatory Fish	Ext = total external flux (for mass balance)								
-– Bent–  = zoobenthos 									
+"Substances, elements:"					Processes:				Prefixes:
+D- = dry weight 					Load = external loading				s- = state variable
+P- = phosphorus 					Dil = dilution				s...0 = initial value of state variable 
+N- = nitrogen 					Ev = evaporation				d- = derivative 
+Si- = silica 					Outfl = surface outflow				"t- = transfer (flux, process) per area [g/m2/d] "
+O2- = oxygen 					Inf = infiltration (water to soil)				"w- = flux (transfer, process) per volume of water [g/m3/d] "
+Q- = water flow 					Seep = seepage (soil to water)				v- = volume change per area [m/d] 
+L- = light 					Eros = erosion				r- = (dynamical) ratio [gA/gB] 
+Tm = temperature 					Exch = exchange lake <-> marsh				o- = concentration [m/g/l] 
+"Chla, Ch- = chlorophyll-a "					"Set = settling, sedimentation"				a- = other auxiliary
+					Resus = resuspension				c- = constant (general) 
+Layers: 					Bur = burial				k- = rate constant [d-1] 
+– W = water column 					Dif = diffusion				h- = half-saturation constant 
+– S = sediment top layer 					Nitr = nitrification				f- = fraction [–] 
+– T = total 					Deit = denitrification				b- = derived constant 
+– M = marsh zone 					Sorp = ad-/desorption				"u- = (derived) input variable, or derived constant "
+– WM = water column in marsh zone 					Min = mineralization				"m- = measurement, read variable "
+– SM = sediment top layer in marsh zone					Upt = uptake (of nutrients)				"i-, j- = counters (integers) "
+					Ass = assimilation				n- = numbers (integers) 
+Components: 					Prod = production				kd- = partitioning coefficient (used in sorption
+– IM = inorganic matter 					Cons = consumption				equations) [(gX/gDW)/(gX/m3)]=[m3/g]
+– Det = detritus 					Eges = egestion				
+– Hum = humus 					Resp = respiration (DW)				Other abbreviations:
+"– PO4 = phosphate, -NH4 = ammonium, "					Excr = excretion (nutrients)				"-Fun- = function, dependence"
+-NO3 = nitrate					Graz = grazing				"-C(o)r- = corrected, modified"
+"– Diss = (total) dissolved, "					Pred = predation				-Iso = adsorption isotherm
+– AIM = adsorbed onto inorganic matter 					Mort = natural mortality				-Ext = extinction
+– Phyt = (total) phytoplankton 					Loss = phytopl. grazing loss (in case food web not included				-V- = velocity [m/d]
+– Diat = diatoms					Harv = harvesting				-Mu- = grwoth rate [d-1]
+– Blue = Blue– greens					"Man = management, mowing"				"-Carr- = carrying capacity, maximum biomass [gDW/m2 or gDW/m3]"
+– Gren = small edible algae					Dred = dredging				"-Secchi = transparencym, Secchi dept [m]"
+– OM = total organic matter					Tran = total transport flux				
+– Zoo = zooplankton					Abio = total flux from abiotic module				
+– Fish = whitefish					Prim = total flux from algae module				
+– FiAd = adult whitefish					Bed = total flux from vegetation module				
+– FiJv = juvenile whitefish					Web = total flux from food web module				
+– Pisc = predatory Fish					Mars = total flux from marsh module				
+– Bent–  = zoobenthos 					Ext = total external flux (for mass balance)				
 – Tot = total									
 – Veg = submerged vegetation									
 – Phra = reed vegetation									

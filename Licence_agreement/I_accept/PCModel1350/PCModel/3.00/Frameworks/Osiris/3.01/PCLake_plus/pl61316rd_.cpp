@@ -1,4 +1,5 @@
 double _dDepthW_;
+double _dMixDepthW_;
 double _dNH4WHyp_;
 double _dNO3WHyp_;
 double _dPO4WHyp_;
@@ -122,9 +123,13 @@ double _dPBlueWEpi_;
 double _dDZooEpi_;
 double _dNZooEpi_;
 double _dPZooEpi_;
+double _dDBlueSurf_;
+double _dNBlueSurf_;
+double _dPBlueSurf_;
 double _dDExtTotT_;
 double _dNExtTotT_;
 double _dPExtTotT_;
 double _dSiExtTotT_;
 double _dO2ExtTotT_;
-#define MAX_DERIV 129
+double _dDepthExtTotT_;
+#define MAX_DERIV 134

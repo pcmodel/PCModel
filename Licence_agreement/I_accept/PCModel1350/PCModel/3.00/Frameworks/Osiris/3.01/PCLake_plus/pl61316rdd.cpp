@@ -1,4 +1,5 @@
 _dDepthW_;
+_dMixDepthW_;
 _dNH4WHyp_;
 _dNO3WHyp_;
 _dPO4WHyp_;
@@ -122,8 +123,12 @@ _dPBlueWEpi_;
 _dDZooEpi_;
 _dNZooEpi_;
 _dPZooEpi_;
+_dDBlueSurf_;
+_dNBlueSurf_;
+_dPBlueSurf_;
 _dDExtTotT_;
 _dNExtTotT_;
 _dPExtTotT_;
 _dSiExtTotT_;
 _dO2ExtTotT_;
+_dDepthExtTotT_;

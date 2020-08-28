@@ -1,4 +1,4 @@
-double _uDepthMix0_;
+double _sMixDepthW0_;
 double _aInclStrat0_;
 double _sDepthW0_;
 double _MassHyp0_;
@@ -56,6 +56,9 @@ double _sPBlueWEpi0_;
 double _sDZooEpi0_;
 double _sNZooEpi0_;
 double _sPZooEpi0_;
+double _sDBlueSurf0_;
+double _sNBlueSurf0_;
+double _sPBlueSurf0_;
 double _sNH4S0_;
 double _sNO3S0_;
 double _bRhoSolidS0_;
@@ -162,6 +165,9 @@ double _uDTotTHyp0_;
 double _uPTotTHyp0_;
 double _uNTotTHyp0_;
 double _uSiTotTHyp0_;
+double _uDTotTSurf0_;
+double _uPTotTSurf0_;
+double _uNTotTSurf0_;
 double _uDTotM0_;
 double _uPTotM0_;
 double _uNTotM0_;
@@ -177,4 +183,5 @@ double _sNExtTotT0_;
 double _sPExtTotT0_;
 double _sSiExtTotT0_;
 double _sO2ExtTotT0_;
-#define MAX_INIT_AUXIL 179
+double _sDepthExtTotT0_;
+#define MAX_INIT_AUXIL 186

@@ -1,4 +1,5 @@
 double _sDepthW_;
+double _sMixDepthW_;
 double _sNH4WHyp_;
 double _sNO3WHyp_;
 double _sPO4WHyp_;
@@ -122,9 +123,13 @@ double _sPBlueWEpi_;
 double _sDZooEpi_;
 double _sNZooEpi_;
 double _sPZooEpi_;
+double _sDBlueSurf_;
+double _sNBlueSurf_;
+double _sPBlueSurf_;
 double _sDExtTotT_;
 double _sNExtTotT_;
 double _sPExtTotT_;
 double _sSiExtTotT_;
 double _sO2ExtTotT_;
-#define MAX_STATE 129
+double _sDepthExtTotT_;
+#define MAX_STATE 134

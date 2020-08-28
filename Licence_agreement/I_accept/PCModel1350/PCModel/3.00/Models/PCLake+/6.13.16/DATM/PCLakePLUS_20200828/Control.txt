@@ -1,0 +1,92 @@
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+	Set0	Set1	Set2	Set3																				
+iRuniD	0	1	2	3																				
+iIntType	3	3	3	3																				
+iStateSet	0	1	0	0																				
+iParamSet	0	0	2	3																				
+iInitAuxilSet	0	0	0	0																				
+iAuxilset	0	0	0	0																				
+iCalibType	0	0	0	0																				
+iCalibMaxIter	50	50	50	50																				
+dReady	25	25	25	25																				
+dIntStep	0.001	0.001	0.001	0.001																				
+dIntAccuracy	0.0001	0.0001	0.0001	0.0001																				
+dRepStart	0	0	0	0																				
+dRepStep	1	1	1	1																				
+dAvgStep	1	1	1	1																				
+dAvgStart	24	24	24	24																				
+dAvgStartWithinYear	150	150	150	150																				
+dAvgEndWithinYear	210	210	210	210																				
+dSensitivityFactor	0.01	0.01	0.01	0.01																				
+dCalibScale	0.05	0.05	0.05	0.05																				
+dCalibAccuracy	0.001	0.001	0.001	0.001																				
+iGccCompiler	c:\rtools\gcc-4.6.3																							
+iFilesDATM	DATM\PCLakePLUS_20200506\																							
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
+																								
