@@ -1896,7 +1896,7 @@ PCmodelSingleRun <- function(lDATM = NULL,
   run_set     <- which(dfRUN_SETTINGS["iRuniD",] == as.character(nRUN_SET))
   state_set   <- dfRUN_SETTINGS["iStateSet", run_set]
   param_set   <- dfRUN_SETTINGS["iParamSet", run_set]
-  forcing_set <- names(lFORCINGS)[which(colnames(dfPARAMS)[4+set_param] == names(lFORCINGS))]
+  forcing_set <- names(lFORCINGS)[which(colnames(dfPARAMS)[4+param_set] == names(lFORCINGS))]
 
   sel_params <- dfPARAMS[, param_set + 4]
   names(sel_params) <- rownames(dfPARAMS)
